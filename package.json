@@ -1,0 +1,25 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "start:server": "ts-node server/index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "body-parser": "^1.20.3",
+    "express": "^4.21.0",
+    "nuxt": "^3.13.0",
+    "vue": "latest",
+    "vue-router": "latest",
+    "vue-tg": "latest"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21"
+  }
+}
