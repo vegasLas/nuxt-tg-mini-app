@@ -7,4 +7,7 @@ export default defineNuxtConfig({
       script: [{ src: 'https://telegram.org/js/telegram-web-app.js' }],
     },
   },
+  serverMiddleware: [
+    '~/server/middleware/auth'
+  ],
 })
