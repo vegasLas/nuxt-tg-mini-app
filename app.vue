@@ -1,20 +1,15 @@
 <template>
-  <div>
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-    <AppointmentScheduler />
+  <div id="app">
+    <Nuxt />
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import AppointmentScheduler from './components/AppointmentScheduler.vue';
-
-export default defineComponent({
-  name: 'App',
-  components: {
-    AppointmentScheduler,
-  },
-});
+<script>
+export default {
+  name: 'App'
+}
 </script>
+
+<style>
+/* Add your styles here */
+</style>

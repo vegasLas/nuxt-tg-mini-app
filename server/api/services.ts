@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { defineEventHandler, readBody } from 'h3'
-import type { User } from '../types'
+import type { Service } from '../types'
 
 const prisma = new PrismaClient()
 
@@ -11,27 +11,27 @@ export default defineEventHandler(async (event) => {
   switch (method) {
     case 'GET':
       if (id) {
-        return await prisma.user.findUnique({ where: { id: parseInt(id) } }) as User | null
+        return await prisma.service.findUnique({ where: { id: parseInt(id) } }) as Service | null
       }
-      return await prisma.user.findMany() as User[]
+      return await prisma.service.findMany() as Service[]
 
     case 'POST':
-      const createData = await readBody(event) as Omit<User, 'id'>
-      return await prisma.user.create({ data: createData }) as User
+      const createData = await readBody(event) as Omit<Service, 'id'>
+      return await prisma.service.create({ data: createData }) as Service
 
     case 'PUT':
       if (id) {
-        const updateData = await readBody(event) as Partial<User>
-        return await prisma.user.update({
+        const updateData = await readBody(event) as Partial<Service>
+        return await prisma.service.update({
           where: { id: parseInt(id) },
           data: updateData,
-        }) as User
+        }) as Service
       }
       break
 
     case 'DELETE':
       if (id) {
-        return await prisma.user.delete({ where: { id: parseInt(id) } }) as User
+        return await prisma.service.delete({ where: { id: parseInt(id) } }) as Service
       }
       break
   }
