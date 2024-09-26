@@ -17,14 +17,15 @@ model Appointment {
   id        Int      @id @default(autoincrement())
   time      String
   booked    Boolean  @default(false)
-  userId    Int?
-  user      User?    @relation(fields: [userId], references: [id])
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
 }
 
 model User {
   id          Int            @id @default(autoincrement())
+  telegramId  Int            @unique
+  phoneNumber String?
   name        String
-  email       String         @unique
   appointments Appointment[]
   notifications Notification[]
 }

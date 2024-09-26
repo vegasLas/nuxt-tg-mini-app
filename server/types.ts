@@ -1,14 +1,16 @@
 export interface Appointment {
   id: number;
   time: string;
+  phoneNumber: string | null;
   booked: boolean;
   userId: number | null;
 }
 
 export interface User {
   id: number;
+  phoneNumber: string | null;
+  telegramId: number;
   name: string;
-  email: string;
 }
 
 export interface Service {

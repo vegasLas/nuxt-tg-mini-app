@@ -1,40 +1,38 @@
-import { defineEventHandler, createError } from 'h3'
-import { createHmac } from 'crypto'
+import { validate } from '@telegram-apps/init-data-node'
+import { H3Event } from 'h3'
 
-const BOT_TOKEN = process.env.BOT_TOKEN
+const protectedPaths = ['/api']
+
+function isProtectedPath(event: H3Event): boolean {
+  const path = event.node.req.url
+  return protectedPaths.some(prefix => path?.startsWith(prefix))
+}
 
 export default defineEventHandler((event) => {
-  const initData = event.node.req.headers['telegram-init-data'] as string
+  console.log('Protected path:', isProtectedPath(event))
+  if (!isProtectedPath(event)) {
+    return
+  }
 
-  if (!initData) {
+  const headers = getHeaders(event)
+  const initDataRaw = headers['x-init-data'] as string | undefined
+  if (!initDataRaw) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Unauthorized: Missing Telegram init data',
+      statusMessage: 'Unauthorized',
+      message: 'Missing initData'
     })
   }
 
-  const secret = createHmac('sha256', 'WebAppData').update(BOT_TOKEN || '').digest()
-  
-  // Parse and validate the init data
-  const urlParams = new URLSearchParams(initData)
-  const hash = urlParams.get('hash')
-  urlParams.delete('hash')
-  const dataCheckString = Array.from(urlParams.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n')
-
-  const calculatedHash = createHmac('sha256', secret)
-    .update(dataCheckString)
-    .digest('hex')
-
-  if (calculatedHash !== hash) {
+  try {
+    console.log('Validating initData')
+    validate(initDataRaw, process.env.TELEGRAM_BOT_TOKEN as string, { expiresIn: 3600 })
+  } catch (err) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Unauthorized: Invalid Telegram init data',
+      statusMessage: 'Unauthorized',
+      message: 'Invalid initData'
     })
   }
-
-  // If validation passes, you can optionally set some data in the event context
-  event.context.telegramUser = JSON.parse(urlParams.get('user') || '{}')
 })
+

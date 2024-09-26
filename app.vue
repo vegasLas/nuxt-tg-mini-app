@@ -1,15 +1,13 @@
 <template>
-  <div id="app">
-    <Nuxt />
+  <div>
+    <!-- <VCalendar /> -->
+    <ClientOnly>
+      <AppointmentScheduler />
+    </ClientOnly>
+      <!-- <MiniApp /> -->
   </div>
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
+<script setup lang="ts">
+import AppointmentScheduler from '~/components/AppointmentScheduler.vue'
 </script>
-
-<style>
-/* Add your styles here */
-</style>

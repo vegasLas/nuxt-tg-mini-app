@@ -1,0 +1,20 @@
+:root {
+  --tg-theme-bg-color: var(--tg-theme-bg-color);
+  --tg-theme-text-color: var(--tg-theme-text-color);
+  --tg-theme-hint-color: var(--tg-theme-hint-color);
+  --tg-theme-link-color: var(--tg-theme-link-color);
+  --tg-theme-button-color: var(--tg-theme-button-color);
+  --tg-theme-button-text-color: var(--tg-theme-button-text-color);
+  --tg-theme-secondary-bg-color: var(--tg-theme-secondary-bg-color);
+  --tg-theme-header-bg-color: var(--tg-theme-header-bg-color);
+  --tg-theme-bottom-bar-bg-color: var(--tg-theme-bottom-bar-bg-color);
+  --tg-theme-accent-text-color: var(--tg-theme-accent-text-color);
+  --tg-theme-section-bg-color: var(--tg-theme-section-bg-color);
+}
+
+body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+}
+
+/* You can add more global styles here using the CSS variables */
