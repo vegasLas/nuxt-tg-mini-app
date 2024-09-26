@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { defineEventHandler, readBody } from 'h3'
-import type { Appointment } from '../types'
+import type { Appointment } from '~/types'
 
 const prisma = new PrismaClient()
 

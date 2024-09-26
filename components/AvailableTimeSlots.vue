@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <h2>Available Time Slots</h2>
+    <h2>Доступные временные слоты</h2>
     <div class="time-slots-grid">
       <button
         v-for="slot in availableTimeSlots"
@@ -13,7 +13,7 @@
     </div>
     <BackButton @click="$emit('back')" />
     <MainButton
-      text="Proceed"
+      text="Продолжить"
       @click="$emit('proceed')"
       :disabled="!selectedTime"
     />
@@ -39,10 +39,7 @@ function selectTimeSlot(slot: string): void {
 }
 
 function formatTime(time: string): string {
-  const [hours, minutes] = time.split(':')
-  const period = Number(hours) >= 12 ? 'PM' : 'AM'
-  const formattedHours = Number(hours) % 12 || 12
-  return `${formattedHours}:${minutes} ${period}`
+  return time // В 24-часовом формате время не нужно преобразовывать
 }
 </script>
 

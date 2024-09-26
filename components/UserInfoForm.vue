@@ -1,16 +1,16 @@
 <template>
   <div class="user-info-form">
-    <h2>User Information</h2>
+    <h2>Информация о пользователе</h2>
     <div class="form-group">
-      <label for="username">Username:</label>
-      <input id="username" v-model="username" type="text" placeholder="Enter your username">
+      <label for="username">Имя пользователя:</label>
+      <input id="username" v-model="username" type="text" placeholder="Введите ваше имя пользователя">
     </div>
     <div class="form-group">
-      <label for="phone">Phone:</label>
-      <input id="phone" v-model="phone" type="tel" placeholder="Enter your phone number">
+      <label for="phone">Телефон:</label>
+      <input id="phone" v-model="phone" type="tel" placeholder="Введите ваш номер телефона">
     </div>
     <div class="button-group">
-      <MainButton text="записаться" @click="submitForm" :disabled="!isFormValid"/>
+      <MainButton text="Записаться" @click="submitForm" :disabled="!isFormValid"/>
       <BackButton @click="goBack" />
     </div>
   </div>

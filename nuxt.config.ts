@@ -14,6 +14,7 @@ export default defineNuxtConfig({
 
   // Add the following CSS configuration
   css: [
+    '@/node_modules/vue-preloader/dist/style.css',
     '~/assets/css/telegram-theme.css',
   ],
 })

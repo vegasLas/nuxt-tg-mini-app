@@ -2,7 +2,15 @@
   <div class="appointment-scheduler">
     <template v-if="currentStep === 'calendar'">
       <VCalendar
+        locale="ru-RU"
         :attributes="calendarAttributes"
+        :disabled-dates="[
+          {
+            repeat: {
+              weekdays: [1, 7],
+            },
+          },
+          ]"
         @dayclick="onDayClick"
       />
     </template>
@@ -23,24 +31,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { OpenWindow, CalendarAttribute, SelectedDate, SelectedTime } from '~/types'
+import { ref, computed, onMounted } from 'vue'
+import type { CalendarAttribute, SelectedDate, SelectedTime } from '~/types'
 import UserInfoForm from './UserInfoForm.vue'
 import AvailableTimeSlots from './AvailableTimeSlots.vue'
-
-// Mock data for open windows (replace with actual data from your backend)
-const openWindows: OpenWindow[] = [
-  { date: new Date(2023, 4, 15), slots: ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00'] },
-  { date: new Date(2023, 4, 16), slots: ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00'] },
-  // Add more open windows as needed
-]
+import type { Appointment } from '~/types'
 
 const selectedDate = ref<SelectedDate>(null)
 const selectedTime = ref<SelectedTime>(null)
 const availableTimeSlots = ref<string[]>([])
+const openWindows = ref<{ date: Date, slots: string[] }[]>([])
 
 const calendarAttributes = computed<CalendarAttribute[]>(() => {
-  return openWindows.map(window => ({
+  return openWindows.value.map(window => ({
     dot: 'green',
     dates: window.date,
     popover: {
@@ -51,8 +54,52 @@ const calendarAttributes = computed<CalendarAttribute[]>(() => {
 
 const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo'>('calendar')
 
+async function fetchOpenWindows() {
+  try {
+    const response = await fetch('/api/appointments')
+    const appointments = await response.json() as Appointment[]
+
+    const workDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+    const workHours = Array.from({ length: 9 }, (_, i) => `${9 + i}:00`)
+
+    const openWindowsMap: { [key: string]: { date: Date, slots: string[] } } = {}
+
+    // Define a range of dates to consider (e.g., the next 30 days)
+    const today = new Date()
+    const endDate = new Date()
+    endDate.setDate(today.getDate() + 30)
+
+    for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const day = d.toLocaleDateString('en-US', { weekday: 'short' })
+      if (workDays.includes(day)) {
+        const dateString = d.toDateString()
+        openWindowsMap[dateString] = { date: new Date(d), slots: [...workHours] }
+      }
+    }
+
+    if (appointments.length > 0) {
+      appointments.forEach((appointment) => {
+        const date = new Date(appointment.time)
+        const dateString = date.toDateString()
+        const appointmentTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+
+        if (openWindowsMap[dateString]) {
+          const appointmentTimeIndex = openWindowsMap[dateString].slots.indexOf(appointmentTime)
+          if (appointmentTimeIndex !== -1) {
+            openWindowsMap[dateString].slots.splice(appointmentTimeIndex, 1)
+          }
+        }
+      })
+    }
+
+    openWindows.value = Object.values(openWindowsMap)
+  } catch (error) {
+    console.error('Error fetching open windows:', error)
+  }
+}
+
 function onDayClick(day: { date: Date }): void {
-  const openWindow = openWindows.find(window => 
+  const openWindow = openWindows.value.find(window => 
     window.date.toDateString() === day.date.toDateString()
   )
   
@@ -82,7 +129,6 @@ function goBackToCalendar(): void {
 
 function goBackToTimeSlots(): void {
   currentStep.value = 'timeSlots'
-  selectedTime.value = null
 }
 
 function submitAppointment(userInfo: { username: string, phone: string }): void {
@@ -97,6 +143,10 @@ function submitAppointment(userInfo: { username: string, phone: string }): void 
     currentStep.value = 'calendar'
   }
 }
+
+onMounted(() => {
+  fetchOpenWindows()
+})
 </script>
 
 <style scoped>
