@@ -1,6 +1,6 @@
 <template>
   <div class="user-info-form">
-    <h2>Информация о пользователе</h2>
+    <h2>Заполните анкету пожалуйста</h2>
     <div class="form-group">
       <label for="username">Имя пользователя:</label>
       <input id="username" v-model="username" type="text" placeholder="Введите ваше имя пользователя">

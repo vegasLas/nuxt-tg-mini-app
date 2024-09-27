@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <h2>Доступные временные слоты</h2>
+    <h2>Доступные окна</h2>
     <div class="time-slots-grid">
       <button
         v-for="slot in availableTimeSlots"
