@@ -13,10 +13,10 @@
     </div>
     <BackButton @click="$emit('back')" />
     <MainButton
-      text="Продолжить"
-      @click="$emit('proceed')"
-      :disabled="!selectedTime"
-    />
+        text="Продолжить"
+        @click="$emit('proceed')"
+        :disabled="!selectedTime"
+      />
   </div>
 </template>
 
@@ -45,42 +45,93 @@ function formatTime(time: string): string {
 
 <style scoped>
 .time-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  width: 80%;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .time-slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .time-slot {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
+  justify-content: center;
+  padding: 0.75rem;
+  background-color: #fff;
+  border: 2px solid #e9ecef;
   border-radius: 8px;
-  background-color: white;
-  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .time-slot:hover {
-  background-color: #f0f0f0;
+  background-color: #e9ecef;
 }
 
 .time-slot.selected {
-  background-color: #e0e0e0;
-  font-weight: bold;
+  background-color: #4263eb;
+  color: #fff;
+  border-color: #4263eb;
 }
 
 .time-icon {
-  margin-right: 8px;
+  margin-right: 0.5rem;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Assuming BackButton and MainButton are custom components */
+:deep(.back-button) {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+:deep(.back-button:hover) {
+  background-color: #dee2e6;
+}
+
+:deep(.main-button) {
+  background-color: #4263eb;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+:deep(.main-button:hover) {
+  background-color: #3b5bdb;
+}
+
+:deep(.main-button:disabled) {
+  background-color: #adb5bd;
+  cursor: not-allowed;
 }
 </style>
