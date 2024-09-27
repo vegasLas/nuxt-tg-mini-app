@@ -4,16 +4,17 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      link: [{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap' }],
       script: [{ src: 'https://telegram.org/js/telegram-web-app.js' }],
     },
   },
-  
   modules: [
     '@samk-dev/nuxt-vcalendar',
   ],
 
   // Add the following CSS configuration
   css: [
+    '~/styles/global.css',
     '@/node_modules/vue-preloader/dist/style.css',
     '~/assets/css/telegram-theme.css',
   ],

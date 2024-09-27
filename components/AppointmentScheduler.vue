@@ -1,18 +1,25 @@
 <template>
   <div class="appointment-scheduler">
     <template v-if="currentStep === 'calendar'">
-      <VCalendar
-        locale="ru-RU"
-        :attributes="calendarAttributes"
-        :disabled-dates="[
-          {
-            repeat: {
-              weekdays: [1, 7],
+      <div class="calendar-container">
+        <VCalendar
+          size="large"
+          locale="ru-RU"
+          :attributes="calendarAttributes"
+          :disabled-dates="[
+            {
+              repeat: {
+                weekdays: [1, 7],
+              },
             },
-          },
           ]"
-        @dayclick="onDayClick"
-      />
+          @dayclick="onDayClick"
+        />
+      </div>
+      <div class="legend">
+        <div><span class="dot green"></span> Есть свободные окна</div>
+        <div><span class="dot red"></span> Все окна заняты</div>
+      </div>
     </template>
 
     <template v-else-if="currentStep === 'timeSlots'">
@@ -44,10 +51,10 @@ const openWindows = ref<{ date: Date, slots: string[] }[]>([])
 
 const calendarAttributes = computed<CalendarAttribute[]>(() => {
   return openWindows.value.map(window => ({
-    dot: 'green',
+    dot: window.slots.length > 0 ? 'green' : 'red',
     dates: window.date,
     popover: {
-      label: 'Open slots available'
+      label: window.slots.length > 0 ? 'Есть свободные окна' : 'Все окна заняты'
     }
   }))
 })
@@ -153,8 +160,52 @@ onMounted(() => {
 .appointment-scheduler {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  gap: 24px;
   max-width: 600px;
   margin: 0 auto;
+  padding: 24px;
+  background-color: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 80vh; /* Ensure the component takes the full height of the viewport */
+}
+
+.calendar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex-grow: 1; /* Allow the container to grow and take available space */
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 16px;
+}
+
+.dot {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.dot.green {
+  background-color: green;
+}
+
+.dot.red {
+  background-color: red;
+}
+
+@media (max-width: 600px) {
+  .appointment-scheduler {
+    padding: 16px;
+    gap: 16px;
+  }
 }
 </style>

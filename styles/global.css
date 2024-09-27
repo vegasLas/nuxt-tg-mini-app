@@ -1,0 +1,8 @@
+body {
+  font-family: 'Roboto', serif; /* Apply the font to the entire body */
+}
+
+/* You can also add specific styles for headings or other elements if needed */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', serif; /* Ensure headings use the same font */
+}
