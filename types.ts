@@ -19,14 +19,24 @@ export interface Appointment {
   id: number;
   comment: string | null;
   time: string;
-  phoneNumber: string | null;
   booked: boolean;
-  userId: number | null;
+  userId: number;
+  user?: User;
+}
+
+export interface Admin {
+  id: number;
+  userId: number;
+  user: User;
 }
 
 export interface User {
   id: number;
   phoneNumber: string | null;
+  allowsWriteToPm: boolean;
+  username: string | null;
+  languageCode: string | null;
+  admin: Admin | null;
   telegramId: number;
   name: string;
 }

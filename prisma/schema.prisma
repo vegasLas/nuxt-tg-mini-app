@@ -17,18 +17,22 @@ model Appointment {
   id        Int      @id @default(autoincrement())
   time      String
   comment   String?
+  phoneNumber String?
   booked    Boolean  @default(false)
-  userId    Int?
+  userId    Int
   user      User?    @relation(fields: [userId], references: [id])
 }
 
 model User {
   id          Int            @id @default(autoincrement())
   telegramId  Int            @unique
-  phoneNumber String?
+  allowsWriteToPm Boolean?
+  username    String?
+  languageCode String?
   name        String
   appointments Appointment[]
   notifications Notification[]
+  admin       Admin?         // New field for relation with Admin
 }
 
 model Service {
@@ -44,4 +48,11 @@ model Notification {
   userId      Int
   user        User      @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+// New Admin model
+model Admin {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @unique
+  user     User   @relation(fields: [userId], references: [id])
 }
