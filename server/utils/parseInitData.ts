@@ -28,7 +28,6 @@ export function parseInitData(event: H3Event): ParsedInitData {
       message: 'Missing initData'
     })
   }
-  console.log('Validating initData')
   validate(initDataRaw, process.env.TELEGRAM_BOT_TOKEN as string, { expiresIn: 3600 })
   if (!initDataRaw) {
     throw new Error('No init data found')

@@ -38,6 +38,7 @@ export interface User {
   languageCode: string | null;
   admin: Admin | null;
   telegramId: number;
+  appointments?: Appointment[];
   name: string;
 }
 

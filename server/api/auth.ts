@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { defineEventHandler } from 'h3'
 import type { User } from '~/types'
 import { getUserFromEvent } from '../utils/getUserFromEvent'
-import { createError } from 'h3' // Import createError
 
 const prisma = new PrismaClient()
 
@@ -15,7 +13,23 @@ export default defineEventHandler(async (event) => {
   }
   switch (method) {
     case 'GET':
-        return await prisma.user.findUnique({ where: { id: user.id } }) as User | null
+      const userWithDetails = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          appointments: {
+            select: {
+              id: true, // Select only the id to count
+            },
+          },
+        },
+      }) as User | null
+
+      // Add appointments count and admin status to the response
+      return {
+        ...userWithDetails,
+        appointmentsCount: userWithDetails?.appointments?.length || 0,
+        isAdmin: !!userWithDetails?.admin, // Check if admin relation exists
+      }
   }
   throw createError({ statusCode: 405, statusMessage: `Method ${method} not allowed` }) // Use createError
 })

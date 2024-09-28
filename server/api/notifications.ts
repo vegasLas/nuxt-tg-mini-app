@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { defineEventHandler, readBody } from 'h3'
 import type { Notification } from '~/types'
 
 const prisma = new PrismaClient()

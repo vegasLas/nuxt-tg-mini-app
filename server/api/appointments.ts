@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client'
-import { defineEventHandler, readBody, createError } from 'h3' // Added createError import
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../utils/getUserFromEvent'
-import { parseInitData } from '../utils/parseInitData'
 
 const prisma = new PrismaClient()
 
@@ -18,10 +16,16 @@ export default defineEventHandler(async (event) => {
 
   switch (method) {
     case 'GET':
-      if (id) {
-        return await prisma.appointment.findUnique({ where: { id: parseInt(id) } }) as Appointment | null
+      try {
+        if (id) {
+          return await prisma.appointment.findMany({
+            where: { userId: user.id }
+          }) as Appointment[]
+        }
+      } catch (error) {
+        console.error('Error fetching appointment:', error)
+        throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
       }
-      return await prisma.appointment.findMany() as Appointment[]
 
     case 'POST':
       const createData = await readBody(event) as Omit<Appointment, 'id' | 'user'>

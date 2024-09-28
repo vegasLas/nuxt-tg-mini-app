@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     
     if (!user) {
       // Create new user if not found
-      const newUser = await prisma.user.create({
+      await prisma.user.create({
         data: {
           telegramId: initData.user.id,
           username: initData.user.username,
@@ -34,14 +34,7 @@ export default defineEventHandler(async (event) => {
 
         },
       })
-      
-      // Attach the new user to the event context
-      event.context.user = newUser
-    } else {
-      // Attach the existing user to the event context
-      event.context.user = user
-    }
-
+    } 
   } catch (err) {
     throw createError({
       statusCode: 401,
