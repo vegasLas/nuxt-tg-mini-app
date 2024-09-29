@@ -1,11 +1,18 @@
 <template>
   <div class="appointment-scheduler">
-    <template v-if="currentStep === 'calendar'">
+    <div class="appointments-count">
+      <button class="count-button" @click="showAppointmentsDetails">
+        <span class="label">Мои записи</span>
+        <span class="count">{{ appointmentStore.appointmentsCount }}</span>
+      </button>
+    </div>
+
+    <template v-if="appointmentStore.currentStep === 'calendar'">
       <div class="calendar-container">
         <VCalendar
           size="large"
           locale="ru-RU"
-          :attributes="calendarAttributes"
+          :attributes="calendarStore.calendarAttributes"
           :disabled-dates="[
             {
               repeat: {
@@ -13,7 +20,7 @@
               },
             },
           ]"
-          @dayclick="onDayClick"
+          @dayclick="(day: any) => appointmentStore.onDayClick(day, calendarStore.openWindows)"
         />
       </div>
       <div class="legend">
@@ -22,137 +29,39 @@
       </div>
     </template>
 
-    <template v-else-if="currentStep === 'timeSlots'">
+    <template v-else-if="appointmentStore.currentStep === 'timeSlots'">
       <AvailableTimeSlots
-        :availableTimeSlots="availableTimeSlots"
-        v-model:selectedTime="selectedTime"
-        @back="goBackToCalendar"
-        @proceed="proceedToUserInfo"
+        :availableTimeSlots="appointmentStore.availableTimeSlots"
+        v-model:selectedTime="appointmentStore.selectedTime"
+        @back="appointmentStore.goBackToCalendar"
+        @proceed="appointmentStore.proceedToUserInfo"
       />
     </template>
     
-    <template v-else-if="currentStep === 'userInfo'">
-      <UserInfoForm @submit="submitAppointment" @back="goBackToTimeSlots" />
+    <template v-else-if="appointmentStore.currentStep === 'userInfo'">
+      <UserInfoForm @submit="appointmentStore.submitAppointment" @back="appointmentStore.goBackToTimeSlots" />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { CalendarAttribute, SelectedDate, SelectedTime } from '~/types'
+import { onMounted } from 'vue'
 import UserInfoForm from './UserInfoForm.vue'
 import AvailableTimeSlots from './AvailableTimeSlots.vue'
-import type { Appointment } from '~/types'
+import { useCalendarStore } from '~/stores/useCalendarStore'
+import { useAppointmentStore } from '~/stores/useAppointmentStore'
 
-const selectedDate = ref<SelectedDate>(null)
-const selectedTime = ref<SelectedTime>(null)
-const availableTimeSlots = ref<string[]>([])
-const openWindows = ref<{ date: Date, slots: string[] }[]>([])
+const calendarStore = useCalendarStore()
+const appointmentStore = useAppointmentStore()
 
-const calendarAttributes = computed<CalendarAttribute[]>(() => {
-  return openWindows.value.map(window => ({
-    dot: window.slots.length > 0 ? 'green' : 'red',
-    dates: window.date,
-    popover: {
-      label: window.slots.length > 0 ? 'Есть свободные окна' : 'Все окна заняты'
-    }
-  }))
-})
-
-const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo'>('calendar')
-
-async function fetchOpenWindows() {
-  try {
-    const response = await fetch('/api/appointments')
-    const appointments = await response.json() as Appointment[]
-
-    const workDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-    const workHours = Array.from({ length: 9 }, (_, i) => `${9 + i}:00`)
-
-    const openWindowsMap: { [key: string]: { date: Date, slots: string[] } } = {}
-
-    // Define a range of dates to consider (e.g., the next 30 days)
-    const today = new Date()
-    const endDate = new Date()
-    endDate.setDate(today.getDate() + 30)
-
-    for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const day = d.toLocaleDateString('en-US', { weekday: 'short' })
-      if (workDays.includes(day)) {
-        const dateString = d.toDateString()
-        openWindowsMap[dateString] = { date: new Date(d), slots: [...workHours] }
-      }
-    }
-
-    if (appointments.length > 0) {
-      appointments.forEach((appointment) => {
-        const date = new Date(appointment.time)
-        const dateString = date.toDateString()
-        const appointmentTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
-
-        if (openWindowsMap[dateString]) {
-          const appointmentTimeIndex = openWindowsMap[dateString].slots.indexOf(appointmentTime)
-          if (appointmentTimeIndex !== -1) {
-            openWindowsMap[dateString].slots.splice(appointmentTimeIndex, 1)
-          }
-        }
-      })
-    }
-
-    openWindows.value = Object.values(openWindowsMap)
-  } catch (error) {
-    console.error('Error fetching open windows:', error)
-  }
-}
-
-function onDayClick(day: { date: Date }): void {
-  const openWindow = openWindows.value.find(window => 
-    window.date.toDateString() === day.date.toDateString()
-  )
-  
-  if (openWindow) {
-    selectedDate.value = day.date.toLocaleDateString()
-    availableTimeSlots.value = openWindow.slots
-    selectedTime.value = null
-    currentStep.value = 'timeSlots'
-  } else {
-    selectedDate.value = null
-    availableTimeSlots.value = []
-  }
-}
-
-function proceedToUserInfo(): void {
-  if (selectedDate.value && selectedTime.value) {
-    currentStep.value = 'userInfo'
-  }
-}
-
-function goBackToCalendar(): void {
-  currentStep.value = 'calendar'
-  selectedDate.value = null
-  selectedTime.value = null
-  availableTimeSlots.value = []
-}
-
-function goBackToTimeSlots(): void {
-  currentStep.value = 'timeSlots'
-}
-
-function submitAppointment(userInfo: { username: string, phone: string }): void {
-  if (selectedDate.value && selectedTime.value) {
-    // Implement booking logic here
-    console.log('Booking appointment for', selectedDate.value, 'at', selectedTime.value)
-    console.log('User Info:', userInfo)
-    // Reset selection after booking
-    selectedDate.value = null
-    selectedTime.value = null
-    availableTimeSlots.value = []
-    currentStep.value = 'calendar'
-  }
+function showAppointmentsDetails() {
+  // Implement logic to show appointments details
+  console.log('Show appointments details')
 }
 
 onMounted(() => {
-  fetchOpenWindows()
+  calendarStore.fetchOpenWindows()
+  appointmentStore.fetchAppointmentsCount()
 })
 </script>
 
@@ -208,4 +117,41 @@ onMounted(() => {
     gap: 16px;
   }
 }
+
+.appointments-count {
+  width: 100%;
+  display: flex;
+  justify-content: right;
+  margin-bottom: 20px;
+  margin-right: 20px;
+}
+
+.count-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.count-button:hover {
+  background-color: var(--tg-theme-button-color, #2d7fcf);
+}
+
+.count {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.label {
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* ... existing styles ... */
 </style>

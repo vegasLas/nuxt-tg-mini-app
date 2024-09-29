@@ -17,6 +17,8 @@ export type SelectedTime = string | null;
 
 export interface Appointment {
   id: number;
+  name: string;
+  phoneNumber: string;
   comment: string | null;
   time: string;
   booked: boolean;

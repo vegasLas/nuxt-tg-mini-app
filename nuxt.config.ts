@@ -10,8 +10,11 @@ export default defineNuxtConfig({
   },
   modules: [
     '@samk-dev/nuxt-vcalendar',
+    '@pinia/nuxt',
   ],
-
+  // pinia: {
+  //   storesDirs: ['./stores/**'],
+  // },
   // Add the following CSS configuration
   css: [
     '~/styles/global.css',

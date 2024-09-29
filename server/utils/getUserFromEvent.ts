@@ -14,7 +14,7 @@ export async function getUserFromEvent(event: H3Event): Promise<User | null> {
   }
 
   try {
-    
+    console.log('initData.user.id', initData.user.id)
     // Fetch the user from the database
     const user = await prisma.user.findUnique({
       where: { telegramId: initData.user.id },

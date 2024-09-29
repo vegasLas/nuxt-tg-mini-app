@@ -22,7 +22,6 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-
 const props = defineProps<{
   availableTimeSlots: string[]
   selectedTime: string | null

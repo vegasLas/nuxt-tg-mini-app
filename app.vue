@@ -17,13 +17,4 @@
 import AppointmentScheduler from '~/components/AppointmentScheduler.vue'
 import { VuePreloader } from 'vue-preloader';
 
-onMounted(async () => {
-  const {useWebApp} = await import('vue-tg')
-  const {initData} = useWebApp()
-  useFetch('/api/appointments', {
-    headers: {
-      'x-init-data': initData
-    }
-  })
-})
 </script>
