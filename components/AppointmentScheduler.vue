@@ -41,6 +41,10 @@
     <template v-else-if="appointmentStore.currentStep === 'userInfo'">
       <UserInfoForm @submit="appointmentStore.submitAppointment" @back="appointmentStore.goBackToTimeSlots" />
     </template>
+
+    <template v-else-if="appointmentStore.currentStep === 'appointmentsList'">
+      <AppointmentsList />
+    </template>
   </div>
 </template>
 
@@ -48,6 +52,7 @@
 import { onMounted } from 'vue'
 import UserInfoForm from './UserInfoForm.vue'
 import AvailableTimeSlots from './AvailableTimeSlots.vue'
+import AppointmentsList from './AppointmentsList.vue'
 import { useCalendarStore } from '~/stores/useCalendarStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 
@@ -55,13 +60,12 @@ const calendarStore = useCalendarStore()
 const appointmentStore = useAppointmentStore()
 
 function showAppointmentsDetails() {
-  // Implement logic to show appointments details
-  console.log('Show appointments details')
+  appointmentStore.showAppointmentsList()
 }
 
 onMounted(() => {
   calendarStore.fetchOpenWindows()
-  appointmentStore.fetchAppointmentsCount()
+  appointmentStore.fetchUserAppointments()
 })
 </script>
 

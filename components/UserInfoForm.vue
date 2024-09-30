@@ -42,7 +42,6 @@
 
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
 import { BackButton, MainButton } from 'vue-tg'
 
 const username = ref('')

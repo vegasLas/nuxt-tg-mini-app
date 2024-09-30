@@ -1,4 +1,3 @@
-import { ref, computed } from 'vue'
 import type { CalendarAttribute, Appointment } from '~/types'
 
 export const useCalendarStore = defineStore('calendar', () => {
