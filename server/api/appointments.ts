@@ -1,10 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../utils/getUserFromEvent'
-
+import type { EventHandler, EventHandlerRequest } from 'h3'
 const prisma = new PrismaClient()
-
-export default defineEventHandler(async (event) => {
+export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  async (event) => {
   const method = event.node.req.method
   const id = event.context.params?.id
 
@@ -73,4 +72,6 @@ export default defineEventHandler(async (event) => {
   }
 
   throw createError({ statusCode: 405, statusMessage: `Method ${method} not allowed` }) // Updated to createError
-})
+}
+
+export default defineEventHandler(appointmentsHandlers)

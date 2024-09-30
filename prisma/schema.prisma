@@ -15,7 +15,7 @@ datasource db {
 
 model Appointment {
   id        Int      @id @default(autoincrement())
-  time      String
+  time      DateTime
   name      String
   comment   String?
   phoneNumber String

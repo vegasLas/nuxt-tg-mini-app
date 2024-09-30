@@ -3,7 +3,6 @@ import type { User } from '~/types'
 import { getUserFromEvent } from '../utils/getUserFromEvent'
 
 const prisma = new PrismaClient()
-
 export default defineEventHandler(async (event) => {
   const method = event.node.req.method
   // Verify user using getUserFromEvent

@@ -8,7 +8,7 @@
       <li v-for="appointment in appointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
           <div class="date-time">
-            {{ formatDateTime(appointment.time) }}
+            {{ formatDateTime(appointment.time.toISOString()) }}
           </div>
           <!-- <div class="service">{{ appointment }}</div> -->
         </div>
