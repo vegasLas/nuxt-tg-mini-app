@@ -122,8 +122,8 @@ onMounted(() => {
   width: 100%;
   display: flex;
   justify-content: right;
-  margin-bottom: 20px;
-  margin-right: 20px;
+  margin-bottom: 10px;
+  margin-right: 10px;
 }
 
 .count-button {

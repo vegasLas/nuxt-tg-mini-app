@@ -88,7 +88,6 @@ function goBack() {
 
 <style scoped>
 .container {
-  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;

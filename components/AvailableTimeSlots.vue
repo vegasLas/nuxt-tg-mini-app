@@ -46,7 +46,7 @@ function formatTime(time: string): string {
 .time-selector {
   width: 80%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem 0.5rem;
   background-color: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
