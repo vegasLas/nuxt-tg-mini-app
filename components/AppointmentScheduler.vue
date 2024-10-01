@@ -3,7 +3,7 @@
     <div class="appointments-count">
       <button class="count-button" @click="showAppointmentsDetails">
         <span class="label">Мои записи</span>
-        <span class="count">{{ appointmentStore.appointmentsCount }}</span>
+        <span class="count">{{ appointmentStore.appointments.length }}</span>
       </button>
     </div>
 

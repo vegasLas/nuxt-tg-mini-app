@@ -1,11 +1,12 @@
-import type { Appointment, SelectedDate, SelectedTime } from '~/types'
+import type { Appointment } from '~/types'
 import { useWebApp } from 'vue-tg'
+
 export const useAppointmentStore = defineStore('appointment', () => {
-  const selectedDate = ref<SelectedDate>(null)
-  const selectedTime = ref<SelectedTime>(null)
-  const availableTimeSlots = ref<string[]>([])
+  const selectedDate = ref<Date | null>(null)
+  const selectedTime = ref<Date | null>(null)
+  const availableTimeSlots = ref<{ show: string; time: Date }[]>([])
   const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
-  const appointmentsCount = ref(0)
+  const appointments = ref<Appointment[]>([])
   const reschedulingAppointment = ref(null)
 
   async function fetchUserAppointments() {
@@ -18,22 +19,20 @@ export const useAppointmentStore = defineStore('appointment', () => {
       if (!response.data.value) {
         throw new Error('Failed to fetch appointments')
       }
-      const appointments = response.data.value as Appointment[]
-      appointmentsCount.value = appointments.length
-      return appointments
+      appointments.value = response.data.value as Appointment[]
     } catch (error) {
       console.error('Error fetching user appointments:', error)
       return []
     }
   }
 
-  function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: string[] }[]) {
+  function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: { show: string; time: Date }[] }[]) {
     const openWindow = openWindows.find(window => 
       window.date.toDateString() === day.date.toDateString()
     )
     
     if (openWindow) {
-      selectedDate.value = day.date.toLocaleDateString()
+      selectedDate.value = day.date
       availableTimeSlots.value = openWindow.slots
       selectedTime.value = null
       currentStep.value = 'timeSlots'
@@ -95,12 +94,20 @@ export const useAppointmentStore = defineStore('appointment', () => {
     reschedulingAppointment.value = appointment
   }
 
+  function setSelectedDate(date: Date | null) {
+    selectedDate.value = date
+  }
+
+  function setSelectedTime(time: Date | null) {
+    selectedTime.value = time
+  }
+
   return {
     selectedDate,
     selectedTime,
     availableTimeSlots,
     currentStep,
-    appointmentsCount,
+    appointments,
     fetchUserAppointments,
     onDayClick,
     proceedToUserInfo,
@@ -110,6 +117,8 @@ export const useAppointmentStore = defineStore('appointment', () => {
     showAppointmentsList,
     hideAppointmentsList,
     removeAppointment,
-    setReschedulingAppointment
+    setReschedulingAppointment,
+    setSelectedDate,
+    setSelectedTime
   }
 })

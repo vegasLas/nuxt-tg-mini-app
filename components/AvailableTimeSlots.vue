@@ -3,43 +3,27 @@
     <h2>Доступные окна</h2>
     <div class="time-slots-grid">
       <button
-        v-for="slot in availableTimeSlots"
-        :key="slot"
-        :class="['time-slot', { selected: selectedTime === slot }]"
-        @click="selectTimeSlot(slot)"
+        v-for="slot in availableTimeSlots.availableTimeSlots"
+        :key="slot.show"
+        :class="['time-slot', { selected: availableTimeSlots.selectedTime === slot.time }]"
+        @click="availableTimeSlots.selectTimeSlot(slot)"
       >
-        <span class="time-icon">&#128339;</span> {{ formatTime(slot) }}
+        <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
     </div>
-    <BackButton @click="$emit('back')" />
+    <BackButton @click="availableTimeSlots.goBack()" />
     <MainButton
-        text="Продолжить"
-        @click="$emit('proceed')"
-        :disabled="!selectedTime"
-      />
+      text="Продолжить"
+      @click="availableTimeSlots.proceed()"
+      :disabled="!availableTimeSlots.selectedTime"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-const props = defineProps<{
-  availableTimeSlots: string[]
-  selectedTime: string | null
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:selectedTime', value: string): void
-  (e: 'proceed'): void
-  (e: 'back'): void
-}>()
-
-function selectTimeSlot(slot: string): void {
-  emit('update:selectedTime', slot)
-}
-
-function formatTime(time: string): string {
-  return time // В 24-часовом формате время не нужно преобразовывать
-}
+import { useAvailableTimeSlots } from '~/stores/useAvailableTimeSlots'
+const availableTimeSlots = useAvailableTimeSlots()
 </script>
 
 <style scoped>

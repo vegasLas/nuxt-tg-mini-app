@@ -11,8 +11,6 @@ export interface CalendarAttribute {
   };
 }
 
-export type SelectedDate = string | null;
-export type SelectedTime = string | null;
 
 
 export interface Appointment {

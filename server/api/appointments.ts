@@ -16,19 +16,27 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
   switch (method) {
     case 'GET':
       try {
-        if (id) {
           return await prisma.appointment.findMany({
             where: { userId: user.id }
           }) as Appointment[]
-        }
       } catch (error) {
         console.error('Error fetching appointment:', error)
         throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
       }
 
     case 'POST':
+      console.log('appointment post')
       const createData = await readBody(event) as Omit<Appointment, 'id' | 'user'>
+      console.log(createData)
       return await prisma.appointment.create({
+        select: {
+          id: true,
+          name: true,
+          phoneNumber: true,
+          comment: true,
+          time: true,
+          booked: true,
+        },
         data: {
           ...createData,
           userId: user.id
@@ -49,6 +57,14 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
         }
         
         return await prisma.appointment.update({
+          select: {
+            id: true,
+            name: true,
+            phoneNumber: true,
+            comment: true,
+            time: true,
+            booked: true,
+          },
           where: { id: parseInt(id) },
           data: updateData,
         }) as Appointment

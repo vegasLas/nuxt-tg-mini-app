@@ -1,6 +1,6 @@
 <template>
   <div class="appointments-list">
-    <h2>Мои записи</h2>
+    <h2 style="color: #000000;">Мои записи</h2>
     <div v-if="appointments.length === 0" class="no-appointments">
       У вас нет запланированных записей.
     </div>
@@ -32,15 +32,6 @@ import { BackButton } from 'vue-tg'
 
 const appointmentStore = useAppointmentStore()
 const appointments = ref<Omit<Appointment, 'userId' | 'user'>[]>([])
-
-onMounted(async () => {
-  await fetchAppointments()
-})
-
-async function fetchAppointments() {
-  appointments.value = await appointmentStore.fetchUserAppointments()
-}
-
 function formatDateTime(dateTime: string) {
   const date = new Date(dateTime)
   return date.toLocaleString('ru-RU', {
@@ -54,7 +45,7 @@ function formatDateTime(dateTime: string) {
 
 async function removeAppointment(id: number) {
   await appointmentStore.removeAppointment(id)
-  await fetchAppointments()
+  await appointmentStore.fetchUserAppointments()
 }
 
 function rescheduleAppointment(appointment: Omit<Appointment, 'userId' | 'user'>) {
@@ -69,9 +60,14 @@ function closeAppointmentsList() {
 </script>
 
 <style scoped>
+
 .appointments-list {
-  background-color: var(--tg-theme-bg-color, #ffffff);
-  padding: 20px;
+  height: 60vh; /* Set a fixed height, adjust as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  padding: 10px 20px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -89,14 +85,18 @@ h2 {
 ul {
   list-style-type: none;
   padding: 0;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .appointment-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
+  padding: 15px;
   border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
+  color: #000000;
 }
 
 .appointment-item:last-child {
@@ -110,10 +110,11 @@ ul {
 .date-time {
   font-weight: bold;
   margin-bottom: 5px;
+  color: #000000;
 }
 
 .service {
-  color: var(--tg-theme-hint-color, #666666);
+  color: #666666;
 }
 
 .appointment-actions {

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
   }
   try {
     const initData = parseInitData(event)
-    
+    console.log('initData', initData)
     // Get or create user
     const user = await getUserFromEvent(event)
     

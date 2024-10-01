@@ -6,78 +6,61 @@
       </div>
       <form class="form" @submit.prevent>
         <div class="input-group">
-          <div>
-            <label for="username" class="sr-only">Имя</label>
+          <div style="margin-bottom: 1rem;">
             <input
               id="username"
-              v-model="username"
+              v-model="name"
               type="text"
               required
               class="input input-top"
               placeholder="имя"
             >
-            <p v-if="usernameError" class="error-text">{{ usernameError }}</p> <!-- Moved error message here -->
           </div>
-          <div>
-            <label for="phone" class="sr-only">Телефон</label>
+          <div style="margin-bottom: 1rem;">
             <input
-              id="phone"
-              v-model="phone"
-              type="tel"
-              required
-              class="input input-bottom"
-              placeholder="Введите ваш номер телефона"
-            >
-            <p v-if="phoneError" class="error-text">{{ phoneError }}</p> <!-- Moved error message here -->
-          </div>
+                id="phone"
+                v-model="phone"
+                type="tel"
+                required
+                class="input input-bottom"
+                placeholder="Введите ваш номер телефона"
+              >
+            </div>
+            <div style="margin-bottom: 1rem;">
+              <textarea
+                id="comment"
+                v-model="comment"
+                class="textarea textarea-bottom"
+                placeholder="Комментарий"
+              />
+            </div>
         </div>
       </form>
       <div class="button-group">
-        <MainButton text="Записаться" @click="submitForm" :disabled="!isFormValid"/>
+        <MainButton 
+          text="Записаться" 
+          @click="submitForm"
+          :disabled="!isFormValid"
+          :progress="isLoading"
+        />
         <BackButton @click="goBack" />
       </div>
     </div>
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { BackButton, MainButton } from 'vue-tg'
+import { useUserInfoStore } from '../stores/useUserInfoStore'
+import { storeToRefs } from 'pinia'
 
-const username = ref('')
-const phone = ref('+79')
-const showErrors = ref(false)
-const phoneRegex = /^\+79\d{9}$/
-
-const isFormValid = computed(() => {
-  return username.value.trim() !== '' && phoneRegex.test(phone.value)
-})
-
-const usernameError = computed(() => {
-  return username.value.trim() === '' && showErrors.value ? 'Имя пользователя обязательно' : ''
-})
-
-const phoneError = computed(() => {
-  return !phoneRegex.test(phone.value) && showErrors.value ? 'Введите корректный номер телефона' : ''
-})
+const userInfoStore = useUserInfoStore()
+const { name, phone, comment, isLoading, isFormValid } = storeToRefs(userInfoStore)
 
 const emit = defineEmits(['submit', 'back'])
 
-watch(phone, (newPhone, oldPhone) => {
-  if (newPhone === '+' && oldPhone === '+79') {
-    phone.value = '+79'
-  } else if (newPhone === '+7' && oldPhone === '+79') {
-    phone.value = '+79'
-  } else if (!newPhone.startsWith('+79')) {
-    phone.value = '+79' + newPhone.replace(/^(\+79|79|89)?/, '')
-  }
-}, { immediate: true })
-
-function submitForm() {
-  showErrors.value = true
-  if (isFormValid.value) {
-    emit('submit', { username: username.value, phone: phone.value })
-  }
+async function submitForm() {
+  await userInfoStore.submitForm()
 }
 
 function goBack() {
@@ -126,7 +109,15 @@ function goBack() {
   font-size: 0.875rem;
   outline: none;
 }
-
+.textarea {
+  appearance: none;
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  color: #1f2937;
+  font-size: 0.875rem;
+  outline: none;
+}
 .input-top {
   border-top-left-radius: 0.375rem;
   border-top-right-radius: 0.375rem;

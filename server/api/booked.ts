@@ -15,6 +15,10 @@ export default defineEventHandler(async (event) => {
     const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
 
     const appointments = await prisma.appointment.findMany({
+      select: {
+        id: true,
+        time: true
+      },
       where: {
         userId: user.id,
         time: {
@@ -26,11 +30,8 @@ export default defineEventHandler(async (event) => {
         time: 'asc'
       }
     })
-
-    return {
-      success: true,
-      data: appointments
-    }
+    console.log('booked', appointments.length)
+    return appointments
   } catch (error) {
     console.error('Error fetching appointment schedule:', error)
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
