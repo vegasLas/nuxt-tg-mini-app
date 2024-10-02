@@ -6,11 +6,12 @@
         v-for="slot in availableTimeSlots.availableTimeSlots"
         :key="slot.show"
         :class="['time-slot', { 
+          booked: slot.booked,
           selected: availableTimeSlots.selectedTime === slot.time,
-          booked: slot.booked
+          'user-appointment': userStore.hasAppointment(slot.time)
         }]"
-        @click="availableTimeSlots.selectTimeSlot(slot)"
-        :disabled="slot.booked"
+        @click="handleSlotClick(slot)"
+        :disabled="slot.booked && !userStore.hasAppointment(slot.time)"
       >
         <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
@@ -22,12 +23,43 @@
       :disabled="!availableTimeSlots.selectedTime"
     />
   </div>
+
+  <!-- Add popup component -->
+
 </template>
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import { useAvailableTimeSlots } from '~/stores/useAvailableTimeSlots'
+// Hover to inspect type
+import { useWebAppPopup } from 'vue-tg'
+
 const availableTimeSlots = useAvailableTimeSlots()
+const userStore = useUserStore()
+const handleSlotClick = (slot: { time: Date, show: string }) => {
+  if (userStore.hasAppointment(slot.time)) {
+    availableTimeSlots.unselectTimeSlot()
+    const {showPopup} = useWebAppPopup()
+    showPopup({
+      title: 'Отмена записи',
+      message: 'Хотите отменить запись?',
+      buttons: [
+        {
+          text: 'отменить запись',
+          type: 'ok',
+          callback: () => {
+            userStore.removeAppointment(slot.time)
+          },
+        },
+        {
+          text: 'закрыть',
+          type: 'default',
+        },
+      ],
+    })
+  } else {
+    availableTimeSlots.selectTimeSlot(slot)
+  }
+}
 </script>
 
 <style scoped>
@@ -68,9 +100,6 @@ h2 {
   cursor: pointer;
 }
 
-.time-slot:hover:not(.booked) {
-  background-color: #e9ecef;
-}
 
 .time-slot.selected {
   background-color: #4263eb;
@@ -83,6 +112,17 @@ h2 {
   color: #adb5bd;
   border-color: #dee2e6;
   cursor: not-allowed;
+}
+
+.time-slot.user-appointment {
+  background-color: #ffd43b;
+  color: #212529;
+  border-color: #fab005;
+  cursor: pointer;
+}
+
+.time-slot.user-appointment:hover {
+  background-color: #fcc419;
 }
 
 .time-icon {

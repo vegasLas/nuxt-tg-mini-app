@@ -1,5 +1,4 @@
 <template>
-  <div>
     <VuePreloader
       background-color="#091a28"
       color="#ffffff"
@@ -7,15 +6,12 @@
       :loading-speed="25"
       :transition-speed="1000"
     ></VuePreloader>
+    <NuxtPage />
     <ClientOnly>
-      <AppointmentCalendar />
+      <Main />
     </ClientOnly>
-  </div>
 </template>
 
 <script setup lang="ts">
-
-import AppointmentCalendar from '~/components/AppointmentCalendar.vue'
-import { VuePreloader } from 'vue-preloader';
-
+import { VuePreloader } from "vue-preloader";
 </script>

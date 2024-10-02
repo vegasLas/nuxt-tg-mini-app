@@ -1,15 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-import { getUserFromEvent } from '../utils/getUserFromEvent'
 
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
-  // Get user from event
-  const user = await getUserFromEvent(event)
-  if (!user) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-  }
-
   try {
     const today = new Date()
     today.setHours(0, 0, 0, 0) // Set to start of the day (00:00)
@@ -20,7 +13,6 @@ export default defineEventHandler(async (event) => {
         time: true
       },
       where: {
-        userId: user.id,
         time: {
           gte: today,
           lte: thirtyDaysFromNow

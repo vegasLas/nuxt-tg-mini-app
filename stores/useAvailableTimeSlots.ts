@@ -26,7 +26,9 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     appointmentStore.setSelectedTime(null)
     appointmentStore.goBackToCalendar()
   }
-
+  function unselectTimeSlot(): void {
+    appointmentStore.setSelectedTime(null)
+  }
   function proceed(): void {
     appointmentStore.currentStep = 'userInfo'
   }
@@ -35,6 +37,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     availableTimeSlots,
     selectedTime,
     selectTimeSlot,
+    unselectTimeSlot,
     goBack,
     proceed
   }

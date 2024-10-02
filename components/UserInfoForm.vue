@@ -57,7 +57,7 @@ import { storeToRefs } from 'pinia'
 const userInfoStore = useUserInfoStore()
 const { name, phone, comment, isLoading, isFormValid } = storeToRefs(userInfoStore)
 
-const emit = defineEmits(['submit', 'back'])
+const emit = defineEmits(['back'])
 
 async function submitForm() {
   await userInfoStore.submitForm()

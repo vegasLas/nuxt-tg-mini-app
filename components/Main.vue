@@ -1,34 +1,44 @@
 <template>
-  <div class="calendar-container">
-        <VCalendar
-          size="large"
-          locale="ru-RU"
-          :attributes="calendarStore.calendarAttributes"
-          :disabled-dates="[
-            {
-              repeat: {
-                weekdays: [1, 7],
-              },
-            },
-          ]"
-          @dayclick="(day: any) => appointmentStore.onDayClick(day, calendarStore.openWindows)"
-        />
-      </div>
-      <div class="legend">
-        <div><span class="dot green"></span> Есть свободные окна</div>
-        <div><span class="dot red"></span> Все окна заняты</div>
-      </div>
-</template>
+	<ClientOnly>
+		<div class="appointment-scheduler">
+			<div class="appointments-count">
+			<button class="count-button" @click="appointmentStore.showAppointmentsList">
+				<span class="label">Мои записи</span>
+				<span class="count">{{ userStore.appointments.length }}</span>
+			</button>
+			</div>
 
-<script setup lang="ts">
-import { useCalendarStore } from '~/stores/useCalendarStore'
-import { useAppointmentStore } from '~/stores/useAppointmentStore'
+			<template v-if="appointmentStore.currentStep === 'calendar'">
+				<AppointmentCalendar />
+			</template>
 
-const calendarStore = useCalendarStore()
-const appointmentStore = useAppointmentStore()
-</script>
+			<template v-else-if="appointmentStore.currentStep === 'timeSlots'">
+				<AvailableTimeSlots />
+			</template>
+			
+			<template v-else-if="appointmentStore.currentStep === 'userInfo'">
+				<UserInfoForm @back="appointmentStore.goBackToTimeSlots" />
+			</template>
 
-<style scoped>
+			<template v-else-if="appointmentStore.currentStep === 'appointmentsList'">
+				<AppointmentsList />
+			</template>
+		</div>
+	</ClientOnly>
+  </template>
+  
+  <script setup lang="ts">
+  const calendarStore = useCalendarStore()
+  const appointmentStore = useAppointmentStore()
+  const userStore = useUserStore()
+  
+  onMounted(() => {
+	calendarStore.fetchOpenWindows()
+	userStore.fetchUserAppointments()
+  })
+  </script>
+
+  <style scoped>
 .appointment-scheduler {
   display: flex;
   flex-direction: column;
@@ -114,7 +124,4 @@ const appointmentStore = useAppointmentStore()
 .label {
   font-size: 14px;
   margin-top: 4px;
-}
-
-/* ... existing styles ... */
-</style>
+}</style>

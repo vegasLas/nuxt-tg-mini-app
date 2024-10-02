@@ -72,6 +72,7 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
       
     case 'DELETE':
       if (id) {
+        console.log('delete', id)
         // Check if the user has the appointment
         const existingAppointment = await prisma.appointment.findUnique({
           where: { id: parseInt(id) }

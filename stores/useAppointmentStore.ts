@@ -5,24 +5,8 @@ export const useAppointmentStore = defineStore('appointment', () => {
   const selectedTime = ref<Date | null>(null)
   const availableTimeSlots = ref<{ show: string; time: Date }[]>([])
   const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
-  const appointments = ref<Appointment[]>([])
   const reschedulingAppointment = ref(null)
-  async function fetchUserAppointments() {
-    try {
-      const response = await useFetch('/api/appointments', {
-        headers: {
-          'x-init-data': useWebApp().initData
-        }
-      })
-      if (!response.data.value) {
-        throw new Error('Failed to fetch appointments')
-      }
-      appointments.value = response.data.value as Appointment[]
-    } catch (error) {
-      console.error('Error fetching user appointments:', error)
-      return []
-    }
-  }
+  
 
   function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: { show: string; time: Date }[] }[]) {
     console.log('onDayClick', day, openWindows)
@@ -79,20 +63,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
     currentStep.value = 'calendar'
   }
 
-  async function removeAppointment(id: number) {
-    try {
-      const response = await useFetch(`/api/appointments/${id}`, {
-        method: 'DELETE',
-      })
-      if (!response.data.value) {
-        throw new Error('Failed to remove appointment')
-      }
-      await fetchUserAppointments()
-    } catch (error) {
-      console.error('Error removing appointment:', error)
-    }
-  }
-
   function setReschedulingAppointment(appointment: any) {
     reschedulingAppointment.value = appointment
   }
@@ -110,8 +80,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
     selectedTime,
     availableTimeSlots,
     currentStep,
-    appointments,
-    fetchUserAppointments,
     onDayClick,
     proceedToUserInfo,
     goBackToCalendar,
@@ -119,7 +87,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
     submitAppointment,
     showAppointmentsList,
     hideAppointmentsList,
-    removeAppointment,
     setReschedulingAppointment,
     setSelectedDate,
     setSelectedTime

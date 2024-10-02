@@ -1,52 +1,37 @@
 <template>
   <div class="appointments-list">
     <h2 style="color: #000000;">Мои записи</h2>
-    <div v-if="appointments.length === 0" class="no-appointments">
+    <div v-if="userStore.appointments.length === 0" class="no-appointments">
       У вас нет запланированных записей.
     </div>
     <ul v-else>
-      <li v-for="appointment in appointments" :key="appointment.id" class="appointment-item">
+      <li v-for="appointment in userStore.appointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
           <div class="date-time">
             {{ formatDateTime(appointment.time.toISOString()) }}
           </div>
-          <!-- <div class="service">{{ appointment }}</div> -->
         </div>
         <div class="appointment-actions">
           <button @click="rescheduleAppointment(appointment)" class="action-button reschedule">
             Перенести
           </button>
-          <Popup message="Отменить" title="Вы уверены, что хотите отменить эту запись?" @click="removeAppointment(appointment.id)" class="action-button remove"/>
+          <Popup message="Отменить" title="Вы уверены, что хотите отменить эту запись?" @click="userStore.removeAppointment(appointment.time)" class="action-button remove"/>
         </div>
       </li>
     </ul>
-	<BackButton @click="closeAppointmentsList" />
+    <BackButton @click="closeAppointmentsList" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
+import { useUserStore } from '~/stores/useUserStore'
 import type { Appointment } from '~/types'
 import { Popup } from 'vue-tg'
 import { BackButton } from 'vue-tg'
 
 const appointmentStore = useAppointmentStore()
-const appointments = ref<Omit<Appointment, 'userId' | 'user'>[]>([])
-function formatDateTime(dateTime: string) {
-  const date = new Date(dateTime)
-  return date.toLocaleString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-async function removeAppointment(id: number) {
-  await appointmentStore.removeAppointment(id)
-  await appointmentStore.fetchUserAppointments()
-}
+const userStore = useUserStore()
 
 function rescheduleAppointment(appointment: Omit<Appointment, 'userId' | 'user'>) {
   appointmentStore.setReschedulingAppointment(appointment)

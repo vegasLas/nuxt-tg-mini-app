@@ -57,7 +57,6 @@ export const useCalendarStore = defineStore('calendar', () => {
           }
         }
       }
-      
       // Mark booked slots
       bookedAppointments?.forEach((appointment) => {
         const appointmentDate = new Date(appointment.time)

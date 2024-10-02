@@ -23,6 +23,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       phone.value = '+79' + newPhone.replace(/^(\+79|79|89)?/, '')
     }
   }, { immediate: true })
+  
   async function submitForm() {
     isLoading.value = true
     const appointmentStore = useAppointmentStore()
@@ -48,12 +49,12 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       }
 
       const result = response.data.value as Appointment
-      appointmentStore.appointments.unshift(result)
-
+      useUserStore().appointments.unshift(result)
       name.value = ''
       phone.value = ''
       comment.value = ''
       appointmentStore.goBackToCalendar()
+      await useCalendarStore().fetchOpenWindows()
     } catch (error) {
       console.error('Error submitting form:', error)
     } finally {
