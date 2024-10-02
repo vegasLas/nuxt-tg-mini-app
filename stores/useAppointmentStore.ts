@@ -1,6 +1,5 @@
-import type { Appointment } from '~/types'
 import { useWebApp } from 'vue-tg'
-
+import type { Appointment } from '~/types'
 export const useAppointmentStore = defineStore('appointment', () => {
   const selectedDate = ref<Date | null>(null)
   const selectedTime = ref<Date | null>(null)
@@ -8,7 +7,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
   const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
   const appointments = ref<Appointment[]>([])
   const reschedulingAppointment = ref(null)
-
   async function fetchUserAppointments() {
     try {
       const response = await useFetch('/api/appointments', {
@@ -27,18 +25,23 @@ export const useAppointmentStore = defineStore('appointment', () => {
   }
 
   function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: { show: string; time: Date }[] }[]) {
-    const openWindow = openWindows.find(window => 
-      window.date.toDateString() === day.date.toDateString()
-    )
-    
-    if (openWindow) {
-      selectedDate.value = day.date
-      availableTimeSlots.value = openWindow.slots
-      selectedTime.value = null
-      currentStep.value = 'timeSlots'
-    } else {
-      selectedDate.value = null
-      availableTimeSlots.value = []
+    console.log('onDayClick', day, openWindows)
+    try {
+      const openWindow = openWindows.find(window => 
+        window.date.toDateString() === day.date.toDateString()
+      )
+      
+      if (openWindow) {
+        selectedDate.value = day.date
+        availableTimeSlots.value = openWindow.slots
+        selectedTime.value = null
+        currentStep.value = 'timeSlots'
+      } else {
+        selectedDate.value = null
+        availableTimeSlots.value = []
+      }
+    } catch (error) {
+      console.error('Error finding open window:', error)
     }
   }
 

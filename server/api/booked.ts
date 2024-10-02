@@ -12,8 +12,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     const today = new Date()
+    today.setHours(0, 0, 0, 0) // Set to start of the day (00:00)
     const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
-
     const appointments = await prisma.appointment.findMany({
       select: {
         id: true,
@@ -30,7 +30,6 @@ export default defineEventHandler(async (event) => {
         time: 'asc'
       }
     })
-    console.log('booked', appointments.length)
     return appointments
   } catch (error) {
     console.error('Error fetching appointment schedule:', error)

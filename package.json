@@ -29,6 +29,7 @@
     "vue-tg": "latest"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21"
+    "@types/express": "^4.17.21",
+    "dotenv": "^16.4.5"
   }
 }

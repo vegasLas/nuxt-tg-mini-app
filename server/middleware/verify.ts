@@ -12,13 +12,11 @@ function isProtectedPath(event: H3Event): boolean {
 }
 
 export default defineEventHandler(async (event) => {
-  console.log('Protected path:', isProtectedPath(event))
   if (!isProtectedPath(event)) {
     return
   }
   try {
     const initData = parseInitData(event)
-    console.log('initData', initData)
     // Get or create user
     const user = await getUserFromEvent(event)
     

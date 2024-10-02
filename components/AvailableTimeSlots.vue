@@ -5,8 +5,12 @@
       <button
         v-for="slot in availableTimeSlots.availableTimeSlots"
         :key="slot.show"
-        :class="['time-slot', { selected: availableTimeSlots.selectedTime === slot.time }]"
+        :class="['time-slot', { 
+          selected: availableTimeSlots.selectedTime === slot.time,
+          booked: slot.booked
+        }]"
         @click="availableTimeSlots.selectTimeSlot(slot)"
+        :disabled="slot.booked"
       >
         <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
@@ -64,7 +68,7 @@ h2 {
   cursor: pointer;
 }
 
-.time-slot:hover {
+.time-slot:hover:not(.booked) {
   background-color: #e9ecef;
 }
 
@@ -72,6 +76,13 @@ h2 {
   background-color: #4263eb;
   color: #fff;
   border-color: #4263eb;
+}
+
+.time-slot.booked {
+  background-color: #f8f9fa;
+  color: #adb5bd;
+  border-color: #dee2e6;
+  cursor: not-allowed;
 }
 
 .time-icon {

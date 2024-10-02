@@ -30,29 +30,24 @@
     </template>
 
     <template v-else-if="appointmentStore.currentStep === 'timeSlots'">
-      <AvailableTimeSlots
-        :availableTimeSlots="appointmentStore.availableTimeSlots"
-        v-model:selectedTime="appointmentStore.selectedTime"
-        @back="appointmentStore.goBackToCalendar"
-        @proceed="appointmentStore.proceedToUserInfo"
-      />
+      <!-- <AvailableTimeSlots /> -->
     </template>
     
-    <template v-else-if="appointmentStore.currentStep === 'userInfo'">
+    <!-- <template v-else-if="appointmentStore.currentStep === 'userInfo'">
       <UserInfoForm @submit="appointmentStore.submitAppointment" @back="appointmentStore.goBackToTimeSlots" />
     </template>
 
     <template v-else-if="appointmentStore.currentStep === 'appointmentsList'">
       <AppointmentsList />
-    </template>
+    </template> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import UserInfoForm from './UserInfoForm.vue'
-import AvailableTimeSlots from './AvailableTimeSlots.vue'
-import AppointmentsList from './AppointmentsList.vue'
+// import UserInfoForm from './UserInfoForm.vue'
+// import AvailableTimeSlots from './AvailableTimeSlots.vue'
+// import AppointmentsList from './AppointmentsList.vue'
 import { useCalendarStore } from '~/stores/useCalendarStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 

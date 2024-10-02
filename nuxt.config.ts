@@ -8,6 +8,11 @@ export default defineNuxtConfig({
       script: [{ src: 'https://telegram.org/js/telegram-web-app.js' }],
     },
   },
+  runtimeConfig: {
+    public: {
+      INIT_DATA_SECRET: process.env.INIT_DATA_SECRET,
+    }
+  },
   modules: [
     '@samk-dev/nuxt-vcalendar',
     '@pinia/nuxt',

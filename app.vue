@@ -8,13 +8,14 @@
       :transition-speed="1000"
     ></VuePreloader>
     <ClientOnly>
-      <AppointmentScheduler />
+      <AppointmentCalendar />
     </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
-import AppointmentScheduler from '~/components/AppointmentScheduler.vue'
+
+import AppointmentCalendar from '~/components/AppointmentCalendar.vue'
 import { VuePreloader } from 'vue-preloader';
 
 </script>
