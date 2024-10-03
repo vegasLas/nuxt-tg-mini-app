@@ -24,7 +24,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       if (response.status.value === 'error') {
         throw new Error('Failed to fetch booked appointments')
       }
-      const bookedAppointments = response.data.value
+      const bookedAppointments = response.data.value as unknown as { time: Date }[]
 
       const workDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
       const workHours = Array.from({ length: 9 }, (_, i) => {

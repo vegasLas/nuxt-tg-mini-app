@@ -6,10 +6,10 @@
         v-for="slot in availableTimeSlots.availableTimeSlots"
         :key="slot.show"
         :class="['time-slot', { 
-          booked: slot.booked,
+          booked: slot.booked || new Date(slot.time) <= new Date(),
           selected: availableTimeSlots.selectedTime === slot.time,
           'user-appointment': userStore.hasAppointment(slot.time),
-        }]"
+        }]" 
         @click="handleSlotClick(slot)"
         :disabled="slot.booked && !userStore.hasAppointment(slot.time)"
       >

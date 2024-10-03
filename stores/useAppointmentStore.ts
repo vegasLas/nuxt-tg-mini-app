@@ -7,7 +7,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
   
 
   function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: { show: string; time: Date }[] }[]) {
-    console.log('onDayClick', day, openWindows)
     try {
       const openWindow = openWindows.find(window => 
         window.date.toDateString() === day.date.toDateString()

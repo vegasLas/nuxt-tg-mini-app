@@ -16,7 +16,8 @@ export const useUserStore = defineStore('user', () => {
       if (!response.data.value) {
         throw new Error('Failed to fetch appointments')
       }
-      appointments.value = response.data.value
+      const result = response.data.value as unknown as Appointment[]
+      appointments.value = result
     } catch (error) {
       console.error('Error fetching user appointments:', error)
       return []

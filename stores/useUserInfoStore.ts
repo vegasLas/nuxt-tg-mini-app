@@ -48,8 +48,11 @@ export const useUserInfoStore = defineStore('userInfo', () => {
         throw new Error('Failed to submit appointment')
       }
 
-      const result = response.data.value as Appointment
-      useUserStore().appointments.unshift(result)
+      const result = response.data.value
+      if (!result) {
+        throw new Error('Failed to submit appointment')
+      }
+      useUserStore().appointments.unshift(result as unknown as Appointment)
       name.value = ''
       phone.value = ''
       comment.value = ''
