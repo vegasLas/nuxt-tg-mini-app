@@ -23,21 +23,25 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function removeAppointment(time: Date) {
-    const id = appointments.value.find(appointment => appointment.time.getTime() === time.getTime())?.id
+    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
     try {
-      const response = await useFetch(`/api/appointments/${id}`, {
+      const response = await $fetch<{ success: boolean }>(`/api/appointments/${id}`, {
         method: 'DELETE',
+        headers: {
+          'x-init-data': useWebApp().initData
+        }
       })
-      if (!response.data.value) {
+	  
+      if (!response.success) {
         throw new Error('Failed to remove appointment')
       }
       await fetchUserAppointments()
+	  useAppointmentStore().goBackToCalendar()
     } catch (error) {
       console.error('Error removing appointment:', error)
     }
   }
   function hasAppointment(time: Date) {
-    console.log('hasAppointment', appointments.value)
     return appointments.value.some(appointment => new Date(appointment.time).getTime() === time.getTime())
   }
   return {

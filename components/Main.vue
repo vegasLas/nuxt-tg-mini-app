@@ -32,10 +32,8 @@
   const appointmentStore = useAppointmentStore()
   const userStore = useUserStore()
   
-  onMounted(() => {
 	calendarStore.fetchOpenWindows()
 	userStore.fetchUserAppointments()
-  })
   </script>
 
   <style scoped>

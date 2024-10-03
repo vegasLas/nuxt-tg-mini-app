@@ -1,6 +1,7 @@
 <template>
-    <VuePreloader
-      background-color="#091a28"
+  <Meta name="viewport" content="width=device-width, initial-scale=1" />
+  <VuePreloader
+    background-color="#091a28"
       color="#ffffff"
       transition-type="fade-up"
       :loading-speed="25"

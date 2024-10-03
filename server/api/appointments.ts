@@ -8,7 +8,9 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
   const id = event.context.params?.id
 
   // Get user from event
+
   const user = await getUserFromEvent(event)
+  
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' }) // Updated to createError
   }
@@ -17,7 +19,7 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
     case 'GET':
       try {
           const appointments = await prisma.appointment.findMany({
-            where: { userId: user.id }
+            where: { userId: user.id, booked: true }
           }) as Appointment[]
           return appointments
       } catch (error) {
@@ -72,8 +74,6 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
       
     case 'DELETE':
       if (id) {
-        console.log('delete', id)
-        // Check if the user has the appointment
         const existingAppointment = await prisma.appointment.findUnique({
           where: { id: parseInt(id) }
         })
@@ -82,7 +82,11 @@ export const appointmentsHandlers: EventHandler<EventHandlerRequest, any> =  asy
           throw createError({ statusCode: 404, statusMessage: 'Appointment not found or not authorized' }) // Updated to createError
         }
         
-        return await prisma.appointment.delete({ where: { id: parseInt(id) } }) as Appointment
+        await prisma.appointment.update({
+          where: { id: parseInt(id) },
+          data: { booked: false },
+        }) as Appointment
+        return {success: true}
       }
       break
   }

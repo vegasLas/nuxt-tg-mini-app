@@ -8,7 +8,7 @@
         :class="['time-slot', { 
           booked: slot.booked,
           selected: availableTimeSlots.selectedTime === slot.time,
-          'user-appointment': userStore.hasAppointment(slot.time)
+          'user-appointment': userStore.hasAppointment(slot.time),
         }]"
         @click="handleSlotClick(slot)"
         :disabled="slot.booked && !userStore.hasAppointment(slot.time)"
@@ -18,9 +18,9 @@
     </div>
     <BackButton @click="availableTimeSlots.goBack()" />
     <MainButton
-      text="Продолжить"
-      @click="availableTimeSlots.proceed()"
-      :disabled="!availableTimeSlots.selectedTime"
+      :text="cancelMode ? 'Отменить запись' : 'Продолжить'"
+      @click="cancelMode ? handleCancel() : availableTimeSlots.proceed()"
+      :disabled="!availableTimeSlots.selectedTime && !cancelMode"
     />
   </div>
 
@@ -29,36 +29,50 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { MainButton, BackButton } from 'vue-tg'
-// Hover to inspect type
 import { useWebAppPopup } from 'vue-tg'
 
 const availableTimeSlots = useAvailableTimeSlots()
 const userStore = useUserStore()
+const cancelMode = ref(false)
+
 const handleSlotClick = (slot: { time: Date, show: string }) => {
   if (userStore.hasAppointment(slot.time)) {
-    availableTimeSlots.unselectTimeSlot()
-    const {showPopup} = useWebAppPopup()
-    showPopup({
-      title: 'Отмена записи',
-      message: 'Хотите отменить запись?',
-      buttons: [
-        {
-          text: 'отменить запись',
-          type: 'ok',
-          callback: () => {
-            userStore.removeAppointment(slot.time)
-          },
-        },
-        {
-          text: 'закрыть',
-          type: 'default',
-        },
-      ],
-    })
+    availableTimeSlots.selectTimeSlot(slot)
+    cancelMode.value = true
   } else {
     availableTimeSlots.selectTimeSlot(slot)
+    cancelMode.value = false
   }
+}
+
+const handleCancel = () => {
+  const { showPopup, onPopupClosed } = useWebAppPopup()
+  onPopupClosed((e: { button_id: string }) => {
+    if (e.button_id === 'removeAppointment') {
+      userStore.removeAppointment(availableTimeSlots.selectedTime!)
+      availableTimeSlots.unselectTimeSlot()
+      cancelMode.value = false
+    }
+  }, {
+    manual: true
+  })
+  showPopup({
+    title: 'Отмена записи',
+    message: 'Хотите отменить запись?',
+    buttons: [
+      {
+        text: 'Закрыть',
+        type: 'destructive',
+      },
+      {
+        id: 'removeAppointment',
+        type: 'default',
+        text: 'Отменить запись'
+      },
+    ],
+  })
 }
 </script>
 
@@ -99,7 +113,6 @@ h2 {
   transition: all 0.3s ease;
   cursor: pointer;
 }
-
 
 .time-slot.selected {
   background-color: #4263eb;
@@ -167,5 +180,18 @@ h2 {
 :deep(.main-button:disabled) {
   background-color: #adb5bd;
   cursor: not-allowed;
+}
+
+
+.time-slot.cancel-mode:hover {
+  background-color: #f03e3e;
+}
+
+:deep(.main-button.cancel) {
+  background-color: #ff6b6b;
+}
+
+:deep(.main-button.cancel:hover) {
+  background-color: #f03e3e;
 }
 </style>
