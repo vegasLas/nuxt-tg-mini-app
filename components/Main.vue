@@ -4,7 +4,7 @@
 			<div class="appointments-count">
 			<button class="count-button" @click="appointmentStore.showAppointmentsList">
 				<span class="label">Мои записи</span>
-				<span class="count">{{ userStore.appointments.length }}</span>
+				<span class="count">{{ userStore.appointments.filter(appointment => new Date(appointment.time) >= new Date()).length }}</span>
 			</button>
 			</div>
 

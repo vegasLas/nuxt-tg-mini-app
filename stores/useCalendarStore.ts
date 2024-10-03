@@ -3,7 +3,7 @@ import { useWebApp } from 'vue-tg'
 
 export const useCalendarStore = defineStore('calendar', () => {
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
-
+  
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
     return openWindows.value.map(window => ({
       dot: window.slots.some(slot => !slot.booked) ? 'green' : 'red',
@@ -16,7 +16,7 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   async function fetchOpenWindows() {
     try {
-      const response = await useFetch('/api/booked', {
+      const response = await useFetch('/api/appointments/booked', {
         headers: {
           'x-init-data': useWebApp().initData
         }

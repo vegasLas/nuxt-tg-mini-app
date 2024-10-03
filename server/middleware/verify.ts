@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
     const initData = parseInitData(event)
     // Get or create user
     const user = await getUserFromEvent(event)
-    
     if (!user) {
       // Create new user if not found
       await prisma.user.create({
@@ -33,6 +32,7 @@ export default defineEventHandler(async (event) => {
         },
       })
     } 
+    console.log('method', event.node.req.method)
   } catch (err) {
     throw createError({
       statusCode: 401,

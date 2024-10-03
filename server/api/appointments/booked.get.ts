@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
         time: true
       },
       where: {
+        booked: true,
         time: {
           gte: today,
           lte: thirtyDaysFromNow

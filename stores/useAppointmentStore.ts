@@ -1,5 +1,3 @@
-import { useWebApp } from 'vue-tg'
-import type { Appointment } from '~/types'
 export const useAppointmentStore = defineStore('appointment', () => {
   const selectedDate = ref<Date | null>(null)
   const selectedTime = ref<Date | null>(null)
@@ -46,7 +44,7 @@ export const useAppointmentStore = defineStore('appointment', () => {
     currentStep.value = 'timeSlots'
   }
 
-  function submitAppointment(userInfo: { username: string; phone: string }) {
+  function submitAppointment() {
     if (selectedDate.value && selectedTime.value) {
       selectedDate.value = null
       selectedTime.value = null

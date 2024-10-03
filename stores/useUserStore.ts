@@ -4,10 +4,11 @@ import type { Appointment } from '~/types'
 
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
-
+ 
   async function fetchUserAppointments() {
     try {
       const response = await useFetch('/api/appointments', {
+        method: 'GET',
         headers: {
           'x-init-data': useWebApp().initData
         }
@@ -15,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
       if (!response.data.value) {
         throw new Error('Failed to fetch appointments')
       }
-      appointments.value = response.data.value as Appointment[]
+      appointments.value = response.data.value
     } catch (error) {
       console.error('Error fetching user appointments:', error)
       return []
@@ -23,7 +24,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function removeAppointment(time: Date) {
-    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
+    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === new Date(time).getTime())?.id
     try {
       const response = await $fetch<{ success: boolean }>(`/api/appointments/${id}`, {
         method: 'DELETE',
@@ -31,7 +32,6 @@ export const useUserStore = defineStore('user', () => {
           'x-init-data': useWebApp().initData
         }
       })
-	  
       if (!response.success) {
         throw new Error('Failed to remove appointment')
       }

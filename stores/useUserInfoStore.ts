@@ -37,7 +37,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     try {
       const response = await useFetch('/api/appointments', {
         method: 'POST',
-        headers: {
+        headers: {  
           'x-init-data': useWebApp().initData,
           'Content-Type': 'application/json',
         },
