@@ -11,13 +11,15 @@
           'user-appointment': userStore.hasAppointment(slot.time),
         }]" 
         @click="handleSlotClick(slot)"
-        :disabled="slot.booked && !userStore.hasAppointment(slot.time)"
+        :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
       >
+        <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
         <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
     </div>
     <BackButton @click="availableTimeSlots.goBack()" />
     <MainButton
+      v-if="availableTimeSlots.selectedTime"
       :text="cancelMode ? 'Отменить запись' : 'Продолжить'"
       @click="cancelMode ? handleCancel() : availableTimeSlots.proceed()"
       :disabled="!availableTimeSlots.selectedTime && !cancelMode"
@@ -112,6 +114,7 @@ h2 {
   color: #495057;
   transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .time-slot.selected {
@@ -136,6 +139,18 @@ h2 {
 
 .time-slot.user-appointment:hover {
   background-color: #fcc419;
+}
+
+.time-slot.user-appointment.selected {
+  background-color: #ffbf00e4;
+  color: #212529;
+  border-color: #ffbf00e4;
+}
+
+.checkmark {
+  color: #40c057;
+  font-weight: bold;
+  margin-right: 0.25rem;
 }
 
 .time-icon {

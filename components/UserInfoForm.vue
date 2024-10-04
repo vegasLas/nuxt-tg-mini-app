@@ -38,9 +38,9 @@
       </form>
       <div class="button-group">
         <MainButton 
+          v-if="isFormValid"
           text="Записаться" 
           @click="submitForm"
-          :disabled="!isFormValid"
           :progress="isLoading"
         />
         <BackButton @click="goBack" />

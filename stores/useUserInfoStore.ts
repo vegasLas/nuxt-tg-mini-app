@@ -11,7 +11,8 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   const isLoading = ref(false)
 
   const isFormValid = computed(() => {
-    return name.value.trim() !== '' && phone.value.trim() !== ''
+    const phoneRegex = /^\+7\d{10}$/
+    return name.value.trim() !== '' && phoneRegex.test(phone.value.trim())
   })
 
   watch(phone, (newPhone, oldPhone) => {

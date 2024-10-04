@@ -17,6 +17,9 @@ export const useUserStore = defineStore('user', () => {
         throw new Error('Failed to fetch appointments')
       }
       const result = response.data.value as unknown as Appointment[]
+      if (!result) {
+        throw new Error('Failed to fetch appointments')
+      }
       appointments.value = result
     } catch (error) {
       console.error('Error fetching user appointments:', error)
@@ -36,8 +39,10 @@ export const useUserStore = defineStore('user', () => {
       if (!response.success) {
         throw new Error('Failed to remove appointment')
       }
-      await fetchUserAppointments()
-	  useAppointmentStore().goBackToCalendar()
+      await fetchUserAppointments()  
+      await useCalendarStore().fetchOpenWindows()
+      
+      useAppointmentStore().goBackToCalendar()
     } catch (error) {
       console.error('Error removing appointment:', error)
     }
