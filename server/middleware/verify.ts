@@ -32,7 +32,6 @@ export default defineEventHandler(async (event) => {
         },
       })
     } 
-    console.log('method', event.node.req.method)
   } catch (err) {
     throw createError({
       statusCode: 401,

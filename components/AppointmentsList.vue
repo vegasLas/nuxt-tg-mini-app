@@ -8,14 +8,16 @@
       <li v-for="appointment in userStore.appointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
           <div class="date-time">
-            {{ formatDateTime(appointment.time.toISOString()) }}
+            {{ formatDateTime(new Date(appointment.time).toISOString()) }}
           </div>
         </div>
         <div class="appointment-actions">
           <button @click="rescheduleAppointment(appointment)" class="action-button reschedule">
             Перенести
           </button>
-          <Popup message="Отменить" title="Вы уверены, что хотите отменить эту запись?" @click="userStore.removeAppointment(appointment.time)" class="action-button remove"/>
+          <button @click="() => handleCancel(appointment)" class="action-button remove">
+            Отменить
+          </button>
         </div>
       </li>
     </ul>
@@ -27,8 +29,8 @@
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 import { useUserStore } from '~/stores/useUserStore'
 import type { Appointment } from '~/types'
-import { Popup } from 'vue-tg'
 import { BackButton } from 'vue-tg'
+import { useWebAppPopup } from 'vue-tg'
 
 const appointmentStore = useAppointmentStore()
 const userStore = useUserStore()
@@ -42,23 +44,47 @@ function rescheduleAppointment(appointment: Omit<Appointment, 'userId' | 'user'>
 function closeAppointmentsList() {
   appointmentStore.hideAppointmentsList()
 }
+
+const handleCancel = (appointment: Omit<Appointment, 'userId' | 'user'>) => {
+  const { showPopup, onPopupClosed } = useWebAppPopup()
+  onPopupClosed((e: { button_id: string }) => {
+    if (e.button_id === 'removeAppointment') {
+      userStore.removeAppointment(appointment.time)
+    }
+  }, {
+    manual: true
+  })
+  showPopup({
+    title: 'Отмена записи',
+    message: 'Вы уверены, что хотите отменить эту запись?',
+    buttons: [
+      {
+        text: 'Закрыть',
+        type: 'destructive',
+      },
+      {
+        id: 'removeAppointment',
+        type: 'default',
+        text: 'Отменить запись'
+      },
+    ],
+  })
+}
 </script>
 
 <style scoped>
-
 .appointments-list {
-  height: 60vh; /* Set a fixed height, adjust as needed */
-  overflow-y: auto; /* Enable vertical scrolling */
+  height: 70vh;
   display: flex;
   flex-direction: column;
   background-color: white;
-  padding: 10px 20px;
+  padding: 10px 10px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: var(--tg-theme-text-color, #000000);
 }
 
@@ -72,14 +98,16 @@ ul {
   padding: 0;
   background-color: #ffffff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-y: auto; /* Enable vertical scrolling */
+  flex-grow: 1; /* Allow the ul to grow and take available space */
+  margin-bottom: 10px; /* Add some space before the BackButton */
 }
 
 .appointment-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
+  padding: 5px 10px;
   border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
   color: #000000;
 }
@@ -104,11 +132,12 @@ ul {
 
 .appointment-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .action-button {
-  padding: 8px 12px;
+  padding: 4px 8px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -135,5 +164,10 @@ ul {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+}
+
+/* BackButton styles */
+:deep(.back-button) {
+  margin-top: auto; /* Push the BackButton to the bottom */
 }
 </style>

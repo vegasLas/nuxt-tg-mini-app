@@ -1,5 +1,5 @@
 <template>
-  <Meta name="viewport" content="width=device-width, initial-scale=1" />
+  <Meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <VuePreloader
     background-color="#091a28"
       color="#ffffff"

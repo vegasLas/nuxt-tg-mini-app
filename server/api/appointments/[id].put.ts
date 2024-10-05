@@ -39,5 +39,5 @@ export default defineEventHandler(async (event) => {
     },
     where: { id: parseInt(id) },
     data: updateData,
-  }) as Appointment
+  })
 })

@@ -28,7 +28,13 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   async function submitForm() {
     isLoading.value = true
     const appointmentStore = useAppointmentStore()
-    const body: Omit<Appointment, 'id' | 'userId' | 'user'> = {
+    const body: {
+      name: string,
+      phoneNumber: string,
+      time: Date,
+      booked: boolean,
+      comment: string
+    } = {
       name: name.value,
       phoneNumber: phone.value,
       time: appointmentStore.selectedTime as Date,
@@ -53,7 +59,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       if (!result) {
         throw new Error('Failed to submit appointment')
       }
-      useUserStore().appointments.unshift(result as unknown as Appointment)
+      useUserStore().appointments.unshift(result)
       name.value = ''
       phone.value = ''
       comment.value = ''

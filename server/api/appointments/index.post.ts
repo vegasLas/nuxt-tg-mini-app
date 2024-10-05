@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  const createData = await readBody(event) as Omit<Appointment, 'id' | 'user'>
+  const createData = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>
   return await prisma.appointment.create({
     select: {
       id: true,
@@ -20,10 +20,11 @@ export default defineEventHandler(async (event) => {
       comment: true,
       time: true,
       booked: true,
+      userId: true
     },
     data: {
       ...createData,
       userId: user.id
     }
-  }) as Appointment
+  })
 })

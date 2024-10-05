@@ -12,7 +12,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const id = event.context.params?.id
-  console.log('delete id', id)
   try {
     if (!id) {
       throw createError({ statusCode: 400, statusMessage: 'Appointment ID is required' })
@@ -30,7 +29,7 @@ export default defineEventHandler(async (event) => {
       data: { 
         booked: false,
       },
-    }) as Appointment
+    })
 
     return {
       success: true,

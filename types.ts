@@ -18,7 +18,7 @@ export interface Appointment {
   name: string;
   phoneNumber: string;
   comment: string | null;
-  time: Date;
+  time: string;
   booked: boolean;
   userId: number;
   user?: User;
