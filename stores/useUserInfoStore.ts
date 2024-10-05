@@ -1,7 +1,4 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useAppointmentStore } from './useAppointmentStore'
-import type { Appointment } from '../types'
 import { useWebApp } from 'vue-tg'
 
 export const useUserInfoStore = defineStore('userInfo', () => {

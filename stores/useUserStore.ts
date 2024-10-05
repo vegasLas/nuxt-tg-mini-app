@@ -77,7 +77,6 @@ export const useUserStore = defineStore('user', () => {
       await fetchUserAppointments(1)  // Refresh from the first page
       await useCalendarStore().fetchOpenWindows()
       
-      useAppointmentStore().goBackToCalendar()
     } catch (error) {
       console.error('Error removing appointment:', error)
     }

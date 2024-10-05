@@ -1,6 +1,9 @@
 <template>
   <div class="time-selector">
     <h2>Доступные окна</h2>
+    <div v-if="availableTimeSlots.selectedDate" class="selected-date">
+      {{ formatSelectedDate(availableTimeSlots.selectedDate) }}
+    </div>
     <div class="time-slots-grid">
       <button
         v-for="slot in availableTimeSlots.availableTimeSlots"
@@ -25,13 +28,9 @@
       :disabled="!availableTimeSlots.selectedTime && !cancelMode"
     />
   </div>
-
-  <!-- Add popup component -->
-
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { MainButton, BackButton } from 'vue-tg'
 import { useWebAppPopup } from 'vue-tg'
 
@@ -76,13 +75,15 @@ const handleCancel = () => {
     ],
   })
 }
+
+
 </script>
 
 <style scoped>
 .time-selector {
   width: 80%;
   margin: 0 auto;
-  padding: 1rem 0.5rem;
+  padding: 0.7rem 0.5rem;
   background-color: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -91,7 +92,7 @@ const handleCancel = () => {
 h2 {
   font-size: 1.5rem;
   color: #333;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
@@ -208,5 +209,14 @@ h2 {
 
 :deep(.main-button.cancel:hover) {
   background-color: #f03e3e;
+}
+
+/* Add styles for the selected date display */
+.selected-date {
+  font-size: 1.2rem;
+  color: #000;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: bold;
 }
 </style>

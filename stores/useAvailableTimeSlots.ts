@@ -36,6 +36,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   return {
     availableTimeSlots,
     selectedTime,
+    selectedDate,
     selectTimeSlot,
     unselectTimeSlot,
     goBack,
