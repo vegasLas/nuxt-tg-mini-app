@@ -23,60 +23,25 @@
     <BackButton @click="availableTimeSlots.goBack()" />
     <MainButton
       v-if="availableTimeSlots.selectedTime"
-      :text="cancelMode ? 'Отменить запись' : 'Продолжить'"
-      @click="cancelMode ? handleCancel() : availableTimeSlots.proceed()"
-      :disabled="!availableTimeSlots.selectedTime && !cancelMode"
+      :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
+      @click="availableTimeSlots.cancelMode ? availableTimeSlots.handleCancel() : availableTimeSlots.proceed()"
+      :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import { useWebAppPopup } from 'vue-tg'
+import { useAvailableTimeSlots } from '~/stores/useAvailableTimeSlots'
+import { useUserStore } from '~/stores/useUserStore'
 
 const availableTimeSlots = useAvailableTimeSlots()
 const userStore = useUserStore()
-const cancelMode = ref(false)
 
 const handleSlotClick = (slot: { time: Date, show: string }) => {
-  if (userStore.hasAppointment(slot.time)) {
-    availableTimeSlots.selectTimeSlot(slot)
-    cancelMode.value = true
-  } else {
-    availableTimeSlots.selectTimeSlot(slot)
-    cancelMode.value = false
-  }
+  availableTimeSlots.selectTimeSlot(slot)
+  
 }
-
-const handleCancel = () => {
-  const { showPopup, onPopupClosed } = useWebAppPopup()
-  onPopupClosed((e: { button_id: string }) => {
-    if (e.button_id === 'removeAppointment') {
-      userStore.removeAppointment(availableTimeSlots.selectedTime!)
-      availableTimeSlots.unselectTimeSlot()
-      cancelMode.value = false
-    }
-  }, {
-    manual: true
-  })
-  showPopup({
-    title: 'Отмена записи',
-    message: 'Хотите отменить запись?',
-    buttons: [
-      {
-        text: 'Закрыть',
-        type: 'destructive',
-      },
-      {
-        id: 'removeAppointment',
-        type: 'default',
-        text: 'Отменить запись'
-      },
-    ],
-  })
-}
-
-
 </script>
 
 <style scoped>

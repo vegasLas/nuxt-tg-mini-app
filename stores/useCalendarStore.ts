@@ -3,15 +3,33 @@ import { useWebApp } from 'vue-tg'
 
 export const useCalendarStore = defineStore('calendar', () => {
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
+  const userStore = useUserStore() // Add this line to use the user store
   
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
-    return openWindows.value.map(window => ({
-      dot: window.slots.some(slot => !slot.booked) ? 'green' : 'red',
-      dates: window.date,
-      popover: {
-        label: window.slots.some(slot => !slot.booked) ? 'Есть свободные окна' : 'Все окна заняты'
+    return openWindows.value.map(window => {
+      const hasUserAppointment = userStore.appointments.some(appointment => 
+        new Date(appointment.time).toDateString() === window.date.toDateString()
+      )
+      
+      let dotColor = 'red'
+      if (hasUserAppointment) {
+        dotColor = 'yellow'
+      } else if (window.slots.some(slot => !slot.booked)) {
+        dotColor = 'green'
       }
-    }))
+
+      return {
+        dot: dotColor,
+        dates: window.date,
+        popover: {
+          label: hasUserAppointment 
+            ? 'У вас есть запись на этот день'
+            : window.slots.some(slot => !slot.booked) 
+              ? 'Есть свободные окна' 
+              : 'Все окна заняты'
+        }
+      }
+    })
   })
 
   async function fetchOpenWindows() {

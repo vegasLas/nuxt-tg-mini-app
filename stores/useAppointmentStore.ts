@@ -16,7 +16,6 @@ export const useAppointmentStore = defineStore('appointment', () => {
         selectedDate.value = day.date
         availableTimeSlots.value = openWindow.slots
         selectedTime.value = null
-        currentStep.value = 'timeSlots'
       } else {
         selectedDate.value = null
         availableTimeSlots.value = []

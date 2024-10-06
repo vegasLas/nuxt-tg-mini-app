@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { useWebApp } from 'vue-tg'
+import { useWebApp, useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
+import { useAppointmentStore } from './useAppointmentStore'
 
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
@@ -10,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
   const itemsPerPage = ref(5)
   const nextLink = ref<string | null>(null)
   const isLoading = ref(false)
+  const isRemoving = ref(false)
 
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
 
@@ -63,7 +65,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function removeAppointment(time: Date) {
-    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === new Date(time).getTime())?.id
+    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
+    isRemoving.value = true
     try {
       const response = await $fetch<{ success: boolean }>(`/api/appointments/${id}`, {
         method: 'DELETE',
@@ -76,9 +79,10 @@ export const useUserStore = defineStore('user', () => {
       }
       await fetchUserAppointments(1)  // Refresh from the first page
       await useCalendarStore().fetchOpenWindows()
-      
     } catch (error) {
       console.error('Error removing appointment:', error)
+    } finally {
+      isRemoving.value = false
     }
   }
 
@@ -94,19 +98,70 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  function rescheduleAppointment(appointment: Omit<Appointment, 'userId' | 'user'>) {
+    const appointmentStore = useAppointmentStore()
+    appointmentStore.setReschedulingAppointment(appointment)
+    appointmentStore.goBackToCalendar()
+    appointmentStore.hideAppointmentsList()
+  }
+
+  function handleCancel(appointment: Omit<Appointment, 'userId' | 'user'>) {
+    const { showPopup, onPopupClosed } = useWebAppPopup()
+    onPopupClosed((e: { button_id: string }) => {
+      if (e.button_id === 'removeAppointment') {
+        removeAppointment(new Date(appointment.time))
+      }
+    }, {
+      manual: true
+    })
+    showPopup({
+      title: 'Отмена записи',
+      message: 'Вы уверены, что хотите отменить эту запись?',
+      buttons: [
+        {
+          text: 'Закрыть',
+          type: 'destructive',
+        },
+        {
+          id: 'removeAppointment',
+          type: 'default',
+          text: 'Отменить запись'
+        },
+      ],
+    })
+  }
+
+  function formatDateTime(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear().toString().slice(-2)
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    
+    return `${day}.${month}.${year} ${hours}:${minutes}`
+  }
+
+  function isExpired(time: string): boolean {
+    return new Date(time) < new Date()
+  }
+
   return {
     appointments,
     currentPage,
     totalPages,
     totalItems,
     itemsPerPage,
-    nextLink,
     isLoading,
     hasMoreAppointments,
+    isRemoving,
     hasAppointment,
     fetchUserAppointments,
     loadMoreAppointments,
     removeAppointment,
     addAppointment,
+    rescheduleAppointment,
+    handleCancel,
+    formatDateTime,
+    isExpired
   }
 })

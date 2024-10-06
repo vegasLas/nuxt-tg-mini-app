@@ -17,12 +17,17 @@
       <div class="legend">
         <div><span class="dot green"></span> Есть свободные окна</div>
         <div><span class="dot red"></span> Все окна заняты</div>
+        <div><span class="dot yellow"></span> У вас есть запись</div>
       </div>
+      <MainButton
+        v-if="appointmentStore.selectedDate"
+        text="Продолжить"
+        @click="appointmentStore.goBackToTimeSlots"
+      />
 </template>
 
 <script setup lang="ts">
-import { useCalendarStore } from '~/stores/useCalendarStore'
-import { useAppointmentStore } from '~/stores/useAppointmentStore'
+import { MainButton } from 'vue-tg'
 
 const calendarStore = useCalendarStore()
 const appointmentStore = useAppointmentStore()
@@ -73,7 +78,9 @@ const appointmentStore = useAppointmentStore()
 .dot.red {
   background-color: red;
 }
-
+.dot.yellow {
+  background-color: #fcc419;
+}
 @media (max-width: 600px) {
   .appointment-scheduler {
     padding: 16px;
