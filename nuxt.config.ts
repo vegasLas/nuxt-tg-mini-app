@@ -5,9 +5,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/api/**': { cors: false },
   },
-  ui: {
-    disableGlobalStyles: false
-  },
   app: {
     head: {
       link: [{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap' }],
@@ -20,13 +17,10 @@ export default defineNuxtConfig({
     }
   },
   modules: ['@samk-dev/nuxt-vcalendar', '@pinia/nuxt'],
-  // pinia: {
-  //   storesDirs: ['./stores/**'],
-  // },
-  // Add the following CSS configuration
   css: [
-    '~/styles/global.css',
+    '@/node_modules/notie/dist/notie.css',
     '@/node_modules/vue-preloader/dist/style.css',
     '~/assets/css/telegram-theme.css',
+    '~/styles/global.css',
   ],
 })

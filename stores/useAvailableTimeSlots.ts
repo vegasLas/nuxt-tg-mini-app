@@ -4,6 +4,7 @@ import { useCalendarStore } from '~/stores/useCalendarStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 import { useUserStore } from '~/stores/useUserStore'
 import { useWebAppPopup } from 'vue-tg'
+import notie from 'notie'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
@@ -49,39 +50,46 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
 
   async function handleCancel(): Promise<void> {
     const { showPopup, onPopupClosed } = useWebAppPopup()
-    
-    return new Promise((resolve) => {
-      onPopupClosed(async (e: { button_id: string }) => {
-        if (e.button_id === 'removeAppointment') {
-          try {
-            await userStore.removeAppointment(selectedTime.value!)
-            unselectTimeSlot()
-            cancelMode.value = false
-            resolve()
-          } catch (error) {
-            console.error('Error removing appointment:', error)
-            resolve()
-          }
-        } else {
-          resolve()
-        }
-      }, { manual: true })
-
-      showPopup({
-        title: 'Отмена записи',
-        message: 'Хотите отменить запись?',
-        buttons: [
-          {
-            text: 'Закрыть',
-            type: 'destructive',
-          },
-          {
-            id: 'removeAppointment',
-            type: 'default',
-            text: 'Отменить запись'
-          },
-        ],
-      })
+    const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
+      if (e.button_id !== 'removeAppointment') return
+      
+      try {
+        await userStore.removeAppointment(selectedTime.value!)
+        notie.alert({
+          type: 'success',
+          text: 'Запись успешно отменена',
+          time: 2,
+          position:  'bottom'
+        })
+        unselectTimeSlot()
+        cancelMode.value = false
+      } catch (error) { 
+        notie.alert({
+          type: 'error',
+          text: 'Ошибка при отмене записи',
+          time: 2,
+          position: 'bottom'
+        })
+        console.error('Error removing appointment:', error)
+      }
+      finally {
+        popupClosed.off()
+      }
+    }, { manual: true })
+    showPopup({
+      title: 'Отмена записи',
+      message: 'Хотите отменить запись?',
+      buttons: [
+        {
+          text: 'Закрыть',
+          type: 'destructive',
+        },
+        {
+          id: 'removeAppointment',
+          type: 'default',
+          text: 'Отменить запись'
+        },
+      ],
     })
   }
 

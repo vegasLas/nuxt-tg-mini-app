@@ -13,7 +13,7 @@
           selected: availableTimeSlots.selectedTime === slot.time,
           'user-appointment': userStore.hasAppointment(slot.time),
         }]" 
-        @click="handleSlotClick(slot)"
+        @click="availableTimeSlots.selectTimeSlot(slot)"
         :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
       >
         <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
@@ -38,10 +38,6 @@ import { useUserStore } from '~/stores/useUserStore'
 const availableTimeSlots = useAvailableTimeSlots()
 const userStore = useUserStore()
 
-const handleSlotClick = (slot: { time: Date, show: string }) => {
-  availableTimeSlots.selectTimeSlot(slot)
-  
-}
 </script>
 
 <style scoped>
@@ -163,7 +159,6 @@ h2 {
   cursor: not-allowed;
 }
 
-
 .time-slot.cancel-mode:hover {
   background-color: #f03e3e;
 }
@@ -183,5 +178,23 @@ h2 {
   margin-bottom: 1rem;
   text-align: center;
   font-weight: bold;
+}
+
+/* Add these styles for the toast notifications */
+:deep(.Vue-Toastification__toast) {
+  min-height: 64px;
+  min-width: 250px;
+}
+
+:deep(.Vue-Toastification__toast--success) {
+  background-color: #40c057;
+}
+
+:deep(.Vue-Toastification__toast--error) {
+  background-color: #f03e3e;
+}
+
+:deep(.Vue-Toastification__toast--loading) {
+  background-color: #4263eb;
 }
 </style>
