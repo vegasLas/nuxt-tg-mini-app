@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useWebApp, useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
 import { useAppointmentStore } from './useAppointmentStore'
+import notie from 'notie'
 
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
@@ -105,29 +106,49 @@ export const useUserStore = defineStore('user', () => {
     appointmentStore.hideAppointmentsList()
   }
 
-  function handleCancel(appointment: Omit<Appointment, 'userId' | 'user'>) {
-    const { showPopup, onPopupClosed } = useWebAppPopup()
-    onPopupClosed((e: { button_id: string }) => {
-      if (e.button_id === 'removeAppointment') {
-        removeAppointment(new Date(appointment.time))
-      }
-    }, {
-      manual: true
-    })
-    showPopup({
-      title: 'Отмена записи',
-      message: 'Вы уверены, что хотите отменить эту запись?',
-      buttons: [
-        {
-          text: 'Закрыть',
-          type: 'destructive',
-        },
-        {
-          id: 'removeAppointment',
-          type: 'default',
-          text: 'Отменить запись'
-        },
-      ],
+  async function handleCancel(time: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      const { showPopup, onPopupClosed } = useWebAppPopup()
+      const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
+        if (e.button_id !== 'removeAppointment') {return}
+        try {
+          await removeAppointment(new Date(time))
+          notie.alert({
+            type: 'success',
+            text: 'Запись успешно отменена',
+            time: 2,
+            position:  'bottom'
+          })
+          resolve(true)
+        } catch (error) { 
+          resolve(false)
+          notie.alert({
+            type: 'error',
+            text: 'Ошибка при отмене записи',
+            time: 2,
+            position: 'bottom'
+          })
+          console.error('Error removing appointment:', error)
+        }
+        finally {
+          popupClosed.off()
+        }
+      }, { manual: true })
+      showPopup({
+        title: 'Отмена записи',
+        message: 'Хотите отменить запись?',
+        buttons: [
+          {
+            text: 'Закрыть',
+            type: 'destructive',
+          },
+          {
+            id: 'removeAppointment',
+            type: 'default',
+            text: 'Отменить запись'
+          },
+        ],
+      })
     })
   }
 

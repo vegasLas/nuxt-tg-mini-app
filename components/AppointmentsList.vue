@@ -16,7 +16,7 @@
             <button @click="userStore.rescheduleAppointment(appointment)" class="action-button reschedule">
               Перенести
             </button>
-            <button @click="() => userStore.handleCancel(appointment)" class="action-button remove">
+            <button @click="() => userStore.handleCancel(appointment.time)" class="action-button remove">
               Отменить
             </button>
           </template>

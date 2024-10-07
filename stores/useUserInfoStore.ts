@@ -1,6 +1,5 @@
-import { defineStore } from 'pinia'
 import { useWebApp } from 'vue-tg'
-
+import notie from 'notie' 
 export const useUserInfoStore = defineStore('userInfo', () => {
   const name = ref('')
   const phone = ref('+79')
@@ -39,7 +38,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       comment: comment.value
     }
     try {
-      const response = await useFetch('/api/appointments', {
+      const response = await $fetch('/api/appointments', {
         method: 'POST',
         headers: {  
           'x-init-data': useWebApp().initData,
@@ -47,12 +46,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
         },
         body: JSON.stringify(body),
       })
-
-      if (response.status.value === 'error') {
-        throw new Error('Failed to submit appointment')
-      }
-
-      const result = response.data.value
+      const result = response
       if (!result) {
         throw new Error('Failed to submit appointment')
       }
@@ -62,8 +56,22 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       comment.value = ''
       appointmentStore.goBackToCalendar()
       await useCalendarStore().fetchOpenWindows()
+      
+      // Show success notification
+      notie.alert({
+        type: 'success',
+        text: 'Запись прошла успешно',
+        time: 2
+      })
     } catch (error) {
       console.error('Error submitting form:', error)
+      
+      // Show error notification
+      notie.alert({
+        type: 'error',
+        text: 'Не удалось создать запись. Попробуйте позже.',
+        time: 2
+      })
     } finally {
       isLoading.value = false
     }

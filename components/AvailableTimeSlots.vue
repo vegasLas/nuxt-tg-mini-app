@@ -24,7 +24,7 @@
     <MainButton
       v-if="availableTimeSlots.selectedTime"
       :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
-      @click="availableTimeSlots.cancelMode ? availableTimeSlots.handleCancel() : availableTimeSlots.proceed()"
+      @click="availableTimeSlots.cancelMode ? availableTimeSlots.cancelAppointment() : availableTimeSlots.proceed()"
       :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
     />
   </div>

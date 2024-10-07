@@ -3,8 +3,6 @@ import { storeToRefs } from 'pinia'
 import { useCalendarStore } from '~/stores/useCalendarStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 import { useUserStore } from '~/stores/useUserStore'
-import { useWebAppPopup } from 'vue-tg'
-import notie from 'notie'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
@@ -48,49 +46,12 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     appointmentStore.currentStep = 'userInfo'
   }
 
-  async function handleCancel(): Promise<void> {
-    const { showPopup, onPopupClosed } = useWebAppPopup()
-    const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
-      if (e.button_id !== 'removeAppointment') return
-      
-      try {
-        await userStore.removeAppointment(selectedTime.value!)
-        notie.alert({
-          type: 'success',
-          text: 'Запись успешно отменена',
-          time: 2,
-          position:  'bottom'
-        })
-        unselectTimeSlot()
-        cancelMode.value = false
-      } catch (error) { 
-        notie.alert({
-          type: 'error',
-          text: 'Ошибка при отмене записи',
-          time: 2,
-          position: 'bottom'
-        })
-        console.error('Error removing appointment:', error)
-      }
-      finally {
-        popupClosed.off()
-      }
-    }, { manual: true })
-    showPopup({
-      title: 'Отмена записи',
-      message: 'Хотите отменить запись?',
-      buttons: [
-        {
-          text: 'Закрыть',
-          type: 'destructive',
-        },
-        {
-          id: 'removeAppointment',
-          type: 'default',
-          text: 'Отменить запись'
-        },
-      ],
-    })
+  async function cancelAppointment(): Promise<void> {
+    const isCanceled = await userStore.handleCancel(selectedTime.value?.toString()!)
+    if (isCanceled) {
+      unselectTimeSlot()
+      cancelMode.value = false
+    }
   }
 
   return {
@@ -99,10 +60,10 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     selectedDate,
     cancelMode,
     isRemoving,
+    cancelAppointment,
     selectTimeSlot,
     unselectTimeSlot,
     goBack,
-    proceed,
-    handleCancel
+    proceed
   }
 })
