@@ -179,22 +179,4 @@ h2 {
   text-align: center;
   font-weight: bold;
 }
-
-/* Add these styles for the toast notifications */
-:deep(.Vue-Toastification__toast) {
-  min-height: 64px;
-  min-width: 250px;
-}
-
-:deep(.Vue-Toastification__toast--success) {
-  background-color: #40c057;
-}
-
-:deep(.Vue-Toastification__toast--error) {
-  background-color: #f03e3e;
-}
-
-:deep(.Vue-Toastification__toast--loading) {
-  background-color: #4263eb;
-}
 </style>

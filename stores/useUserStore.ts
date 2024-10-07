@@ -99,12 +99,6 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function rescheduleAppointment(appointment: Omit<Appointment, 'userId' | 'user'>) {
-    const appointmentStore = useAppointmentStore()
-    appointmentStore.setReschedulingAppointment(appointment)
-    appointmentStore.goBackToCalendar()
-    appointmentStore.hideAppointmentsList()
-  }
 
   async function handleCancel(time: string): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -180,7 +174,6 @@ export const useUserStore = defineStore('user', () => {
     loadMoreAppointments,
     removeAppointment,
     addAppointment,
-    rescheduleAppointment,
     handleCancel,
     formatDateTime,
     isExpired

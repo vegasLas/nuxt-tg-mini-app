@@ -48,7 +48,7 @@
   background-color: var(--tg-theme-bg-color, #ffffff);
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 80vh; /* Ensure the component takes the full height of the viewport */
+  min-height: 70vh; /* Ensure the component takes the full height of the viewport */
 }
 
 .calendar-container {

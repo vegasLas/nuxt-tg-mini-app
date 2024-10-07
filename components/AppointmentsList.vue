@@ -13,9 +13,6 @@
         </div>
         <div class="appointment-actions" :class="{ 'expired': userStore.isExpired(appointment.time) }">
           <template v-if="!userStore.isExpired(appointment.time)">
-            <button @click="userStore.rescheduleAppointment(appointment)" class="action-button reschedule">
-              Перенести
-            </button>
             <button @click="() => userStore.handleCancel(appointment.time)" class="action-button remove">
               Отменить
             </button>
@@ -56,7 +53,7 @@ onMounted(async () => {
 <style scoped>
 .appointments-list {
   width: 90%;
-  height: 70vh;
+  min-height: 70vh;
   display: flex;
   flex-direction: column;
   background-color: white;
@@ -116,12 +113,12 @@ ul {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  width: 100px; /* Set a fixed width for consistency */
+  width: 100px; /* Reduced width since we only have one button now */
 }
 
 .appointment-actions.expired {
   justify-content: center;
-  height: 66px; /* Adjust this value to match the height of two buttons plus gap */
+  height: 33px; /* Adjusted height for a single button */
 }
 
 .action-button {
@@ -130,11 +127,6 @@ ul {
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-}
-
-.reschedule {
-  background-color: var(--tg-theme-button-color, #3390ec);
-  color: var(--tg-theme-button-text-color, #ffffff);
 }
 
 .remove {

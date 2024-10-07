@@ -61,7 +61,8 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       notie.alert({
         type: 'success',
         text: 'Запись прошла успешно',
-        time: 2
+        time: 2,
+        position: 'bottom'
       })
     } catch (error) {
       console.error('Error submitting form:', error)
@@ -70,7 +71,8 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       notie.alert({
         type: 'error',
         text: 'Не удалось создать запись. Попробуйте позже.',
-        time: 2
+        time: 2,
+        position: 'bottom'
       })
     } finally {
       isLoading.value = false
