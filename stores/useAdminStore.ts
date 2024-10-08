@@ -40,20 +40,6 @@ export const useAdminStore = defineStore('admin', () => {
   const error = ref<string | null>(null)
   const isAuthenticated = ref(false)
 
-  const fetchDisabledDays = async () => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await fetch('/api/disabled-days')
-      if (!response.ok) throw new Error('Не удалось получить заблокированные дни')
-      disabledDays.value = await response.json()
-    } catch (err) {
-      error.value = (err as Error).message
-    } finally {
-      loading.value = false
-    }
-  }
-
   const addDisabledDay = async (date: string) => {
     loading.value = true
     error.value = null
@@ -137,7 +123,6 @@ export const useAdminStore = defineStore('admin', () => {
     loading,
     error,
     disabledDayDates,
-    fetchDisabledDays,
     addDisabledDay,
     removeDisabledDay,
     fetchAppointmentsByDate,

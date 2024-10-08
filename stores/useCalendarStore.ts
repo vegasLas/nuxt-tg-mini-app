@@ -1,14 +1,35 @@
-import type { CalendarAttribute } from '~/types'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 import { useWebApp } from 'vue-tg'
+import type { CalendarAttribute } from '~/types'
+import { 
+  addDays, 
+  startOfDay, 
+  isAfter, 
+  set, 
+  isSameDay, 
+  getDay, 
+  setHours, 
+  format,
+  parseISO
+} from 'date-fns'
+
+interface DisabledDay {
+  id: number
+  date: string
+}
 
 export const useCalendarStore = defineStore('calendar', () => {
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
-  const userStore = useUserStore() // Add this line to use the user store
+  const userStore = useUserStore()
+  const disabledDays = ref<DisabledDay[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
   
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
     return openWindows.value.map(window => {
       const hasUserAppointment = userStore.appointments.some(appointment => 
-        new Date(appointment.time).toDateString() === window.date.toDateString()
+        isSameDay(parseISO(appointment.time), window.date)
       )
       
       let dotColor = 'red'
@@ -42,59 +63,50 @@ export const useCalendarStore = defineStore('calendar', () => {
       if (response.status.value === 'error') {
         throw new Error('Failed to fetch booked appointments')
       }
-      const bookedAppointments = response.data.value as unknown as { time: Date }[]
+      const bookedAppointments = response.data.value as unknown as { time: string }[]
 
-      const workDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+      const workDays = [1, 2, 3, 4, 5] // Monday to Friday
       const workHours = Array.from({ length: 9 }, (_, i) => {
         const hour = 9 + i
         return {
-          show: `${hour}:00`,
-          time: new Date(0, 0, 0, hour, 0, 0),
+          show: format(setHours(new Date(), hour), 'HH:mm'),
+          time: setHours(new Date(), hour),
           booked: false
         }
       })
 
       const openWindowsMap: { [key: string]: { date: Date; slots: { show: string; time: Date; booked: boolean }[] } } = {}
 
-      const today = new Date()
-      const endDate = new Date()
-      endDate.setDate(today.getDate() + 30)
-
-      // Check if it's past 19:00 today
-      const isPastWorkingHours = today.getHours() >= 19
+      const now = new Date()
+      const cutoffTime = set(now, { hours: 19, minutes: 0, seconds: 0, milliseconds: 0 })
+      const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
+      const endDate = addDays(startDate, 30)
 
       // Create initial open windows for all work days
-      for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
-        const day = d.toLocaleDateString('en-US', { weekday: 'short' })
-        if (workDays.includes(day)) {
-          // Skip today if it's past working hours
-          if (d.toDateString() === today.toDateString() && isPastWorkingHours) {
-            continue
-          }
-
-          const dateString = d.toDateString()
+      for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
+        if (workDays.includes(getDay(d))) {
+          const dateString = format(d, 'dd-MM-yyyy')
           openWindowsMap[dateString] = {
-            date: new Date(d),
+            date: d,
             slots: workHours.map(({ show, time }) => ({
               show,
-              time: new Date(d.getFullYear(), d.getMonth(), d.getDate(), time.getHours(), time.getMinutes()),
+              time: set(d, { hours: time.getHours(), minutes: 0, seconds: 0, milliseconds: 0 }),
               booked: false
             }))
           }
         }
       }
+
       // Mark booked slots
       bookedAppointments?.forEach((appointment) => {
-        const appointmentDate = new Date(appointment.time)
-        const dateString = appointmentDate.toDateString()
+        const appointmentDate = parseISO(appointment.time)
+        const dateString = format(appointmentDate, 'dd-MM-yyyy')
 
         if (openWindowsMap[dateString]) {
-          openWindowsMap[dateString].slots = openWindowsMap[dateString].slots.map(slot => {
-            if (slot.time.getTime() === appointmentDate.getTime()) {
-              return { ...slot, booked: true }
-            }
-            return slot
-          })
+          openWindowsMap[dateString].slots = openWindowsMap[dateString].slots.map(slot => ({
+            ...slot,
+            booked: isSameDay(slot.time, appointmentDate) && slot.time.getHours() === appointmentDate.getHours()
+          }))
         }
       })
 
@@ -104,9 +116,32 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
+  const fetchDisabledDays = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetch('/api/disabled-days')
+      if (!response.ok) throw new Error('Не удалось получить заблокированные дни')
+      disabledDays.value = await response.json()
+    } catch (err) {
+      error.value = (err as Error).message
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const disabledDayDates = computed(() => {
+    return disabledDays.value.map(day => day.date)
+  })
+
   return {
     openWindows,
     calendarAttributes,
-    fetchOpenWindows
+    fetchOpenWindows,
+    disabledDays,
+    disabledDayDates,
+    fetchDisabledDays,
+    loading,
+    error
   }
 })
