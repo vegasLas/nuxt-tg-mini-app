@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import { isAdminUser } from '../../utils/isAdminUser'
+import { addDays, startOfDay, endOfDay, isAfter, set } from 'date-fns'
 
 const prisma = new PrismaClient()
 const DEFAULT_ITEMS_PER_PAGE = 5
@@ -17,47 +17,41 @@ export default defineEventHandler(async (event) => {
   const date = query.date as string
   const take = DEFAULT_ITEMS_PER_PAGE
 
-  const isAdmin = await isAdminUser(event)
-
   try {
-    if (isAdmin && date) {
-      return await handleAdminRequest(date, page, 9)
-    } else {
-      return await handlePublicRequest(user.id, page, take)
+    const { startDate, endDate } = getDateRange(date)
+    const whereClause = {
+      booked: true,
+      userId: user.id,
+      time: {
+        gte: startDate,
+        lte: endDate
+      }
     }
+
+    return await fetchAppointments(whereClause, page, take, date)
   } catch (error) {
     console.error('Error fetching appointments:', error)
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
   }
 })
 
-async function handleAdminRequest(date: string, page: number, take: number) {
-  const startDate = new Date(date)
-  startDate.setHours(0, 0, 0, 0)
-  const endDate = new Date(date)
-  endDate.setHours(23, 59, 59, 999)
+function getDateRange(date: string) {
+  const now = new Date()
+  const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  const requestDate = date ? new Date(date) : now
 
-  const whereClause = {
-    booked: true,
-    time: {
-      gte: startDate,
-      lte: endDate
-    }
+  if (isAfter(now, cutoffTime) && requestDate.toDateString() === now.toDateString()) {
+    // If it's after 17:00 and the requested date is today, start from tomorrow
+    requestDate.setDate(requestDate.getDate() + 1)
   }
 
-  return await fetchAppointments(whereClause, page, take, true, date)
+  const startDate = startOfDay(requestDate)
+  const endDate = endOfDay(addDays(startDate, 30))
+
+  return { startDate, endDate }
 }
 
-async function handlePublicRequest(userId: number, page: number, take: number) {
-  const whereClause = {
-    booked: true,
-    userId: userId
-  }
-
-  return await fetchAppointments(whereClause, page, take, false)
-}
-
-async function fetchAppointments(whereClause: any, page: number, take: number, includeUser: boolean, date?: string) {
+async function fetchAppointments(whereClause: any, page: number, take: number, date?: string) {
   const [appointments, totalCount] = await Promise.all([
     prisma.appointment.findMany({
       where: whereClause,

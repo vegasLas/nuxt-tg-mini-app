@@ -14,7 +14,6 @@ import {
   setHours, 
   format,
   parseISO,
-  isWithinInterval
 } from 'date-fns'
 
 export const useCalendarStore = defineStore('calendar', () => {
@@ -77,13 +76,17 @@ export const useCalendarStore = defineStore('calendar', () => {
       const openWindowsMap: { [key: string]: { date: Date; slots: { show: string; time: Date; booked: boolean }[] } } = {}
 
       const now = new Date()
-      const cutoffTime = set(now, { hours: 19, minutes: 0, seconds: 0, milliseconds: 0 })
+      const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
       const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
       const endDate = addDays(startDate, 30)
-
       // Create initial open windows for all work days, excluding disabled days
       for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
         if (workDays.includes(getDay(d)) && !isDisabledDay(d)) {
+          // Skip today if it's after 17:00
+          if (isSameDay(d, now) && now > cutoffTime) {
+            continue;
+          }
+
           const dateString = format(d, 'dd-MM-yyyy')
           openWindowsMap[dateString] = {
             date: d,
@@ -118,10 +121,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   // Helper function to check if a day is disabled
   function isDisabledDay(date: Date): boolean {
     return disabledDaysStore.disabledDays.some(disabledDay => 
-      isWithinInterval(date, {
-        start: startOfDay(parseISO(disabledDay.startTime)),
-        end: startOfDay(parseISO(disabledDay.endTime))
-      })
+      isSameDay(date, parseISO(disabledDay.date))
     )
   }
 

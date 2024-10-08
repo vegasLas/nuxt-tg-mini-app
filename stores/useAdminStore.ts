@@ -9,11 +9,10 @@ interface Appointment {
   time: string
   booked: boolean
   userId: number
-  user?: {
-    id: number
-    name: string
-    email: string
-  }
+  user: {
+    telegramId: string
+    username: string | null
+  } | null
 }
 
 interface PaginationInfo {
@@ -24,7 +23,6 @@ interface PaginationInfo {
   nextLink: string | null
 }
 
-
 export const useAdminStore = defineStore('admin', () => {
   const disabledDaysStore = useDisabledDaysStore()
   const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
@@ -34,19 +32,18 @@ export const useAdminStore = defineStore('admin', () => {
   const error = ref<string | null>(null)
   const isAuthenticated = ref(false)
 
-  const fetchAppointmentsByDate = async (date: string, page: number = 1) => {
+  const fetchAppointmentsByDate = async (date: string) => {
     loading.value = true
     error.value = null
     try {
-      const data = await $fetch(`/api/appointments`, {
+      const data = await $fetch(`/api/appointments/day`, {
         method: 'GET',
         headers: {
           'x-init-data': useWebApp().initData
         },
-        params: { date, page }
+        params: { date }
       })
-      appointments.value = data.appointments
-      paginationInfo.value = data.pagination
+      appointments.value = data
     } catch (err) {
       error.value = (err as Error).message
     } finally {
