@@ -38,6 +38,7 @@ export const useAdminStore = defineStore('admin', () => {
   const paginationInfo = ref<PaginationInfo | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const isAuthenticated = ref(false)
 
   const fetchDisabledDays = async () => {
     loading.value = true
@@ -103,7 +104,6 @@ export const useAdminStore = defineStore('admin', () => {
       paginationInfo.value = data.pagination
     } catch (err) {
       error.value = (err as Error).message
-      notie.alert({ type: 'error', text: 'Не удалось получить записи' })
     } finally {
       loading.value = false
     }
@@ -113,10 +113,27 @@ export const useAdminStore = defineStore('admin', () => {
     return disabledDays.value.map(day => day.date)
   })
 
+  const checkAuth = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetch('/api/check-admin')
+      if (!response.ok) throw new Error('Ошибка проверки статуса администратора')
+      const data = await response.json()
+      isAuthenticated.value = data.isAdmin
+    } catch (err) {
+      error.value = (err as Error).message
+      isAuthenticated.value = false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     disabledDays,
     appointments,
     paginationInfo,
+    isAuthenticated,
     loading,
     error,
     disabledDayDates,
@@ -124,5 +141,6 @@ export const useAdminStore = defineStore('admin', () => {
     addDisabledDay,
     removeDisabledDay,
     fetchAppointmentsByDate,
+    checkAuth,
   }
 })

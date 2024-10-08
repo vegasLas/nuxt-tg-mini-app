@@ -64,7 +64,15 @@ async function fetchAppointments(whereClause: any, page: number, take: number, i
       orderBy: { time: 'desc' },
       take: take,
       skip: (page - 1) * take,
-      include: { user: includeUser },
+      select: {
+        id: true,
+        name: true,
+        phoneNumber: true,
+        comment: true,
+        time: true,
+        booked: true,
+        userId: true,
+      }
     }),
     prisma.appointment.count({
       where: whereClause,

@@ -31,7 +31,7 @@ export const useUserStore = defineStore('user', () => {
       }
 
       const result = response.data.value as {
-        appointments: Appointment[],
+        appointments: Omit<Appointment, 'user'>[],
         pagination: {
           currentPage: number,
           totalPages: number,
@@ -101,7 +101,7 @@ export const useUserStore = defineStore('user', () => {
 
 
   async function handleCancel(time: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const { showPopup, onPopupClosed } = useWebAppPopup()
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
         if (e.button_id !== 'removeAppointment') {return}
