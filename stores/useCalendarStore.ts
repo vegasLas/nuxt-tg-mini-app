@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useWebApp } from 'vue-tg'
+import { useUserStore } from './useUserStore'
+import { useDisabledDaysStore } from './useDisabledDaysStore'
 import type { CalendarAttribute } from '~/types'
 import { 
   addDays, 
@@ -11,18 +13,14 @@ import {
   getDay, 
   setHours, 
   format,
-  parseISO
+  parseISO,
+  isWithinInterval
 } from 'date-fns'
-
-interface DisabledDay {
-  id: number
-  date: string
-}
 
 export const useCalendarStore = defineStore('calendar', () => {
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
   const userStore = useUserStore()
-  const disabledDays = ref<DisabledDay[]>([])
+  const disabledDaysStore = useDisabledDaysStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
   
@@ -55,6 +53,7 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   async function fetchOpenWindows() {
     try {
+      await disabledDaysStore.fetchDisabledDays()
       const response = await useFetch('/api/appointments/booked', {
         headers: {
           'x-init-data': useWebApp().initData
@@ -82,9 +81,9 @@ export const useCalendarStore = defineStore('calendar', () => {
       const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
       const endDate = addDays(startDate, 30)
 
-      // Create initial open windows for all work days
+      // Create initial open windows for all work days, excluding disabled days
       for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
-        if (workDays.includes(getDay(d))) {
+        if (workDays.includes(getDay(d)) && !isDisabledDay(d)) {
           const dateString = format(d, 'dd-MM-yyyy')
           openWindowsMap[dateString] = {
             date: d,
@@ -116,32 +115,21 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
-  const fetchDisabledDays = async () => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await fetch('/api/disabled-days')
-      if (!response.ok) throw new Error('Не удалось получить заблокированные дни')
-      disabledDays.value = await response.json()
-    } catch (err) {
-      error.value = (err as Error).message
-    } finally {
-      loading.value = false
-    }
+  // Helper function to check if a day is disabled
+  function isDisabledDay(date: Date): boolean {
+    return disabledDaysStore.disabledDays.some(disabledDay => 
+      isWithinInterval(date, {
+        start: startOfDay(parseISO(disabledDay.startTime)),
+        end: startOfDay(parseISO(disabledDay.endTime))
+      })
+    )
   }
-
-  const disabledDayDates = computed(() => {
-    return disabledDays.value.map(day => day.date)
-  })
 
   return {
     openWindows,
     calendarAttributes,
-    fetchOpenWindows,
-    disabledDays,
-    disabledDayDates,
-    fetchDisabledDays,
     loading,
-    error
+    error,
+    fetchOpenWindows
   }
 })

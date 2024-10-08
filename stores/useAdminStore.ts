@@ -1,11 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import notie from 'notie'
-
-interface DisabledDay {
-  id: number
-  date: string
-}
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useDisabledDaysStore } from './useDisabledDaysStore'
+import { useWebApp } from 'vue-tg'
 
 interface Appointment {
   id: number
@@ -27,65 +24,27 @@ interface PaginationInfo {
   nextLink: string | null
 }
 
-interface AppointmentResponse {
-  appointments: Appointment[]
-  pagination: PaginationInfo
-}
 
 export const useAdminStore = defineStore('admin', () => {
-  const disabledDays = ref<DisabledDay[]>([])
+  const disabledDaysStore = useDisabledDaysStore()
+  const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
   const appointments = ref<Appointment[]>([])
   const paginationInfo = ref<PaginationInfo | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
   const isAuthenticated = ref(false)
 
-  const addDisabledDay = async (date: string) => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await fetch('/api/disabled-days', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date }),
-      })
-      if (!response.ok) throw new Error('Не удалось добавить заблокированный день')
-      const newDisabledDay = await response.json()
-      disabledDays.value.push(newDisabledDay)
-      notie.alert({ type: 'success', text: 'Заблокированный день успешно добавлен' })
-    } catch (err) {
-      error.value = (err as Error).message
-      notie.alert({ type: 'error', text: 'Не удалось добавить заблокированный день' })
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const removeDisabledDay = async (id: number) => {
-    loading.value = true
-    error.value = null
-    try {
-      const response = await fetch(`/api/disabled-days/${id}`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) throw new Error('Не удалось удалить заблокированный день')
-      disabledDays.value = disabledDays.value.filter(day => day.id !== id)
-      notie.alert({ type: 'success', text: 'Заблокированный день успешно удален' })
-    } catch (err) {
-      error.value = (err as Error).message
-      notie.alert({ type: 'error', text: 'Не удалось удалить заблокированный день' })
-    } finally {
-      loading.value = false
-    }
-  }
-
   const fetchAppointmentsByDate = async (date: string, page: number = 1) => {
     loading.value = true
     error.value = null
     try {
-      const response = await fetch(`/api/appointments?date=${date}&page=${page}`)
-      if (!response.ok) throw new Error('Не удалось получить записи')
-      const data: AppointmentResponse = await response.json()
+      const data = await $fetch(`/api/appointments`, {
+        method: 'GET',
+        headers: {
+          'x-init-data': useWebApp().initData
+        },
+        params: { date, page }
+      })
       appointments.value = data.appointments
       paginationInfo.value = data.pagination
     } catch (err) {
@@ -95,17 +54,16 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  const disabledDayDates = computed(() => {
-    return disabledDays.value.map(day => day.date)
-  })
-
   const checkAuth = async () => {
     loading.value = true
     error.value = null
     try {
-      const response = await fetch('/api/check-admin')
-      if (!response.ok) throw new Error('Ошибка проверки статуса администратора')
-      const data = await response.json()
+      const data = await $fetch('/api/check-admin', {
+        method: 'GET',
+        headers: {
+          'x-init-data': useWebApp().initData
+        }
+      })
       isAuthenticated.value = data.isAdmin
     } catch (err) {
       error.value = (err as Error).message
@@ -115,17 +73,22 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  onMounted(async () => {
+    await checkAuth()
+  })
+
   return {
-    disabledDays,
     appointments,
     paginationInfo,
     isAuthenticated,
     loading,
     error,
+    disabledDays,
     disabledDayDates,
-    addDisabledDay,
-    removeDisabledDay,
-    fetchAppointmentsByDate,
     checkAuth,
+    fetchAppointmentsByDate,
+    addDisabledDay: disabledDaysStore.addDisabledDay,
+    removeDisabledDay: disabledDaysStore.removeDisabledDay,
+    fetchDisabledDays: disabledDaysStore.fetchDisabledDays,
   }
 })
