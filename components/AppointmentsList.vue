@@ -33,7 +33,7 @@
       Страница {{ userStore.currentPage }} из {{ userStore.totalPages }}
       (Всего записей: {{ userStore.totalItems }})
     </div>
-    <BackButton @click="useAppointmentStore().hideAppointmentsList" />
+    <BackButton @click="appointmentStore.hideAppointmentsList" />
   </div>
 </template>
 
@@ -42,7 +42,7 @@ import { onMounted } from 'vue'
 import { BackButton } from 'vue-tg'
 import { useUserStore } from '~/stores/useUserStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
-
+const appointmentStore = useAppointmentStore()
 const userStore = useUserStore()
 
 onMounted(async () => {

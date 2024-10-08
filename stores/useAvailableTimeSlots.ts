@@ -1,13 +1,11 @@
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useCalendarStore } from '~/stores/useCalendarStore'
-import { useAppointmentStore } from '~/stores/useAppointmentStore'
-import { useUserStore } from '~/stores/useUserStore'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
   const appointmentStore = useAppointmentStore()
   const userStore = useUserStore()
+  const stepStore = useStepStore()
   const {isRemoving} = storeToRefs(userStore)
 
   const { openWindows } = storeToRefs(calendarStore)
@@ -32,10 +30,10 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     }
   }
 
-  function goBack(): void {
+  function go(): void {
     appointmentStore.setSelectedDate(null)
     appointmentStore.setSelectedTime(null)
-    appointmentStore.goBackToCalendar()
+    stepStore.goToCalendar()
   }
 
   function unselectTimeSlot(): void {
@@ -43,7 +41,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   }
 
   function proceed(): void {
-    appointmentStore.currentStep = 'userInfo'
+    stepStore.proceedToUserInfo()
   }
 
   async function cancelAppointment(): Promise<void> {
@@ -63,7 +61,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     cancelAppointment,
     selectTimeSlot,
     unselectTimeSlot,
-    goBack,
+    go,
     proceed
   }
 })

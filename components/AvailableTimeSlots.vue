@@ -20,7 +20,7 @@
         <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
     </div>
-    <BackButton @click="availableTimeSlots.goBack()" />
+    <BackButton @click="availableTimeSlots.go()" />
     <MainButton
       v-if="availableTimeSlots.selectedTime"
       :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"

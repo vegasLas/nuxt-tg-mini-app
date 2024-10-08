@@ -43,7 +43,7 @@
           @click="submitForm"
           :progress="isLoading"
         />
-        <BackButton @click="goBack" />
+        <BackButton @click="go" />
       </div>
     </div>
   </div>
@@ -63,7 +63,7 @@ async function submitForm() {
   await userInfoStore.submitForm()
 }
 
-function goBack() {
+function go() {
   emit('back')
 }
 </script>

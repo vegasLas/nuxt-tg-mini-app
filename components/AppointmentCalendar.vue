@@ -1,29 +1,39 @@
 <template>
   <div class="calendar-container">
-        <VCalendar
-          size="large"
-          locale="ru-RU"
-          :attributes="calendarStore.calendarAttributes"
-          :disabled-dates="[
-            {
-              repeat: {
-                weekdays: [1, 7],
-              },
-            },
-          ]"
-          @dayclick="(day: any) => appointmentStore.onDayClick(day, calendarStore.openWindows)"
-        />
-      </div>
-      <div class="legend">
-        <div><span class="dot green"></span> Есть свободные окна</div>
-        <div><span class="dot red"></span> Все окна заняты</div>
-        <div><span class="dot yellow"></span> У вас есть запись</div>
-      </div>
-      <MainButton
-        v-if="appointmentStore.selectedDate"
-        text="Продолжить"
-        @click="appointmentStore.goBackToTimeSlots"
-      />
+    <VCalendar
+      size="large"
+      locale="ru-RU"
+      :attributes="calendarStore.calendarAttributes"
+      :disabled-dates="[
+        {
+          repeat: {
+            weekdays: [1, 7],
+          },
+        },
+      ]"
+      @dayclick="onDayClick"
+    />
+  </div>
+  <div v-if="!adminStore.isAdmin" class="legend">
+    <div><span class="dot green"></span> Есть свободные окна</div>
+    <div><span class="dot red"></span> Все окна заняты</div>
+    <div><span class="dot yellow"></span> У вас есть запись</div>
+  </div>
+  <div v-if="adminStore.isAdmin && selectedDate" class="admin-actions">
+    <MainButton
+      text="Отключить день"
+      @click="disableDay"
+    />
+    <MainButton
+      text="Показать слоты"
+      @click="stepStore.goToTimeSlots"
+    />
+  </div>
+  <MainButton
+    v-if="!adminStore.isAdmin && appointmentStore.selectedDate"
+    text="Продолжить"
+    @click="stepStore.goToTimeSlots"
+  />
 </template>
 
 <script setup lang="ts">
@@ -31,6 +41,26 @@ import { MainButton } from 'vue-tg'
 
 const calendarStore = useCalendarStore()
 const appointmentStore = useAppointmentStore()
+const adminStore = useAdminStore()
+const stepStore = useStepStore()
+const selectedDate = ref(null)
+const onDayClick = (day: any) => {
+  console.log('Day clicked:', day)
+  if (adminStore.isAdmin) {
+    selectedDate.value = day.date
+  } else {
+    appointmentStore.onDayClick(day, calendarStore.openWindows)
+  }
+}
+
+const disableDay = () => {
+  if (selectedDate.value) {
+    adminStore.addDisabledDay(selectedDate.value)
+  }
+}
+onMounted(async () => {
+  calendarStore.fetchOpenWindows()
+})
 </script>
 
 <style scoped>
@@ -121,6 +151,12 @@ const appointmentStore = useAppointmentStore()
 .label {
   font-size: 14px;
   margin-top: 4px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
 }
 
 /* ... existing styles ... */

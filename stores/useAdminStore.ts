@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useDisabledDaysStore } from './useDisabledDaysStore'
 import { useWebApp } from 'vue-tg'
 
 interface Appointment {
@@ -30,7 +29,7 @@ export const useAdminStore = defineStore('admin', () => {
   const paginationInfo = ref<PaginationInfo | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const isAuthenticated = ref(false)
+  const isAdmin = ref(false)
 
   const fetchAppointmentsByDate = async (date: string) => {
     loading.value = true
@@ -61,15 +60,14 @@ export const useAdminStore = defineStore('admin', () => {
           'x-init-data': useWebApp().initData
         }
       })
-      isAuthenticated.value = data.isAdmin
+      isAdmin.value = data.isAdmin
     } catch (err) {
       error.value = (err as Error).message
-      isAuthenticated.value = false
+      isAdmin.value = false
     } finally {
       loading.value = false
     }
   }
-
   onMounted(async () => {
     await checkAuth()
   })
@@ -77,7 +75,7 @@ export const useAdminStore = defineStore('admin', () => {
   return {
     appointments,
     paginationInfo,
-    isAuthenticated,
+    isAdmin,
     loading,
     error,
     disabledDays,
@@ -86,6 +84,5 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAppointmentsByDate,
     addDisabledDay: disabledDaysStore.addDisabledDay,
     removeDisabledDay: disabledDaysStore.removeDisabledDay,
-    fetchDisabledDays: disabledDaysStore.fetchDisabledDays,
   }
 })

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useWebApp, useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
-import { useAppointmentStore } from './useAppointmentStore'
 import notie from 'notie'
 
 export const useUserStore = defineStore('user', () => {

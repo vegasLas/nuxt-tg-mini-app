@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useWebApp } from 'vue-tg'
-import { useUserStore } from './useUserStore'
-import { useDisabledDaysStore } from './useDisabledDaysStore'
 import type { CalendarAttribute } from '~/types'
 import { 
   addDays, 

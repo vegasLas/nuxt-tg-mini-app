@@ -1,11 +1,12 @@
 import { useWebApp } from 'vue-tg'
 import notie from 'notie' 
+
 export const useUserInfoStore = defineStore('userInfo', () => {
   const name = ref('')
   const phone = ref('+79')
   const comment = ref('')
   const isLoading = ref(false)
-
+  const stepStore = useStepStore()
   const isFormValid = computed(() => {
     const phoneRegex = /^\+7\d{10}$/
     return name.value.trim() !== '' && phoneRegex.test(phone.value.trim())
@@ -54,7 +55,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       name.value = ''
       phone.value = ''
       comment.value = ''
-      appointmentStore.goBackToCalendar()
+      stepStore.goToCalendar()
       await useCalendarStore().fetchOpenWindows()
       
       // Show success notification

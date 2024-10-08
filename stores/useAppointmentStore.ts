@@ -2,10 +2,8 @@ export const useAppointmentStore = defineStore('appointment', () => {
   const selectedDate = ref<Date | null>(null)
   const selectedTime = ref<Date | null>(null)
   const availableTimeSlots = ref<{ show: string; time: Date }[]>([])
-  const currentStep = ref<'calendar' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
   const reschedulingAppointment = ref(null)
-  
-
+  const stepStore = useStepStore()
   function onDayClick(day: { date: Date }, openWindows: { date: Date; slots: { show: string; time: Date }[] }[]) {
     try {
       const openWindow = openWindows.find(window => 
@@ -25,38 +23,19 @@ export const useAppointmentStore = defineStore('appointment', () => {
     }
   }
 
-  function proceedToUserInfo() {
-    if (selectedDate.value && selectedTime.value) {
-      currentStep.value = 'userInfo'
-    }
-  }
-
-  function goBackToCalendar() {
-    currentStep.value = 'calendar'
-    selectedDate.value = null
-    selectedTime.value = null
-    availableTimeSlots.value = []
-  }
-
-  function goBackToTimeSlots() {
-    currentStep.value = 'timeSlots'
-  }
-
   function submitAppointment() {
     if (selectedDate.value && selectedTime.value) {
       selectedDate.value = null
       selectedTime.value = null
       availableTimeSlots.value = []
-      currentStep.value = 'calendar'
     }
   }
 
-  function showAppointmentsList() {
-    currentStep.value = 'appointmentsList'
-  }
-
   function hideAppointmentsList() {
-    currentStep.value = 'calendar'
+    selectedDate.value = null
+    selectedTime.value = null
+    availableTimeSlots.value = []
+    stepStore.goToTimeSlots()
   }
 
   function setReschedulingAppointment(appointment: any) {
@@ -75,14 +54,8 @@ export const useAppointmentStore = defineStore('appointment', () => {
     selectedDate,
     selectedTime,
     availableTimeSlots,
-    currentStep,
     onDayClick,
-    proceedToUserInfo,
-    goBackToCalendar,
-    goBackToTimeSlots,
     submitAppointment,
-    showAppointmentsList,
-    hideAppointmentsList,
     setReschedulingAppointment,
     setSelectedDate,
     setSelectedTime

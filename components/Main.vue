@@ -2,25 +2,25 @@
 	<ClientOnly>
 		<div class="appointment-scheduler">
 			<div class="appointments-count">
-			<button class="count-button" @click="appointmentStore.showAppointmentsList">
+			<button class="count-button" @click="stepStore.showAppointmentsList">
 				<span class="label">Мои записи</span>
 				<span class="count">{{ userStore.appointments.filter(appointment => new Date(appointment.time) >= new Date()).length }}</span>
 			</button>
 			</div>
 
-			<template v-if="appointmentStore.currentStep === 'calendar'">
+			<template v-if="stepStore.currentStep === 'calendar'">
 				<AppointmentCalendar />
 			</template>
 
-			<template v-else-if="appointmentStore.currentStep === 'timeSlots'">
+			<template v-else-if="stepStore.currentStep === 'timeSlots'">
 				<AvailableTimeSlots />
 			</template>
 			
-			<template v-else-if="appointmentStore.currentStep === 'userInfo'">
-				<UserInfoForm @back="appointmentStore.goBackToTimeSlots" />
+			<template v-else-if="stepStore.currentStep === 'userInfo'">
+				<UserInfoForm @back="stepStore.goToTimeSlots" />
 			</template>
 
-			<template v-else-if="appointmentStore.currentStep === 'appointmentsList'">
+			<template v-else-if="stepStore.currentStep === 'appointmentsList'">
 				<AppointmentsList />
 			</template>
 		</div>
@@ -28,12 +28,13 @@
   </template>
   
   <script setup lang="ts">
-  const calendarStore = useCalendarStore()
-  const appointmentStore = useAppointmentStore()
   const userStore = useUserStore()
-  
-	calendarStore.fetchOpenWindows()
-	userStore.fetchUserAppointments()
+  const adminStore = useAdminStore()
+  const stepStore = useStepStore()
+  onMounted(async () => {
+    await adminStore.checkAuth()
+    await adminStore.fetchDisabledDays()
+  })
   </script>
 
   <style scoped>
