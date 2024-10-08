@@ -57,3 +57,13 @@ model Admin {
   userId   Int    @unique
   user     User   @relation(fields: [userId], references: [id])
 }
+
+// Add this model to your existing schema
+model DisabledTime {
+  id        String   @id @default(cuid())
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

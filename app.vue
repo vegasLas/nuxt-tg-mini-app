@@ -7,7 +7,6 @@
       :loading-speed="25"
       :transition-speed="1000"
     ></VuePreloader>
-    <NuxtNotifications position="top center" :speed="500" />
     <ClientOnly>
       <Main />
     </ClientOnly>
