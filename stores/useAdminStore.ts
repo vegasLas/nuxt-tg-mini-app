@@ -23,7 +23,7 @@ interface PaginationInfo {
 }
 
 export const useAdminStore = defineStore('admin', () => {
-  const disabledDaysStore = useDisabledDaysStore()
+  const disabledDaysStore = useDisabledTimeStore()
   const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
   const appointments = ref<Appointment[]>([])
   const paginationInfo = ref<PaginationInfo | null>(null)

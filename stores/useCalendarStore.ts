@@ -17,7 +17,7 @@ import {
 export const useCalendarStore = defineStore('calendar', () => {
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
   const userStore = useUserStore()
-  const disabledDaysStore = useDisabledDaysStore()
+  const disabledDaysStore = useDisabledTimeStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
   
