@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import { addDays, startOfDay, endOfDay, isAfter, set } from 'date-fns'
 
 const prisma = new PrismaClient()
 const DEFAULT_ITEMS_PER_PAGE = 5
@@ -18,14 +17,9 @@ export default defineEventHandler(async (event) => {
   const take = DEFAULT_ITEMS_PER_PAGE
 
   try {
-    const { startDate, endDate } = getDateRange(date)
     const whereClause = {
       booked: true,
       userId: user.id,
-      time: {
-        gte: startDate,
-        lte: endDate
-      }
     }
 
     return await fetchAppointments(whereClause, page, take, date)
@@ -34,22 +28,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
   }
 })
-
-function getDateRange(date: string) {
-  const now = new Date()
-  const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
-  const requestDate = date ? new Date(date) : now
-
-  if (isAfter(now, cutoffTime) && requestDate.toDateString() === now.toDateString()) {
-    // If it's after 17:00 and the requested date is today, start from tomorrow
-    requestDate.setDate(requestDate.getDate() + 1)
-  }
-
-  const startDate = startOfDay(requestDate)
-  const endDate = endOfDay(addDays(startDate, 30))
-
-  return { startDate, endDate }
-}
 
 async function fetchAppointments(whereClause: any, page: number, take: number, date?: string) {
   const [appointments, totalCount] = await Promise.all([

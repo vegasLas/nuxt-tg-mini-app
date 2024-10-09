@@ -22,7 +22,7 @@ export const useDisabledDaysStore = defineStore('disabledDays', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await $fetch('/api/disabled-days', {
+      const response = await $fetch('/api/disabled', {
         method: 'GET',
         headers: {
           'x-init-data': useWebApp().initData
@@ -40,7 +40,7 @@ export const useDisabledDaysStore = defineStore('disabledDays', () => {
     loading.value = true
     error.value = null
     try {
-      await $fetch('/api/disabled-days', {
+      await $fetch('/api/disabled', {
         method: 'POST',
         headers: {
           'x-init-data': useWebApp().initData
@@ -61,7 +61,7 @@ export const useDisabledDaysStore = defineStore('disabledDays', () => {
     loading.value = true
     error.value = null
     try {
-      await $fetch(`/api/disabled-days/${id}`, {
+      await $fetch(`/api/disabled/${id}`, {
         method: 'DELETE',
         headers: {
           'x-init-data': useWebApp().initData

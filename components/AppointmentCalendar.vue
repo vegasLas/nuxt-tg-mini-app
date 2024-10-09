@@ -20,14 +20,18 @@
     <div><span class="dot yellow"></span> У вас есть запись</div>
   </div>
   <div v-if="adminStore.isAdmin && selectedDate" class="admin-actions">
-    <MainButton
-      text="Отключить день"
+    <button
+      class="admin-button"
       @click="disableDay"
-    />
-    <MainButton
-      text="Показать слоты"
+    >
+      Отключить день
+    </button>
+    <button
+      class="admin-button"
       @click="stepStore.goToTimeSlots"
-    />
+    >
+      Показать слоты
+    </button>
   </div>
   <MainButton
     v-if="!adminStore.isAdmin && appointmentStore.selectedDate"
@@ -157,6 +161,21 @@ onMounted(async () => {
   display: flex;
   gap: 16px;
   margin-top: 16px;
+}
+
+.admin-button {
+  padding: 10px 20px;
+  background-color: var(--tg-theme-button-color, #3390ec);
+  color: var(--tg-theme-button-text-color, #ffffff);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.admin-button:hover {
+  background-color: var(--tg-theme-button-color, #2d7fcf);
 }
 
 /* ... existing styles ... */
