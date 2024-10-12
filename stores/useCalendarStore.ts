@@ -65,7 +65,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       const workHours = Array.from({ length: 9 }, (_, i) => {
         const hour = 9 + i
         return {
-          show: format(setHours(new Date(), hour), 'HH:mm'),
+          show: format(setHours(new Date(), hour), 'HH:00'),
           time: setHours(new Date(), hour),
           booked: false
         }

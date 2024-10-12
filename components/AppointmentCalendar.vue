@@ -62,9 +62,7 @@ const disableDay = () => {
     adminStore.addDisabledDay(selectedDate.value)
   }
 }
-onMounted(async () => {
-  calendarStore.fetchOpenWindows()
-})
+calendarStore.fetchOpenWindows()
 </script>
 
 <style scoped>
