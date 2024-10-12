@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
-import { useWebApp, useWebAppPopup } from 'vue-tg'
+import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
 import notie from 'notie'
+import { fetchUserAppointments, removeAppointment, submitAppointment } from '~/api/appointments'
 
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
@@ -15,30 +15,10 @@ export const useUserStore = defineStore('user', () => {
 
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
 
-  async function fetchUserAppointments(page: number = 1) {
+  async function fetchAppointments(page: number = 1) {
     isLoading.value = true
     try {
-      const response = await useFetch(`/api/appointments?page=${page}`, {
-        method: 'GET',
-        headers: {
-          'x-init-data': useWebApp().initData
-        }
-      })
-
-      if (!response.data.value) {
-        throw new Error('Failed to fetch appointments')
-      }
-
-      const result = response.data.value as {
-        appointments: Omit<Appointment, 'user'>[],
-        pagination: {
-          currentPage: number,
-          totalPages: number,
-          totalItems: number,
-          itemsPerPage: number,
-          nextLink: string | null
-        }
-      }
+      const result = await fetchUserAppointments(page)
 
       if (page === 1) {
         appointments.value = result.appointments
@@ -60,24 +40,18 @@ export const useUserStore = defineStore('user', () => {
 
   async function loadMoreAppointments() {
     if (hasMoreAppointments.value && nextLink.value) {
-      await fetchUserAppointments(currentPage.value + 1)
+      await fetchAppointments(currentPage.value + 1)
     }
   }
 
-  async function removeAppointment(time: Date) {
+  async function removeUserAppointment(time: Date) {
     const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
+    if (!id) return
+
     isRemoving.value = true
     try {
-      const response = await $fetch<{ success: boolean }>(`/api/appointments/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'x-init-data': useWebApp().initData
-        }
-      })
-      if (!response.success) {
-        throw new Error('Failed to remove appointment')
-      }
-      await fetchUserAppointments(1)  // Refresh from the first page
+      await removeAppointment(id)
+      await fetchAppointments(1)  // Refresh from the first page
       await useCalendarStore().fetchOpenWindows()
     } catch (error) {
       console.error('Error removing appointment:', error)
@@ -105,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
         if (e.button_id !== 'removeAppointment') {return}
         try {
-          await removeAppointment(new Date(time))
+          await removeUserAppointment(new Date(time))
           notie.alert({
             type: 'success',
             text: 'Запись успешно отменена',
@@ -159,6 +133,44 @@ export const useUserStore = defineStore('user', () => {
     return new Date(time) < new Date()
   }
 
+  async function submitUserAppointment(appointmentData: {
+    name: string,
+    phoneNumber: string,
+    time: Date,
+    comment: string
+  }) {
+    try {
+      const response = await submitAppointment(appointmentData)
+      
+      appointments.value.unshift(response)
+      const stepStore = useStepStore()
+      const calendarStore = useCalendarStore()
+      
+      stepStore.goToCalendar()
+      await calendarStore.fetchOpenWindows()
+      
+      notie.alert({
+        type: 'success',
+        text: 'Запись прошла успешно',
+        time: 2,
+        position: 'bottom'
+      })
+
+      return true
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      
+      notie.alert({
+        type: 'error',
+        text: 'Не удалось создать запись. Попробуйте позже.',
+        time: 2,
+        position: 'bottom'
+      })
+
+      return false
+    }
+  }
+
   return {
     appointments,
     currentPage,
@@ -169,12 +181,13 @@ export const useUserStore = defineStore('user', () => {
     hasMoreAppointments,
     isRemoving,
     hasAppointment,
-    fetchUserAppointments,
+    fetchAppointments,
     loadMoreAppointments,
-    removeAppointment,
+    removeUserAppointment,
     addAppointment,
     handleCancel,
     formatDateTime,
-    isExpired
+    isExpired,
+    submitUserAppointment
   }
 })

@@ -1,12 +1,9 @@
-import { useWebApp } from 'vue-tg'
-import notie from 'notie' 
 
 export const useUserInfoStore = defineStore('userInfo', () => {
   const name = ref('')
   const phone = ref('+79')
   const comment = ref('')
   const isLoading = ref(false)
-  const stepStore = useStepStore()
   const isFormValid = computed(() => {
     const phoneRegex = /^\+7\d{10}$/
     return name.value.trim() !== '' && phoneRegex.test(phone.value.trim())
@@ -24,57 +21,22 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   
   async function submitForm() {
     isLoading.value = true
+    const userStore = useUserStore()
     const appointmentStore = useAppointmentStore()
-    const body: {
-      name: string,
-      phoneNumber: string,
-      time: Date,
-      booked: boolean,
-      comment: string
-    } = {
-      name: name.value,
-      phoneNumber: phone.value,
-      time: appointmentStore.selectedTime as Date,
-      booked: true,
-      comment: comment.value
-    }
+
     try {
-      const response = await $fetch('/api/appointments', {
-        method: 'POST',
-        headers: {  
-          'x-init-data': useWebApp().initData,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
+      const success = await userStore.submitUserAppointment({
+        name: name.value,
+        phoneNumber: phone.value,
+        time: appointmentStore.selectedTime as Date,
+        comment: comment.value
       })
-      const result = response
-      if (!result) {
-        throw new Error('Failed to submit appointment')
+
+      if (success) {
+        name.value = ''
+        phone.value = ''
+        comment.value = ''
       }
-      useUserStore().appointments.unshift(result)
-      name.value = ''
-      phone.value = ''
-      comment.value = ''
-      stepStore.goToCalendar()
-      await useCalendarStore().fetchOpenWindows()
-      
-      // Show success notification
-      notie.alert({
-        type: 'success',
-        text: 'Запись прошла успешно',
-        time: 2,
-        position: 'bottom'
-      })
-    } catch (error) {
-      console.error('Error submitting form:', error)
-      
-      // Show error notification
-      notie.alert({
-        type: 'error',
-        text: 'Не удалось создать запись. Попробуйте позже.',
-        time: 2,
-        position: 'bottom'
-      })
     } finally {
       isLoading.value = false
     }
