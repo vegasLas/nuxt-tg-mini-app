@@ -1,42 +1,44 @@
 <template>
   <div class="time-selector">
-    <h2>Доступные окна</h2>
-    <div v-if="availableTimeSlots.selectedDate" class="selected-date">
-      {{ formatSelectedDate(availableTimeSlots.selectedDate) }}
+    <LoaderOverlay v-if="availableTimeSlots.isCanceling" />
+    <div>
+      <h2>Доступные окна</h2>
+      <div v-if="availableTimeSlots.selectedDate" class="selected-date">
+        {{ formatSelectedDate(availableTimeSlots.selectedDate) }}
+      </div>
+      <div class="time-slots-grid">
+        <button
+          v-for="slot in availableTimeSlots.availableTimeSlots"
+          :key="slot.show"
+          :class="['time-slot', { 
+            booked: slot.booked || new Date(slot.time) <= new Date(),
+            selected: availableTimeSlots.selectedTime === slot.time,
+            'user-appointment': userStore.hasAppointment(slot.time),
+          }]" 
+          @click="availableTimeSlots.selectTimeSlot(slot)"
+          :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
+        >
+          <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
+          <span class="time-icon">&#128339;</span> {{ slot.show }}
+        </button>
+      </div>
+      <BackButton @click="availableTimeSlots.closeForm()" />
+      <MainButton
+        v-if="availableTimeSlots.selectedTime && !availableTimeSlots.isCanceling"
+        :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
+        @click="availableTimeSlots.cancelMode ? availableTimeSlots.cancelAppointment() : availableTimeSlots.proceed()"
+        :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
+      />
     </div>
-    <div class="time-slots-grid">
-      <button
-        v-for="slot in availableTimeSlots.availableTimeSlots"
-        :key="slot.show"
-        :class="['time-slot', { 
-          booked: slot.booked || new Date(slot.time) <= new Date(),
-          selected: availableTimeSlots.selectedTime === slot.time,
-          'user-appointment': userStore.hasAppointment(slot.time),
-        }]" 
-        @click="availableTimeSlots.selectTimeSlot(slot)"
-        :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
-      >
-        <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
-        <span class="time-icon">&#128339;</span> {{ slot.show }}
-      </button>
-    </div>
-    <BackButton @click="availableTimeSlots.closeForm()" />
-    <MainButton
-      v-if="availableTimeSlots.selectedTime"
-      :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
-      @click="availableTimeSlots.cancelMode ? availableTimeSlots.cancelAppointment() : availableTimeSlots.proceed()"
-      :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
-    />
-    <BeatLoader v-if="availableTimeSlots.isCanceling" color="#4263eb" size="10px" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
+import LoaderOverlay from './LoaderOverlay.vue'
 
 const availableTimeSlots = useAvailableTimeSlots()
 const userStore = useUserStore()
-
 </script>
 
 <style scoped>
@@ -179,10 +181,25 @@ h2 {
   font-weight: bold;
 }
 
-/* Add styles for the BeatLoader */
-.beat-loader {
+/* Update styles for the loader overlay and container */
+.loader-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
+  align-items: center;
+  z-index: 1000;
+  height: 100%;
+  width: 100%;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

@@ -24,6 +24,8 @@ export const useUserStore = defineStore('user', () => {
       totalItems.value = result.pagination.totalItems
       itemsPerPage.value = result.pagination.itemsPerPage
       nextLink.value = result.pagination.nextLink
+      console.log(appointments.value)
+
     } catch (error) {
       console.error('Error fetching user appointments:', error)
     } finally {

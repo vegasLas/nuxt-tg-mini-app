@@ -61,6 +61,9 @@ export const useAdminStore = defineStore('admin', () => {
         }
       })
       isAdmin.value = data.isAdmin
+      if (isAdmin.value) {
+        await disabledDaysStore.fetchDisabledDays()
+      }
     } catch (err) {
       error.value = (err as Error).message
       isAdmin.value = false
