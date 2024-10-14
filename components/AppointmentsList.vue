@@ -7,12 +7,12 @@
     <ul v-else>
       <li v-for="appointment in userStore.appointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
-          <div class="date-time" :class="{ 'expired': userStore.isExpired(appointment.time) }">
-            {{ userStore.formatDateTime(new Date(appointment.time)) }}
+          <div class="date-time" :class="{ 'expired': isExpired(appointment.time) }">
+            {{ formatDateTime(new Date(appointment.time)) }}
           </div>
         </div>
-        <div class="appointment-actions" :class="{ 'expired': userStore.isExpired(appointment.time) }">
-          <template v-if="!userStore.isExpired(appointment.time)">
+        <div class="appointment-actions" :class="{ 'expired': isExpired(appointment.time) }">
+          <template v-if="!isExpired(appointment.time)">
             <button @click="() => userStore.handleCancel(appointment.time)" class="action-button remove">
               Отменить
             </button>
@@ -44,7 +44,9 @@ import { useUserStore } from '~/stores/useUserStore'
 import { useAppointmentStore } from '~/stores/useAppointmentStore'
 const appointmentStore = useAppointmentStore()
 const userStore = useUserStore()
-
+function isExpired(time: string): boolean {
+  return new Date(time) < new Date()
+}
 onMounted(async () => {
   await userStore.fetchUserAppointments()
 })

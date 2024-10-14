@@ -119,20 +119,6 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  function formatDateTime(date: Date): string {
-    const day = date.getDate().toString().padStart(2, '0')
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const year = date.getFullYear().toString().slice(-2)
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    
-    return `${day}.${month}.${year} ${hours}:${minutes}`
-  }
-
-  function isExpired(time: string): boolean {
-    return new Date(time) < new Date()
-  }
-
   async function submitUserAppointment(appointmentData: {
     name: string,
     phoneNumber: string,
@@ -186,8 +172,6 @@ export const useUserStore = defineStore('user', () => {
     removeUserAppointment,
     addAppointment,
     handleCancel,
-    formatDateTime,
-    isExpired,
     submitUserAppointment
   }
 })
