@@ -17,16 +17,11 @@ export const useStepStore = defineStore('step', () => {
     currentStep.value = 'appointmentsList'
   }
 
-  function hideAppointmentsList() {
-    currentStep.value = 'calendar'
-  }
-
   return {
     currentStep,
     proceedToUserInfo,
     goToCalendar,
     goToTimeSlots,
     showAppointmentsList,
-    hideAppointmentsList,
   }
 })

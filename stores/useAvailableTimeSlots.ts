@@ -30,7 +30,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     }
   }
 
-  function go(): void {
+  function closeForm(): void {
     appointmentStore.setSelectedDate(null)
     appointmentStore.setSelectedTime(null)
     stepStore.goToCalendar()
@@ -61,7 +61,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     cancelAppointment,
     selectTimeSlot,
     unselectTimeSlot,
-    go,
+    closeForm,
     proceed
   }
 })
