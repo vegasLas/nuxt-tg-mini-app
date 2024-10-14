@@ -38,18 +38,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import { BackButton } from 'vue-tg'
-import { useUserStore } from '~/stores/useUserStore'
-import { useAppointmentStore } from '~/stores/useAppointmentStore'
 const appointmentStore = useAppointmentStore()
 const userStore = useUserStore()
 function isExpired(time: string): boolean {
   return new Date(time) < new Date()
 }
-onMounted(async () => {
-  await userStore.fetchUserAppointments()
-})
+await userStore.fetchAppointments()
 </script>
 
 <style scoped>

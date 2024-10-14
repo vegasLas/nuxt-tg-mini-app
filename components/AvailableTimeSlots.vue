@@ -20,7 +20,7 @@
         <span class="time-icon">&#128339;</span> {{ slot.show }}
       </button>
     </div>
-    <BackButton @click="availableTimeSlots.go()" />
+    <BackButton @click="availableTimeSlots.closeForm()" />
     <MainButton
       v-if="availableTimeSlots.selectedTime"
       :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
@@ -32,8 +32,6 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import { useAvailableTimeSlots } from '~/stores/useAvailableTimeSlots'
-import { useUserStore } from '~/stores/useUserStore'
 
 const availableTimeSlots = useAvailableTimeSlots()
 const userStore = useUserStore()
