@@ -33,7 +33,7 @@
   const stepStore = useStepStore()
   onMounted(async () => {
     await adminStore.checkAuth()
-    await adminStore.fetchDisabledDays()
+    await userStore.fetchAppointments()
   })
   </script>
 
