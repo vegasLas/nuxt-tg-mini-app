@@ -6,7 +6,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const appointmentStore = useAppointmentStore()
   const userStore = useUserStore()
   const stepStore = useStepStore()
-  const {isRemoving} = storeToRefs(userStore)
+  const { isCanceling } = storeToRefs(userStore)
 
   const { openWindows } = storeToRefs(calendarStore)
   const { selectedDate, selectedTime } = storeToRefs(appointmentStore)
@@ -45,7 +45,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   }
 
   async function cancelAppointment(): Promise<void> {
-    const isCanceled = await userStore.handleCancel(selectedTime.value?.toString()!)
+    const isCanceled = await userStore.handleCancelAppointment(selectedTime.value?.toString()!)
     if (isCanceled) {
       unselectTimeSlot()
       cancelMode.value = false
@@ -57,7 +57,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     selectedTime,
     selectedDate,
     cancelMode,
-    isRemoving,
+    isCanceling,
     cancelAppointment,
     selectTimeSlot,
     unselectTimeSlot,

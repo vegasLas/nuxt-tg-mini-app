@@ -1,6 +1,5 @@
 import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
-import notie from 'notie'
 import { fetchUserAppointments, removeAppointment, submitAppointment } from '~/api/appointments'
 
 export const useUserStore = defineStore('user', () => {
@@ -11,20 +10,14 @@ export const useUserStore = defineStore('user', () => {
   const itemsPerPage = ref(5)
   const nextLink = ref<string | null>(null)
   const isLoading = ref(false)
-  const isRemoving = ref(false)
+  const isCanceling = ref(false)  // New state for tracking cancellation
 
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
-
   async function fetchAppointments(page: number = 1) {
     isLoading.value = true
     try {
       const result = await fetchUserAppointments(page)
-
-      if (page === 1) {
-        appointments.value = result.appointments
-      } else {
-        appointments.value.push(...result.appointments)
-      }
+      appointments.value = page === 1 ? result.appointments : [...appointments.value, ...result.appointments]
 
       currentPage.value = result.pagination.currentPage
       totalPages.value = result.pagination.totalPages
@@ -48,15 +41,12 @@ export const useUserStore = defineStore('user', () => {
     const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
     if (!id) return
 
-    isRemoving.value = true
     try {
       await removeAppointment(id)
       await fetchAppointments(1)  // Refresh from the first page
       await useCalendarStore().fetchOpenWindows()
     } catch (error) {
       console.error('Error removing appointment:', error)
-    } finally {
-      isRemoving.value = false
     }
   }
 
@@ -64,40 +54,27 @@ export const useUserStore = defineStore('user', () => {
     return appointments.value.some(appointment => new Date(appointment.time).getTime() === time.getTime())
   }
 
-  function addAppointment(appointment: Appointment) {
-    appointments.value.unshift(appointment)
-    totalItems.value++
-    if (appointments.value.length > itemsPerPage.value) {
-      appointments.value.pop()
-    }
-  }
 
 
-  async function handleCancel(time: string): Promise<boolean> {
+  async function handleCancelAppointment(time: string): Promise<boolean> {
     return new Promise((resolve) => {
       const { showPopup, onPopupClosed } = useWebAppPopup()
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
-        if (e.button_id !== 'removeAppointment') {return}
+        if (e.button_id !== 'removeAppointment') {
+          resolve(false)
+          return
+        }
+        isCanceling.value = true  // Set canceling state to true
         try {
           await removeUserAppointment(new Date(time))
-          notie.alert({
-            type: 'success',
-            text: 'Запись успешно отменена',
-            time: 2,
-            position:  'bottom'
-          })
+          showNotification('success', 'Запись успешно отменена')
           resolve(true)
         } catch (error) { 
-          resolve(false)
-          notie.alert({
-            type: 'error',
-            text: 'Ошибка при отмене записи',
-            time: 2,
-            position: 'bottom'
-          })
+          showNotification('error', 'Ошибка при отмене записи')
           console.error('Error removing appointment:', error)
-        }
-        finally {
+          resolve(false)
+        } finally {
+          isCanceling.value = false  // Reset canceling state
           popupClosed.off()
         }
       }, { manual: true })
@@ -119,6 +96,7 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
+
   async function submitUserAppointment(appointmentData: {
     name: string,
     phoneNumber: string,
@@ -135,23 +113,13 @@ export const useUserStore = defineStore('user', () => {
       stepStore.goToCalendar()
       await calendarStore.fetchOpenWindows()
       
-      notie.alert({
-        type: 'success',
-        text: 'Запись прошла успешно',
-        time: 2,
-        position: 'bottom'
-      })
+      showNotification('success', 'Запись прошла успешно')
 
       return true
     } catch (error) {
       console.error('Error submitting form:', error)
       
-      notie.alert({
-        type: 'error',
-        text: 'Не удалось создать запись. Попробуйте позже.',
-        time: 2,
-        position: 'bottom'
-      })
+      showNotification('error', 'Не удалось создать запись. Попробуйте позже.')
 
       return false
     }
@@ -165,13 +133,11 @@ export const useUserStore = defineStore('user', () => {
     itemsPerPage,
     isLoading,
     hasMoreAppointments,
-    isRemoving,
+    isCanceling,  // Add isCanceling to the returned object
     hasAppointment,
     fetchAppointments,
     loadMoreAppointments,
-    removeUserAppointment,
-    addAppointment,
-    handleCancel,
+    handleCancelAppointment,
     submitUserAppointment
   }
 })

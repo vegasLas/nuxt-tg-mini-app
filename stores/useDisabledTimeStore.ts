@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import notie from 'notie'
 import { useWebApp } from 'vue-tg'
+import { useCalendarStore } from './useCalendarStore'
 
 interface DisabledDay {
   id: string
@@ -47,11 +47,11 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         },
         body: { date },
       })
-	  await calendarStore.fetchOpenWindows()
-	  notie.alert({ type: 'success', text: 'Заблокированный день успешно добавлен' })
+      await calendarStore.fetchOpenWindows()
+      showNotification('success', 'Заблокированный день успешно добавлен')
     } catch (err) {
       error.value = (err as Error).message
-      notie.alert({ type: 'error', text: 'Не удалось добавить заблокированный день' })
+      showNotification('error', 'Не удалось добавить заблокированный день')
     } finally {
       loading.value = false
     }
@@ -68,10 +68,10 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         },
       })
       disabledDays.value = disabledDays.value.filter(day => day.id !== id)
-      notie.alert({ type: 'success', text: 'Заблокированный день успешно удален' })
+      showNotification('success', 'Заблокированный день успешно удален')
     } catch (err) {
       error.value = (err as Error).message
-      notie.alert({ type: 'error', text: 'Не удалось удалить заблокированный день' })
+      showNotification('error', 'Не удалось удалить заблокированный день')
     } finally {
       loading.value = false
     }
