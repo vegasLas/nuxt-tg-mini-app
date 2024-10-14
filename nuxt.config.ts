@@ -23,4 +23,7 @@ export default defineNuxtConfig({
     '~/assets/css/telegram-theme.css',
     '~/styles/global.css',
   ],
+  plugins: [
+    '~/plugins/spinner.ts'
+  ],
 })

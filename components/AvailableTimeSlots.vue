@@ -27,6 +27,7 @@
       @click="availableTimeSlots.cancelMode ? availableTimeSlots.cancelAppointment() : availableTimeSlots.proceed()"
       :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
     />
+    <BeatLoader v-if="availableTimeSlots.isCanceling" color="#4263eb" size="10px" />
   </div>
 </template>
 
@@ -176,5 +177,12 @@ h2 {
   margin-bottom: 1rem;
   text-align: center;
   font-weight: bold;
+}
+
+/* Add styles for the BeatLoader */
+.beat-loader {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
 </style>
