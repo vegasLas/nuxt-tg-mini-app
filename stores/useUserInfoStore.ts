@@ -1,5 +1,6 @@
-
 export const useUserInfoStore = defineStore('userInfo', () => {
+  const calendarStore = useCalendarStore()
+  
   const name = ref('')
   const phone = ref('+79')
   const comment = ref('')
@@ -22,20 +23,21 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   async function submitForm() {
     isLoading.value = true
     const userStore = useUserStore()
-    const appointmentStore = useAppointmentStore()
-
+    const availableTimeSlotsStore = useAvailableTimeSlots()
+    const stepStore = useStepStore()
     try {
       const success = await userStore.submitUserAppointment({
         name: name.value,
         phoneNumber: phone.value,
-        time: appointmentStore.selectedTime as Date,
+        time: availableTimeSlotsStore.selectedTime as Date,
         comment: comment.value
       })
-
       if (success) {
         name.value = ''
         phone.value = ''
         comment.value = ''
+        calendarStore.setSelectedDate(null)
+        stepStore.goToCalendar()
       }
     } finally {
       isLoading.value = false

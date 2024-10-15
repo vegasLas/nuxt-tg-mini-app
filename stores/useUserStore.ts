@@ -107,16 +107,10 @@ export const useUserStore = defineStore('user', () => {
   }) {
     try {
       const response = await submitAppointment(appointmentData)
-      
       appointments.value.unshift(response)
-      const stepStore = useStepStore()
       const calendarStore = useCalendarStore()
-      
-      stepStore.goToCalendar()
       await calendarStore.fetchOpenWindows()
-      
       showNotification('success', 'Запись прошла успешно')
-
       return true
     } catch (error) {
       console.error('Error submitting form:', error)

@@ -1,33 +1,33 @@
 <template>
   <div class="time-selector">
-    <LoaderOverlay v-if="availableTimeSlots.isCanceling" />
+    <LoaderOverlay v-if="availableTimeSlotsStore.isCanceling" />
     <div>
       <h2>Доступные окна</h2>
-      <div v-if="availableTimeSlots.selectedDate" class="selected-date">
-        {{ formatSelectedDate(availableTimeSlots.selectedDate) }}
+      <div v-if="calendarStore.selectedDate" class="selected-date">
+        {{ formatSelectedDate(calendarStore.selectedDate) }}
       </div>
       <div class="time-slots-grid">
         <button
-          v-for="slot in availableTimeSlots.availableTimeSlots"
+          v-for="slot in availableTimeSlotsStore.availableTimeSlots"
           :key="slot.show"
           :class="['time-slot', { 
             booked: slot.booked || new Date(slot.time) <= new Date(),
-            selected: availableTimeSlots.selectedTime === slot.time,
+            selected: availableTimeSlotsStore.selectedTime === slot.time,
             'user-appointment': userStore.hasAppointment(slot.time),
           }]" 
-          @click="availableTimeSlots.selectTimeSlot(slot)"
+          @click="availableTimeSlotsStore.selectTimeSlot(slot)"
           :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
         >
           <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
         </button>
       </div>
-      <BackButton @click="availableTimeSlots.closeForm()" />
+      <BackButton @click="availableTimeSlotsStore.closeTimeSlots()" />
       <MainButton
-        v-if="availableTimeSlots.selectedTime && !availableTimeSlots.isCanceling"
-        :text="availableTimeSlots.cancelMode ? 'Отменить запись' : 'Продолжить'"
-        @click="availableTimeSlots.cancelMode ? availableTimeSlots.cancelAppointment() : availableTimeSlots.proceed()"
-        :disabled="!availableTimeSlots.selectedTime && !availableTimeSlots.cancelMode"
+        v-if="availableTimeSlotsStore.selectedTime && !availableTimeSlotsStore.isCanceling"
+        :text="availableTimeSlotsStore.cancelMode ? 'Отменить запись' : 'Продолжить'"
+        @click="availableTimeSlotsStore.cancelMode ? availableTimeSlotsStore.cancelAppointment() : availableTimeSlotsStore.proceed()"
+        :disabled="!availableTimeSlotsStore.selectedTime && !availableTimeSlotsStore.cancelMode"
       />
     </div>
   </div>
@@ -37,7 +37,8 @@
 import { MainButton, BackButton } from 'vue-tg'
 import LoaderOverlay from './LoaderOverlay.vue'
 
-const availableTimeSlots = useAvailableTimeSlots()
+const availableTimeSlotsStore = useAvailableTimeSlots()
+const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 </script>
 

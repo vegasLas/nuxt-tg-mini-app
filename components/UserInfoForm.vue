@@ -40,10 +40,10 @@
         <MainButton 
           v-if="isFormValid"
           text="Записаться" 
-          @click="submitForm"
+          @click="userInfoStore.submitForm"
           :progress="isLoading"
         />
-        <BackButton @click="go" />
+        <BackButton @click="stepStore.goToTimeSlots" />
       </div>
     </div>
   </div>
@@ -51,21 +51,11 @@
 
 <script setup lang="ts">
 import { BackButton, MainButton } from 'vue-tg'
-import { useUserInfoStore } from '../stores/useUserInfoStore'
 import { storeToRefs } from 'pinia'
-
+const stepStore = useStepStore()
 const userInfoStore = useUserInfoStore()
 const { name, phone, comment, isLoading, isFormValid } = storeToRefs(userInfoStore)
 
-const emit = defineEmits(['back'])
-
-async function submitForm() {
-  await userInfoStore.submitForm()
-}
-
-function go() {
-  emit('back')
-}
 </script>
 
 <style scoped>

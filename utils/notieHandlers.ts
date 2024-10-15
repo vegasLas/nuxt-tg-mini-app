@@ -6,7 +6,7 @@ export const showNotification = (type: NotieType, message: string) => {
   notie.alert({
     type: type,
     text: message,
-    time: 2,
+    time: 1,
     position: 'bottom'
   })
 }
