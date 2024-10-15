@@ -11,7 +11,7 @@
           },
         },
       ]"
-      @dayclick="onDayClick"
+      @dayclick="calendarStore.onDayClick"
     />
   </div>
   <div v-if="!adminStore.isAdmin" class="legend">
@@ -19,10 +19,10 @@
     <div><span class="dot red"></span> Все окна заняты</div>
     <div><span class="dot yellow"></span> У вас есть запись</div>
   </div>
-  <div v-if="adminStore.isAdmin && selectedDate" class="admin-actions">
+  <div v-if="adminStore.isAdmin && calendarStore.selectedDate" class="admin-actions">
     <button
       class="admin-button"
-      @click="disableDay"
+      @click="calendarStore.disableDay"
     >
       Отключить день
     </button>
@@ -34,7 +34,7 @@
     </button>
   </div>
   <MainButton
-    v-if="!adminStore.isAdmin && appointmentStore.selectedDate"
+    v-if="!adminStore.isAdmin && calendarStore.selectedDate"
     text="Продолжить"
     @click="stepStore.goToTimeSlots"
   />
@@ -42,27 +42,10 @@
 
 <script setup lang="ts">
 import { MainButton } from 'vue-tg'
-
 const calendarStore = useCalendarStore()
-const appointmentStore = useAppointmentStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
-const selectedDate = ref(null)
-const onDayClick = (day: any) => {
-  console.log('Day clicked:', day)
-  if (adminStore.isAdmin) {
-    selectedDate.value = day.date
-  } else {
-    appointmentStore.onDayClick(day, calendarStore.openWindows)
-  }
-}
 
-const disableDay = () => {
-  if (selectedDate.value) {
-    adminStore.addDisabledDay(selectedDate.value)
-  }
-}
-calendarStore.fetchOpenWindows()
 </script>
 
 <style scoped>

@@ -3,41 +3,40 @@ import { storeToRefs } from 'pinia'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
-  const appointmentStore = useAppointmentStore()
   const userStore = useUserStore()
   const stepStore = useStepStore()
   const { isCanceling } = storeToRefs(userStore)
 
   const { openWindows } = storeToRefs(calendarStore)
-  const { selectedDate, selectedTime } = storeToRefs(appointmentStore)
+  const selectedTime = ref<Date | null>(null)
 
   const cancelMode = ref(false)
 
   const availableTimeSlots = computed(() => {
     const selectedWindow = openWindows.value.find(window => 
-      window.date.toDateString() === selectedDate.value?.toDateString()
+      window.date.toDateString() === calendarStore.selectedDate?.toDateString()
     )
     return selectedWindow ? selectedWindow.slots : []
   })
 
   function selectTimeSlot(slot: { time: Date, show: string }): void {
     if (userStore.hasAppointment(slot.time)) {
-      appointmentStore.setSelectedTime(slot.time)
+      selectedTime.value = slot.time
       cancelMode.value = true
     } else {
-      appointmentStore.setSelectedTime(slot.time)
+      selectedTime.value = slot.time
       cancelMode.value = false
     }
   }
 
-  function closeForm(): void {
-    appointmentStore.setSelectedDate(null)
-    appointmentStore.setSelectedTime(null)
+  function closeTimeSlots(): void {
+    calendarStore.setSelectedDate(null)
+    selectedTime.value = null
     stepStore.goToCalendar()
   }
 
   function unselectTimeSlot(): void {
-    appointmentStore.setSelectedTime(null)
+    selectedTime.value = null
   }
 
   function proceed(): void {
@@ -55,13 +54,12 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   return {
     availableTimeSlots,
     selectedTime,
-    selectedDate,
     cancelMode,
     isCanceling,
     cancelAppointment,
     selectTimeSlot,
     unselectTimeSlot,
-    closeForm,
+    closeTimeSlots,
     proceed
   }
 })

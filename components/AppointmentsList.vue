@@ -33,13 +33,14 @@
       Страница {{ userStore.currentPage }} из {{ userStore.totalPages }}
       (Всего записей: {{ userStore.totalItems }})
     </div>
-    <BackButton @click="appointmentStore.hideAppointmentsList" />
+    <BackButton @click="stepStore.goToCalendar()
+" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
-const appointmentStore = useAppointmentStore()
+const stepStore = useStepStore()
 const userStore = useUserStore()
 function isExpired(time: string): boolean {
   return new Date(time) < new Date()
