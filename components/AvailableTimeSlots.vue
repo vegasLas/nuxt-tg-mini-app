@@ -35,7 +35,6 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import LoaderOverlay from './LoaderOverlay.vue'
 
 const availableTimeSlotsStore = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()

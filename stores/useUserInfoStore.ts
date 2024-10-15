@@ -4,7 +4,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   const name = ref('')
   const phone = ref('+79')
   const comment = ref('')
-  const isLoading = ref(false)
+  const isSubmiting = ref(false)
   const isFormValid = computed(() => {
     const phoneRegex = /^\+7\d{10}$/
     return name.value.trim() !== '' && phoneRegex.test(phone.value.trim())
@@ -21,7 +21,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
   }, { immediate: true })
   
   async function submitForm() {
-    isLoading.value = true
+    isSubmiting.value = true
     const userStore = useUserStore()
     const availableTimeSlotsStore = useAvailableTimeSlots()
     const stepStore = useStepStore()
@@ -40,7 +40,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
         stepStore.goToCalendar()
       }
     } finally {
-      isLoading.value = false
+      isSubmiting.value = false
     }
   }
 
@@ -49,7 +49,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     phone,
     comment,
     isFormValid,
-    isLoading,
+    isSubmiting,
     submitForm
   }
 })
