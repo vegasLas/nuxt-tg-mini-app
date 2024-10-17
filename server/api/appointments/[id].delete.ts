@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event)
-  
+  const isAdmin = await isAdminUser(event)
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
       where: { id: parseInt(id) }
     })
 
-    if (!existingAppointment || existingAppointment.userId !== user.id) {
+    if (!existingAppointment || existingAppointment.userId !== user.id && !isAdmin) {
       throw createError({ statusCode: 404, statusMessage: 'Appointment not found or not authorized' })
     }
 
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       where: { id: parseInt(id) },
       data: { 
         booked: false,
-      },
+      },  
     })
 
     return {

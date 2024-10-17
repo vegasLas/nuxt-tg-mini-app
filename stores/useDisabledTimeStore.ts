@@ -5,11 +5,8 @@ import { useCalendarStore } from './useCalendarStore'
 
 interface DisabledDay {
   id: string
-  date: string
-  createdAt: string
-  startTime: string
-  endTime: string
-  updatedAt: string
+  date: string | null
+  slot: string | null
 }
 
 export const useDisabledTimeStore = defineStore('disabledDays', () => {
@@ -18,7 +15,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
   const error = ref<string | null>(null)
   const calendarStore = useCalendarStore()
 
-  const fetchDisabledDays = async () => {
+  async function fetchDisabledDays() {
     loading.value = true
     error.value = null
     try {
@@ -36,7 +33,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
     }
   }
 
-  const addDisabledDay = async (date: string) => {
+  async function addDisabledDay(date: string) {
     loading.value = true
     error.value = null
     try {
@@ -57,7 +54,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
     }
   }
 
-  const removeDisabledDay = async (id: string) => {
+  async function removeDisabledDay(id: string) {
     loading.value = true
     error.value = null
     try {

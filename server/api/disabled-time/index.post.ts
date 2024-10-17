@@ -1,5 +1,4 @@
 import { defineEventHandler, readBody, createError } from 'h3'
-import { isAdminUser } from '~/server/utils/isAdminUser'
 import { PrismaClient } from '@prisma/client'
 import type { CreateDisabledTimeInput } from '~/server/types'
 
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<CreateDisabledTimeInput>(event)
-  if (!body.date || !body.startTime || !body.endTime) {
+  if (!body.date || !body.slot) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Bad Request: Invalid input',
@@ -24,9 +23,8 @@ export default defineEventHandler(async (event) => {
 
   const disabledTime = await prisma.disabledTime.create({
     data: {
-      date: new Date(body.date),
-      startTime: new Date(body.startTime),
-      endTime: new Date(body.endTime),
+      date: body.date,
+      slot: body.slot
     },
   })
 

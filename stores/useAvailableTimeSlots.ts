@@ -15,7 +15,6 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     const selectedWindow = openWindows.value.find(window => 
       window.date.toDateString() === calendarStore.selectedDate?.toDateString()
     )
-    console.log('selectedWindow', selectedWindow?.slots)
     return selectedWindow ? selectedWindow.slots : []
   })
 

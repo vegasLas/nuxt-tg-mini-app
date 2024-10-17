@@ -1,6 +1,3 @@
-import { defineStore } from 'pinia'
-import { ref, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
 import { useWebApp } from 'vue-tg'
 
 interface Appointment {
@@ -87,7 +84,11 @@ export const useAdminStore = defineStore('admin', () => {
     disabledDayDates,
     checkAuth,
     fetchAppointmentsByDate,
-    addDisabledDay: disabledDaysStore.addDisabledDay,
-    removeDisabledDay: disabledDaysStore.removeDisabledDay,
+    addDisabledDay(date: string) {
+      disabledDaysStore.addDisabledDay(date)
+    },
+    removeDisabledDay(id: string) {
+      disabledDaysStore.removeDisabledDay(id)
+    },
   }
 })

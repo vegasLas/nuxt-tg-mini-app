@@ -1,7 +1,7 @@
 import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
 import { fetchUserAppointments, removeAppointment, submitAppointment } from '~/api/appointments'
-
+import { parseISO } from 'date-fns'
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
   const currentPage = ref(1)
@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
   const nextLink = ref<string | null>(null)
   const isLoading = ref(false)
   const isCanceling = ref(false)  // New state for tracking cancellation
+  const bookedAppointmentsStore = useBookedAppointmentsStore()
 
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
   async function fetchAppointments(page: number = 1) {
@@ -39,9 +40,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function removeUserAppointment(time: Date) {
-    const id = appointments.value.find(appointment => new Date(appointment.time).getTime() === time.getTime())?.id
+    const id = bookedAppointmentsStore.bookedAppointments.find(appointment => parseISO(appointment.time).getTime() === time.getTime())?.id
     if (!id) return
-
     try {
       await removeAppointment(id)
       await fetchAppointments(1)  // Refresh from the first page
