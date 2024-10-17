@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <LoaderOverlay v-if="availableTimeSlotsStore.isCanceling" />
+    <LoaderOverlay v-if="availableStore.isCanceling" />
     <div>
       <h2>Доступные окна</h2>
       <div v-if="calendarStore.selectedDate" class="selected-date">
@@ -8,37 +8,68 @@
       </div>
       <div class="time-slots-grid">
         <button
-          v-for="slot in availableTimeSlotsStore.availableTimeSlots"
+          v-for="slot in availableStore.availableTimeSlots"
           :key="slot.show"
           :class="['time-slot', { 
             booked: slot.booked || new Date(slot.time) <= new Date(),
-            selected: availableTimeSlotsStore.selectedTime === slot.time,
-            'user-appointment': userStore.hasAppointment(slot.time),
+            selected: availableStore.selectedSlot?.time === slot.time,
+            'user-appointment': userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.booked)
           }]" 
-          @click="availableTimeSlotsStore.selectTimeSlot(slot)"
-          :disabled="slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date()"
+          @click="availableStore.selectTimeSlot(slot)"
+          :disabled="!adminStore.isAdmin && (slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date())"
         >
           <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
         </button>
       </div>
-      <BackButton @click="availableTimeSlotsStore.closeTimeSlots()" />
+      <div v-if="adminStore.isAdmin && availableStore.selectedSlot && availableStore.selectedSlot.booked" class="admin-actions">
+        <button @click="showDetails" class="native-button details-button">Показать детали</button>
+      </div>
+      <BackButton @click="availableStore.closeTimeSlots()" />
       <MainButton
-        v-if="availableTimeSlotsStore.selectedTime && !availableTimeSlotsStore.isCanceling"
-        :text="availableTimeSlotsStore.cancelMode ? 'Отменить запись' : 'Продолжить'"
-        @click="availableTimeSlotsStore.cancelMode ? availableTimeSlotsStore.cancelAppointment() : availableTimeSlotsStore.proceed()"
-        :disabled="!availableTimeSlotsStore.selectedTime && !availableTimeSlotsStore.cancelMode"
+        v-if="availableStore.selectedSlot && !availableStore.isCanceling"
+        :text="availableStore.cancelMode ? 'Отменить запись' : 'Продолжить'"
+        @click="availableStore.cancelMode ? availableStore.cancelAppointment() : availableStore.proceed()"
+        :disabled="!availableStore.selectedSlot && !availableStore.cancelMode"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { MainButton, BackButton } from 'vue-tg'
-
-const availableTimeSlotsStore = useAvailableTimeSlots()
+import { MainButton, BackButton, useWebAppPopup } from 'vue-tg'
+import { isSameHour } from 'date-fns'
+const availableStore = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
+const adminStore = useAdminStore()
+
+
+
+
+const showDetails = () => {
+  const { showPopup } = useWebAppPopup()
+  const time = availableStore.selectedSlot?.time as unknown as Date
+  const appointment = adminStore.appointments.find(appointment => isSameHour(appointment.time, time))
+  const title = `Запись на ${formatDateTime(time)}`
+  const message = `Клиент: ${appointment?.user?.name}\ntg: @${appointment?.user?.username}\nНомер телефона: ${appointment?.phoneNumber}\nКомментарий: ${appointment?.comment}`
+  showPopup({
+    title,
+    message,
+    buttons: [
+    {
+      text: 'Закрыть',
+      type: 'destructive',
+      }
+    ],
+  })
+}
+onMounted(()=> {
+    if (adminStore.isAdmin) {
+      adminStore.fetchAppointmentsByDate(calendarStore.selectedDate?.toISOString() || '')
+    }
+})
+
 </script>
 
 <style scoped>
@@ -201,5 +232,29 @@ h2 {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.native-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.details-button {
+  background-color: #4263eb;
+  color: #fff;
+}
+
+.details-button:hover {
+  background-color: #3b5bdb;
 }
 </style>

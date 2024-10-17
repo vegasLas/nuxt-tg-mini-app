@@ -12,7 +12,6 @@ import {
   setHours, 
   format,
   parseISO,
-  isSameHour,
 } from 'date-fns'
 
 export const useCalendarStore = defineStore('calendar', () => {
@@ -83,6 +82,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       const endDate = addDays(startDate, 30);
 
       // Create initial open windows for all work days, excluding disabled days
+      
       for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
         if (workDays.includes(getDay(d)) && !isDisabledDay(d)) {
           // Skip today if it's after 17:00
@@ -96,7 +96,7 @@ export const useCalendarStore = defineStore('calendar', () => {
             slots: workHours.map(({ show, time }) => ({
               show,
               time: set(d, { hours: time.getHours(), minutes: 0, seconds: 0, milliseconds: 0 }),
-              booked: bookedAppointments.some(appointment => isSameDay(parseISO(appointment.time), d) && isSameHour(parseISO(appointment.time), time))
+              booked: bookedAppointments.some(appointment => isSameDay(parseISO(appointment.time), d) && parseISO(appointment.time).getHours() === time.getHours())
             }))
           };
         }

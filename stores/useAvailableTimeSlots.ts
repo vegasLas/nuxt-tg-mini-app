@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue'
-import { storeToRefs } from 'pinia'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
@@ -8,7 +7,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const { isCanceling } = storeToRefs(userStore)
 
   const { openWindows } = storeToRefs(calendarStore)
-  const selectedTime = ref<Date | null>(null)
+  const selectedSlot = ref<{ time: Date, show: string, booked: boolean } | null>(null)
 
   const cancelMode = ref(false)
 
@@ -16,27 +15,24 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     const selectedWindow = openWindows.value.find(window => 
       window.date.toDateString() === calendarStore.selectedDate?.toDateString()
     )
+    console.log('selectedWindow', selectedWindow?.slots)
     return selectedWindow ? selectedWindow.slots : []
   })
 
-  function selectTimeSlot(slot: { time: Date, show: string }): void {
+  function selectTimeSlot(slot: { time: Date, show: string, booked: boolean }): void {
     if (userStore.hasAppointment(slot.time)) {
-      selectedTime.value = slot.time
+      selectedSlot.value = slot
       cancelMode.value = true
     } else {
-      selectedTime.value = slot.time
+      selectedSlot.value = slot
       cancelMode.value = false
     }
   }
 
   function closeTimeSlots(): void {
     calendarStore.setSelectedDate(null)
-    selectedTime.value = null
+    selectedSlot.value = null
     stepStore.goToCalendar()
-  }
-
-  function unselectTimeSlot(): void {
-    selectedTime.value = null
   }
 
   function proceed(): void {
@@ -44,21 +40,21 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   }
 
   async function cancelAppointment(): Promise<void> {
-    const isCanceled = await userStore.handleCancelAppointment(selectedTime.value?.toString()!)
+    const isCanceled = await userStore.handleCancelAppointment(selectedSlot.value?.time?.toString()!)
     if (isCanceled) {
-      unselectTimeSlot()
+      selectedSlot.value = null
+
       cancelMode.value = false
     }
   }
 
   return {
     availableTimeSlots,
-    selectedTime,
+    selectedSlot,
     cancelMode,
     isCanceling,
     cancelAppointment,
     selectTimeSlot,
-    unselectTimeSlot,
     closeTimeSlots,
     proceed
   }

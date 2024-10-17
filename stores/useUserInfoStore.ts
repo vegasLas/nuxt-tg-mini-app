@@ -29,7 +29,7 @@ export const useUserInfoStore = defineStore('userInfo', () => {
       const success = await userStore.submitUserAppointment({
         name: name.value,
         phoneNumber: phone.value,
-        time: availableTimeSlotsStore.selectedTime as Date,
+        time: availableTimeSlotsStore.selectedSlot?.time as Date,
         comment: comment.value
       })
       if (success) {

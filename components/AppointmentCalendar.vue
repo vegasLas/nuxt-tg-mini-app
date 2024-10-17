@@ -26,16 +26,10 @@
     >
       Отключить день
     </button>
-    <button
-      class="admin-button"
-      @click="stepStore.goToTimeSlots"
-    >
-      Показать слоты
-    </button>
   </div>
   <MainButton
-    v-if="!adminStore.isAdmin && calendarStore.selectedDate"
-    text="Продолжить"
+    v-if="calendarStore.selectedDate"
+    :text="adminStore.isAdmin ? 'Показать слоты' : 'Продолжить'"
     @click="stepStore.goToTimeSlots"
   />
 </template>
