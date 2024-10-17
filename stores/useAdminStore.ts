@@ -7,10 +7,12 @@ interface Appointment {
   id: number
   time: string
   booked: boolean
+  comment: string | null
+  phoneNumber: string
   userId: number
   user: {
-    telegramId: string
     username: string | null
+    name: string | null
   } | null
 }
 

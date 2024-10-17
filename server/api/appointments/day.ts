@@ -11,7 +11,6 @@ export default defineEventHandler(async (event) => {
       message: 'Forbidden: Admin access required',
     })
   }
-
   const query = getQuery(event)
   const date = query.date as string
 
@@ -21,7 +20,6 @@ export default defineEventHandler(async (event) => {
       message: 'Date parameter is required',
     })
   }
-
   try {
     const parsedDate = parseISO(date)
     const dayStart = startOfDay(parsedDate)
@@ -37,13 +35,12 @@ export default defineEventHandler(async (event) => {
       include: {
         user: {
           select: {
-            telegramId: true,
-            username: true
+            username: true,
+            name: true
           },
         },
       },
     })
-
     return appointments
   } catch (error) {
     console.error('Error fetching appointments:', error)

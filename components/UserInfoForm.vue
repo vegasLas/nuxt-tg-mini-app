@@ -18,12 +18,12 @@
           </div>
           <div style="margin-bottom: 1rem;">
             <input
-                id="phone"
-                v-model="phone"
-                type="tel"
-                required
-                class="input input-bottom"
-                placeholder="Введите ваш номер телефона"
+              id="phone"
+              v-model="phone"
+              type="tel"
+              required
+              class="input input-bottom"
+              placeholder="Введите ваш номер телефона"
               >
             </div>
             <div style="margin-bottom: 1rem;">
@@ -38,15 +38,16 @@
       </form>
       <div class="button-group">
         <MainButton 
-          v-if="isFormValid"
+          v-if="isFormValid && !userInfoStore.isSubmiting"
           text="Записаться" 
           @click="userInfoStore.submitForm"
-          :progress="isLoading"
+          :progress="userInfoStore.isSubmiting"
         />
         <BackButton @click="stepStore.goToTimeSlots" />
       </div>
     </div>
   </div>
+  <LoaderOverlay v-if="userInfoStore.isSubmiting" />
 </template>
 
 <script setup lang="ts">
@@ -54,7 +55,7 @@ import { BackButton, MainButton } from 'vue-tg'
 import { storeToRefs } from 'pinia'
 const stepStore = useStepStore()
 const userInfoStore = useUserInfoStore()
-const { name, phone, comment, isLoading, isFormValid } = storeToRefs(userInfoStore)
+const { name, phone, comment, isSubmiting, isFormValid } = storeToRefs(userInfoStore)
 
 </script>
 

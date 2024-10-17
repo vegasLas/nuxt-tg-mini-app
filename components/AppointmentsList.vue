@@ -33,19 +33,20 @@
       Страница {{ userStore.currentPage }} из {{ userStore.totalPages }}
       (Всего записей: {{ userStore.totalItems }})
     </div>
-    <BackButton @click="stepStore.goToCalendar()
-" />
+    <BackButton @click="stepStore.goToCalendar()" />
+    <LoaderOverlay v-if="userStore.isCanceling" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
+
 const stepStore = useStepStore()
 const userStore = useUserStore()
+
 function isExpired(time: string): boolean {
   return new Date(time) < new Date()
 }
-await userStore.fetchAppointments()
 </script>
 
 <style scoped>
@@ -75,8 +76,8 @@ ul {
   padding: 0;
   background-color: #ffffff;
   border-radius: 8px;
+  height: 50vh; /* Fixed height, adjust as needed */
   overflow-y: auto; /* Enable vertical scrolling */
-  flex-grow: 1; /* Allow the ul to grow and take available space */
   margin-bottom: 10px; /* Add some space before the BackButton */
 }
 
