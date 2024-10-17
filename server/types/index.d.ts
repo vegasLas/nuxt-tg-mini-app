@@ -1,14 +1,12 @@
 export interface DisabledTime {
 	id: string;
-	date: Date;
-	startTime: Date;
-	endTime: Date;
+	date: string | null;
+	slot: string | null;
 	createdAt: Date;
 	updatedAt: Date;
   }
   
   export interface CreateDisabledTimeInput {
-	date: string;
-	startTime: string;
-	endTime: string;
+	date?: Date;
+	slot?: Date;
   }

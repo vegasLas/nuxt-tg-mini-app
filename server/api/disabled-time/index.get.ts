@@ -12,6 +12,12 @@ export default defineEventHandler(async (event) => {
   //   })
   // }
 
-  const disabledTimes = await prisma.disabledTime.findMany()
+  const disabledTimes = await prisma.disabledTime.findMany({
+    select: {
+      id: true,
+      date: true,
+      slot: true,
+    }
+  })
   return disabledTimes
 })

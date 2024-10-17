@@ -28,8 +28,8 @@
       <BackButton @click="availableStore.closeTimeSlots()" />
       <MainButton
         v-if="availableStore.selectedSlot && !availableStore.isCanceling"
-        :text="availableStore.cancelMode ? 'Отменить запись' : 'Продолжить'"
-        @click="availableStore.cancelMode ? availableStore.cancelAppointment() : availableStore.proceed()"
+        :text="getMainButtonText()"
+        @click="handleMainButtonClick()"
         :disabled="!availableStore.selectedSlot && !availableStore.cancelMode"
       />
     </div>
@@ -52,7 +52,13 @@ const showDetails = () => {
   const time = availableStore.selectedSlot?.time as unknown as Date
   const appointment = adminStore.appointments.find(appointment => isSameHour(appointment.time, time))
   const title = `Запись на ${formatDateTime(time)}`
-  const message = `Клиент: ${appointment?.user?.name}\ntg: @${appointment?.user?.username}\nНомер телефона: ${appointment?.phoneNumber}\nКомментарий: ${appointment?.comment}`
+  const message = [
+    appointment?.user?.name ? `Клиент: ${appointment.user.name}` : '`',
+    appointment?.user?.username ? `tg: @${appointment.user.username}` : '`',
+    appointment?.phoneNumber ? `Номер телефона: ${appointment.phoneNumber}` : '`',
+    appointment?.comment ? `Комментарий: ${appointment.comment}` : '`',
+  ].filter(Boolean).join('\n');
+
   showPopup({
     title,
     message,
@@ -69,6 +75,21 @@ onMounted(()=> {
       adminStore.fetchAppointmentsByDate(calendarStore.selectedDate?.toISOString() || '')
     }
 })
+
+const getMainButtonText = () => {
+  if (adminStore.isAdmin && availableStore.selectedSlot?.booked) {
+    return 'Отменить запись'
+  }
+  return availableStore.cancelMode ? 'Отменить запись' : 'Продолжить'
+}
+
+const handleMainButtonClick = () => {
+  if (adminStore.isAdmin && availableStore.selectedSlot?.booked) {
+    availableStore.cancelAppointment()
+  } else {
+    availableStore.cancelMode ? availableStore.cancelAppointment() : availableStore.proceed()
+  }
+}
 
 </script>
 
