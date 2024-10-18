@@ -64,3 +64,20 @@ export async function submitAppointment(appointmentData: {
   
   return response
 }
+
+export async function updateAppointment(id: number, updateData: Partial<Omit<Appointment, 'id' | 'user'>>) {
+  const response = await $fetch(`/api/appointments/${id}`, {
+    method: 'PUT',
+    headers: {
+      'x-init-data': useWebApp().initData,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updateData),
+  })
+  
+  if (!response) {
+    throw new Error('Failed to update appointment')
+  }
+  
+  return response
+}
