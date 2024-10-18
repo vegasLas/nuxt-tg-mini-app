@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <LoaderOverlay v-if="availableStore.isCanceling" />
+    <LoaderOverlay v-if="availableStore.isLoading" />
     <div>
       <h2>Доступные окна</h2>
       <div v-if="calendarStore.selectedDate" class="selected-date">
@@ -23,13 +23,13 @@
         </button>
       </div>
       <div v-if="adminStore.isAdmin && availableStore.selectedSlot && availableStore.selectedSlot.booked" class="admin-actions">
-        <button @click="showDetails" class="native-button details-button">Показать детали</button>
+        <button @click="adminStore.showDetails" class="native-button details-button">Показать детали</button>
       </div>
       <BackButton @click="availableStore.closeTimeSlots()" />
       <MainButton
-        v-if="availableStore.selectedSlot && !availableStore.isCanceling"
-        :text="getMainButtonText()"
-        @click="handleMainButtonClick()"
+        v-if="availableStore.selectedSlot && !availableStore.isLoading"
+        :text="availableStore.getMainButtonText"
+        @click="availableStore.handleMainButtonClick()"
         :disabled="!availableStore.selectedSlot && !availableStore.cancelMode"
       />
     </div>
@@ -37,60 +37,22 @@
 </template>
 
 <script setup lang="ts">
-import { MainButton, BackButton, useWebAppPopup } from 'vue-tg'
-import { isSameHour } from 'date-fns'
+import { MainButton, BackButton } from 'vue-tg'
+import { useAvailableTimeSlots } from '@/stores/useAvailableTimeSlots'
+import { useCalendarStore } from '@/stores/useCalendarStore'
+import { useUserStore } from '@/stores/useUserStore'
+import { useAdminStore } from '@/stores/useAdminStore'
+
 const availableStore = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
 
-
-
-
-const showDetails = () => {
-  const { showPopup } = useWebAppPopup()
-  const time = availableStore.selectedSlot?.time as unknown as Date
-  const appointment = adminStore.appointments.find(appointment => isSameHour(appointment.time, time))
-  const title = `Запись на ${formatDateTime(time)}`
-  const message = [
-    appointment?.user?.name ? `Клиент: ${appointment.user.name}` : '`',
-    appointment?.user?.username ? `tg: @${appointment.user.username}` : '`',
-    appointment?.phoneNumber ? `Номер телефона: ${appointment.phoneNumber}` : '`',
-    appointment?.comment ? `Комментарий: ${appointment.comment}` : '`',
-  ].filter(Boolean).join('\n');
-
-  showPopup({
-    title,
-    message,
-    buttons: [
-    {
-      text: 'Закрыть',
-      type: 'destructive',
-      }
-    ],
-  })
-}
-onMounted(()=> {
-    if (adminStore.isAdmin) {
-      adminStore.fetchAppointmentsByDate(calendarStore.selectedDate?.toISOString() || '')
-    }
+onMounted(() => {
+  if (adminStore.isAdmin) {
+    adminStore.fetchAppointmentsByDate(calendarStore.selectedDate?.toISOString() || '')
+  }
 })
-
-const getMainButtonText = () => {
-  if (adminStore.isAdmin && availableStore.selectedSlot?.booked) {
-    return 'Отменить запись'
-  }
-  return availableStore.cancelMode ? 'Отменить запись' : 'Продолжить'
-}
-
-const handleMainButtonClick = () => {
-  if (adminStore.isAdmin && availableStore.selectedSlot?.booked) {
-    availableStore.cancelAppointment()
-  } else {
-    availableStore.cancelMode ? availableStore.cancelAppointment() : availableStore.proceed()
-  }
-}
-
 </script>
 
 <style scoped>

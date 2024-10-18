@@ -98,10 +98,45 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     })
   }
 
+  function rescheduleAppointment(oldAppointment: { time: string, id: number }, newTime: Date) {
+    // Update the bookedAppointments array
+    const index = bookedAppointments.value.findIndex(app => app.id === oldAppointment.id)
+    if (index !== -1) {
+      bookedAppointments.value[index].time = format(newTime, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")
+    }
+
+    // Update the openWindows
+    const oldDate = parseISO(oldAppointment.time)
+    const newDate = newTime
+
+    // Find and update the old slot
+    const oldWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, oldDate))
+    if (oldWindowIndex !== -1) {
+      const oldSlotIndex = openWindows.value[oldWindowIndex].slots.findIndex(
+        slot => slot.time.getHours() === oldDate.getHours()
+      )
+      if (oldSlotIndex !== -1) {
+        openWindows.value[oldWindowIndex].slots[oldSlotIndex].booked = false
+      }
+    }
+
+    // Find and update the new slot
+    const newWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, newDate))
+    if (newWindowIndex !== -1) {
+      const newSlotIndex = openWindows.value[newWindowIndex].slots.findIndex(
+        slot => slot.time.getHours() === newDate.getHours()
+      )
+      if (newSlotIndex !== -1) {
+        openWindows.value[newWindowIndex].slots[newSlotIndex].booked = true
+      }
+    }
+  }
+
   return {
     bookedAppointments,
     isErrorFetchingBookedAppointments,
     openWindows,
     fetchOpenWindows,
+    rescheduleAppointment,
   }
 })

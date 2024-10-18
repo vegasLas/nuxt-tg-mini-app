@@ -1,5 +1,5 @@
-import { useWebApp } from 'vue-tg'
-
+import { useWebApp, useWebAppPopup } from 'vue-tg'
+import { isSameHour } from 'date-fns'
 interface Appointment {
   id: number
   time: string
@@ -23,6 +23,7 @@ interface PaginationInfo {
 
 export const useAdminStore = defineStore('admin', () => {
   const disabledDaysStore = useDisabledTimeStore()
+  const availableStore = useAvailableTimeSlots()
   const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
   const appointments = ref<Appointment[]>([])
   const paginationInfo = ref<PaginationInfo | null>(null)
@@ -46,7 +47,7 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  const checkAuth = async () => {
+  async function checkAuth() {
     error.value = null
     try {
       const data = await $fetch('/api/check-admin', {
@@ -65,6 +66,29 @@ export const useAdminStore = defineStore('admin', () => {
     } finally {
     }
   }
+  function showDetails() {
+    const { showPopup } = useWebAppPopup()
+    const time = availableStore.selectedSlot?.time as unknown as Date
+    const appointment = appointments.value.find(appointment => isSameHour(appointment.time, time))
+    const title = `Запись на ${formatDateTime(time)}`
+    const message = [
+      appointment?.user?.name ? `Клиент: ${appointment.user.name}` : '',
+      appointment?.user?.username ? `tg: @${appointment.user.username}` : '',
+      appointment?.phoneNumber ? `Номер телефона: ${appointment.phoneNumber}` : '',
+      appointment?.comment ? `Комментарий: ${appointment.comment}` : '',
+    ].filter(Boolean).join('\n');
+  
+    showPopup({
+      title,
+      message,
+      buttons: [
+      {
+        text: 'Закрыть',
+        type: 'destructive',
+        }
+      ],
+    })
+  }
   onMounted(async () => {
     await checkAuth()
   })
@@ -78,6 +102,7 @@ export const useAdminStore = defineStore('admin', () => {
     disabledDayDates,
     checkAuth,
     fetchAppointmentsByDate,
+    showDetails,
     addDisabledDay(date: string) {
       disabledDaysStore.addDisabledDay(date)
     },
