@@ -1,62 +1,48 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import type { CalendarAttribute } from '~/types'
 import { 
-  addDays, 
-  isAfter, 
-  set, 
   isSameDay,
   parseISO,
 } from 'date-fns'
 
 export const useCalendarStore = defineStore('calendar', () => {
-  const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
   const userStore = useUserStore()
   const adminStore = useAdminStore()
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const selectedDate = ref<Date | null>(null)
+  const { openWindows } = storeToRefs(bookedAppointmentsStore)
+  const getDotColor = (hasUserAppointment: boolean, slots: { booked: boolean }[]): string => {
+    if (hasUserAppointment) return 'yellow';
+    return slots.some(slot => !slot.booked) ? 'green' : 'red';
+  }
 
+  const getPopoverLabel = (hasUserAppointment: boolean, slots: { booked: boolean }[]): { label: string } => {
+    return {
+      label: hasUserAppointment 
+        ? 'У вас есть запись на этот день'
+        : slots.some(slot => !slot.booked) 
+          ? 'Есть свободные окна' 
+          : 'Все окна заняты'
+    };
+  }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
-    
     return openWindows.value.map(window => {
       const hasUserAppointment = userStore.appointments.some(appointment => 
         isSameDay(parseISO(appointment.time), window.date)
       );
 
-      const dotColor = hasUserAppointment 
-        ? 'yellow' 
-        : window.slots.some(slot => !slot.booked) 
-          ? 'green' 
-          : 'red';
+      const dotColor = getDotColor(hasUserAppointment, window.slots);
 
       return {
         dot: dotColor,
         dates: window.date,
-        popover: {
-          label: hasUserAppointment 
-            ? 'У вас есть запись на этот день'
-            : window.slots.some(slot => !slot.booked) 
-              ? 'Есть свободные окна' 
-              : 'Все окна заняты'
-        }
+        popover: getPopoverLabel(hasUserAppointment, window.slots)
       };
     });
   });
 
-  async function fetchOpenWindows() {
-    await bookedAppointmentsStore.fetchBookedAppointments()
-    if (bookedAppointmentsStore.isErrorFetchingBookedAppointments) {
-      console.error(bookedAppointmentsStore.isErrorFetchingBookedAppointments)
-      return
-    }
+  
 
-    const now = new Date()
-    const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
-    const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
-    const endDate = addDays(startDate, 30)
-
-    openWindows.value = bookedAppointmentsStore.getOpenWindows(startDate, endDate)
-  }
+  
 
   function onDayClick(day: { date: Date }) {
     if (adminStore.isAdmin) {
@@ -80,18 +66,15 @@ export const useCalendarStore = defineStore('calendar', () => {
   function setSelectedDate(date: Date | null) {
     selectedDate.value = date
   }
-
   onMounted(() => {
-    fetchOpenWindows()
+    bookedAppointmentsStore.fetchOpenWindows()
   })
 
   return {
-    openWindows,
     calendarAttributes,
     selectedDate,
     disableDay,
     onDayClick,
     setSelectedDate,
-    fetchOpenWindows
   }
 })

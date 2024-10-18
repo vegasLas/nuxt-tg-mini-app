@@ -1,7 +1,4 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 import { useWebApp } from 'vue-tg'
-import { useCalendarStore } from './useCalendarStore'
 
 interface DisabledDay {
   id: string
@@ -13,7 +10,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
   const disabledDays = ref<DisabledDay[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const calendarStore = useCalendarStore()
+  const bookedAppointmentsStore = useBookedAppointmentsStore()
 
   async function fetchDisabledDays() {
     loading.value = true
@@ -44,7 +41,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         },
         body: { date },
       })
-      await calendarStore.fetchOpenWindows()
+      await bookedAppointmentsStore.fetchOpenWindows()
       showNotification('success', 'Заблокированный день успешно добавлен')
     } catch (err) {
       error.value = (err as Error).message

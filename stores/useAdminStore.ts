@@ -26,12 +26,10 @@ export const useAdminStore = defineStore('admin', () => {
   const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
   const appointments = ref<Appointment[]>([])
   const paginationInfo = ref<PaginationInfo | null>(null)
-  const loading = ref(false)
   const error = ref<string | null>(null)
   const isAdmin = ref(false)
 
   const fetchAppointmentsByDate = async (date: string) => {
-    loading.value = true
     error.value = null
     try {
       const data = await $fetch(`/api/appointments/day`, {
@@ -45,12 +43,10 @@ export const useAdminStore = defineStore('admin', () => {
     } catch (err) {
       error.value = (err as Error).message
     } finally {
-      loading.value = false
     }
   }
 
   const checkAuth = async () => {
-    loading.value = true
     error.value = null
     try {
       const data = await $fetch('/api/check-admin', {
@@ -67,7 +63,6 @@ export const useAdminStore = defineStore('admin', () => {
       error.value = (err as Error).message
       isAdmin.value = false
     } finally {
-      loading.value = false
     }
   }
   onMounted(async () => {
@@ -78,7 +73,6 @@ export const useAdminStore = defineStore('admin', () => {
     appointments,
     paginationInfo,
     isAdmin,
-    loading,
     error,
     disabledDays,
     disabledDayDates,

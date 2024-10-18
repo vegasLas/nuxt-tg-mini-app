@@ -45,7 +45,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       await removeAppointment(id)
       await fetchAppointments(1)  // Refresh from the first page
-      await useCalendarStore().fetchOpenWindows()
+      await bookedAppointmentsStore.fetchOpenWindows()
     } catch (error) {
       console.error('Error removing appointment:', error)
     }
@@ -107,8 +107,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await submitAppointment(appointmentData)
       appointments.value.unshift(response)
-      const calendarStore = useCalendarStore()
-      await calendarStore.fetchOpenWindows()
+      await bookedAppointmentsStore.fetchOpenWindows()
       showNotification('success', 'Запись прошла успешно')
       return true
     } catch (error) {
