@@ -6,6 +6,7 @@ import {
   isSameDay,
   getDay, 
   setHours, 
+  isAfter,
   format,
   parseISO,
 } from 'date-fns'
@@ -14,6 +15,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   const bookedAppointments = ref<{ time: string, id: number }[]>([])
   const disabledDaysStore = useDisabledTimeStore()
   const isErrorFetchingBookedAppointments = ref(false)
+  const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
   async function fetchBookedAppointments() {
 
     try {
@@ -35,7 +37,19 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
       throw new Error('Failed to fetch booked appointments')
     }
   }
+  async function fetchOpenWindows() {
+    await fetchBookedAppointments()
+    if (isErrorFetchingBookedAppointments.value) {
+      console.error(isErrorFetchingBookedAppointments.value)
+      return
+    }
 
+    const now = new Date()
+    const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+    const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
+    const endDate = addDays(startDate, 30)
+    openWindows.value = getOpenWindows(startDate, endDate)
+  }
   function getOpenWindows(startDate: Date, endDate: Date) {
     const workDays = [1, 2, 3, 4, 5] // Monday to Friday
     const workHours = Array.from({ length: 9 }, (_, i) => {
@@ -87,7 +101,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   return {
     bookedAppointments,
     isErrorFetchingBookedAppointments,
-    fetchBookedAppointments,
-    getOpenWindows,
+    openWindows,
+    fetchOpenWindows,
   }
 })
