@@ -17,7 +17,6 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   const isErrorFetchingBookedAppointments = ref(false)
   const openWindows = ref<{ date: Date; slots: { show: string; time: Date, booked: boolean }[] }[]>([])
   async function fetchBookedAppointments() {
-
     try {
       await disabledDaysStore.fetchDisabledDays()
       const response = await useFetch('/api/appointments/booked', {
@@ -90,7 +89,12 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     return Object.values(openWindowsMap)
   }
   function removeAppointment(id: number) {
-    bookedAppointments.value = bookedAppointments.value.filter(appointment => appointment.id !== id)
+    const oldAppointment = bookedAppointments.value.find(appointment => appointment.id === id);
+    if (oldAppointment) {
+      bookedAppointments.value = bookedAppointments.value.filter(appointment => appointment.id !== id);
+      const time = parseISO(oldAppointment.time);
+      unbookOldSlot(time);
+    }
   }
   // Helper function to check if a day is disabled
   function isDisabledDay(date: Date): boolean {
@@ -99,7 +103,28 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
       return isSameDay(date, parseISO(disabledDay.date))
     })
   }
-
+  function unbookOldSlot(oldDate: Date) {
+    const oldWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, oldDate))
+    if (oldWindowIndex !== -1) {
+      const oldSlotIndex = openWindows.value[oldWindowIndex].slots.findIndex(
+        slot => slot.time.getHours() === oldDate.getHours()
+      )
+      if (oldSlotIndex !== -1) {
+        openWindows.value[oldWindowIndex].slots[oldSlotIndex].booked = false
+      }
+    }
+  }
+  function bookNewSlot(newTime: Date) {
+    const newWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, newTime))
+    if (newWindowIndex !== -1) {
+      const newSlotIndex = openWindows.value[newWindowIndex].slots.findIndex(
+        slot => slot.time.getHours() === newTime.getHours()
+      )
+      if (newSlotIndex !== -1) {
+        openWindows.value[newWindowIndex].slots[newSlotIndex].booked = true
+      }
+    }
+  }
   function rescheduleAppointment(oldAppointment: { time: string, id: number }, newTime: Date) {
     // Update the bookedAppointments array
     const index = bookedAppointments.value.findIndex(app => app.id === oldAppointment.id)
@@ -112,26 +137,9 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     const newDate = newTime
 
     // Find and update the old slot
-    const oldWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, oldDate))
-    if (oldWindowIndex !== -1) {
-      const oldSlotIndex = openWindows.value[oldWindowIndex].slots.findIndex(
-        slot => slot.time.getHours() === oldDate.getHours()
-      )
-      if (oldSlotIndex !== -1) {
-        openWindows.value[oldWindowIndex].slots[oldSlotIndex].booked = false
-      }
-    }
-
+    unbookOldSlot(oldDate);
     // Find and update the new slot
-    const newWindowIndex = openWindows.value.findIndex(window => isSameDay(window.date, newDate))
-    if (newWindowIndex !== -1) {
-      const newSlotIndex = openWindows.value[newWindowIndex].slots.findIndex(
-        slot => slot.time.getHours() === newDate.getHours()
-      )
-      if (newSlotIndex !== -1) {
-        openWindows.value[newWindowIndex].slots[newSlotIndex].booked = true
-      }
-    }
+    bookNewSlot(newDate);
   }
 
   return {
