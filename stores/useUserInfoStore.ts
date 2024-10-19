@@ -1,3 +1,4 @@
+import { parseISO } from 'date-fns'
 export const useUserInfoStore = defineStore('userInfo', () => {
   const calendarStore = useCalendarStore()
   
@@ -20,12 +21,28 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     }
   }, { immediate: true })
   
+
   async function submitForm() {
     isSubmiting.value = true
     const userStore = useUserStore()
+    const adminStore = useAdminStore()
     const availableTimeSlotsStore = useAvailableTimeSlots()
     const stepStore = useStepStore()
+    
     try {
+      const activeAppointments = userStore.appointments.filter(appointment => 
+        parseISO(appointment.time) > new Date()
+      )
+
+      if (activeAppointments.length >= 2 && !adminStore.isAdmin) {
+        showNotification({
+          type: 'error',
+          message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
+          time: 3
+        })
+        return
+      }
+
       const success = await userStore.submitUserAppointment({
         name: name.value,
         phoneNumber: phone.value,

@@ -42,10 +42,10 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         body: { date },
       })
       await bookedAppointmentsStore.fetchOpenWindows()
-      showNotification('success', 'Заблокированный день успешно добавлен')
+      showNotification({type: 'success', message: 'Заблокированный день успешно добавлен'})
     } catch (err) {
       error.value = (err as Error).message
-      showNotification('error', 'Не удалось добавить заблокированный день')
+      showNotification({type: 'error', message: 'Не удалось добавить заблокированный день'})
     } finally {
       loading.value = false
     }
@@ -62,10 +62,10 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         },
       })
       disabledDays.value = disabledDays.value.filter(day => day.id !== id)
-      showNotification('success', 'Заблокированный день успешно удален')
+      showNotification({type: 'success', message: 'Заблокированный день успешно удален'})
     } catch (err) {
       error.value = (err as Error).message
-      showNotification('error', 'Не удалось удалить заблокированный день')
+      showNotification({type: 'error', message: 'Не удалось удалить заблокированный день'})
     } finally {
       loading.value = false
     }

@@ -23,9 +23,8 @@
         </div>
       </li>
     </ul>
-    <div v-if="userStore.isLoading" class="loading">Загрузка...</div>
     <div v-if="userStore.hasMoreAppointments" class="load-more">
-      <button @click="userStore.loadMoreAppointments" class="load-more-button" :disabled="userStore.isLoading">
+      <button @click="userStore.loadMoreAppointments" class="load-more-button" :disabled="userStore.isCanceling">
         Загрузить еще
       </button>
     </div>

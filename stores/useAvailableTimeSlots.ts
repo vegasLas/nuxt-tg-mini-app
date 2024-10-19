@@ -1,10 +1,4 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { useUserStore } from './useUserStore'
-import { useAdminStore } from './useAdminStore'
-import { useCalendarStore } from './useCalendarStore'
 import { useWebAppPopup } from 'vue-tg'
-import { updateAppointment } from '~/api/appointments'
 
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
@@ -23,7 +17,12 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     const selectedWindow = openWindows.value.find(window => 
       window.date.toDateString() === calendarStore.selectedDate?.toDateString()
     )
-    return selectedWindow ? selectedWindow.slots : []
+    if (selectedWindow) {
+      return selectedWindow.slots.sort((a, b) => {
+        return a.time.getTime() - b.time.getTime();
+      });
+    }
+    return [];
   })
 
   const hasExistingAppointment = computed(() => 
@@ -72,7 +71,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   function handleMainButtonClick() {
     if ((adminStore.isAdmin && selectedSlot.value?.booked) || cancelMode.value) {
       cancelAppointment()
-    } else if (hasExistingAppointment.value) {
+    } else if (!adminStore.isAdmin && hasExistingAppointment.value) {
       showAppointmentOptionsPopup()
     } else {
       proceed()
