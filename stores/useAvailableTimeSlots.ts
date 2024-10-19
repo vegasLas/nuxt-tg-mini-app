@@ -119,7 +119,19 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
       if (e.button_id === 'reschedule') {
         rescheduleAppointment()
       } else if (e.button_id === 'createNew') {
+        const activeAppointments = userStore.appointments.filter(appointment => 
+          parseISO(appointment.time) > new Date()
+        )
+        if (!adminStore.isAdmin && activeAppointments.length >= 2) {
+          showNotification({
+            type: 'error',
+            message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
+            time: 3
+          })
+          return
+        }
         proceed()
+
       }
       popupClosed.off()
     }, { manual: true })
