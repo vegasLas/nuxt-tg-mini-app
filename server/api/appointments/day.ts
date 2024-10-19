@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { isAdminUser } from '~/server/utils/isAdminUser'
 import { startOfDay, endOfDay, parseISO } from 'date-fns'
 
 const prisma = new PrismaClient()
@@ -24,9 +23,9 @@ export default defineEventHandler(async (event) => {
     const parsedDate = parseISO(date)
     const dayStart = startOfDay(parsedDate)
     const dayEnd = endOfDay(parsedDate)
-
     const appointments = await prisma.appointment.findMany({
       where: {
+        booked: true,
         time: {
           gte: dayStart,
           lte: dayEnd,
