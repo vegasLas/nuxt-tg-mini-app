@@ -1,9 +1,10 @@
 import { useWebApp, useWebAppPopup } from 'vue-tg'
-import { isSameHour } from 'date-fns'
+import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns'
 interface Appointment {
   id: number
   time: string
   booked: boolean
+  name: string
   comment: string | null
   phoneNumber: string
   userId: number
@@ -21,6 +22,15 @@ interface PaginationInfo {
   nextLink: string | null
 }
 
+interface AppointmentCounts {
+  totalCount: number;
+  todayCount: number;
+  dates: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
 export const useAdminStore = defineStore('admin', () => {
   const disabledDaysStore = useDisabledTimeStore()
   const availableStore = useAvailableTimeSlots()
@@ -29,21 +39,62 @@ export const useAdminStore = defineStore('admin', () => {
   const paginationInfo = ref<PaginationInfo | null>(null)
   const error = ref<string | null>(null)
   const isAdmin = ref(false)
+  const appointmentCounts = ref<AppointmentCounts | null>(null)
+  const currentDate = ref(new Date())
+  const isLoading = ref(false)
+  const filteredAppointments = computed(() => {
+    const start = startOfDay(currentDate.value);
+    const end = endOfDay(currentDate.value);
+    return appointments.value.filter(appointment => {
+      const appointmentDate = parseISO(appointment.time);
+      return appointmentDate >= start && appointmentDate <= end;
+    });
+  });
 
-  const fetchAppointmentsByDate = async (date: string) => {
-    error.value = null
+  async function fetchAppointmentsByDate(date: Date) {
+    const start = startOfDay(date);
+    const end = endOfDay(date);
+    
+    // Check if there are already appointments in the range of the given date
+    const existingAppointments = appointments.value.filter(appointment => {
+      const appointmentDate = parseISO(appointment.time);
+      return appointmentDate >= start && appointmentDate <= end;
+    });
+
+    // If appointments already exist for the date range, do not fetch
+    if (existingAppointments.length > 0) {
+      return; // Exit the function early
+    }
+
+    isLoading.value = true
     try {
       const data = await $fetch(`/api/appointments/day`, {
         method: 'GET',
         headers: {
           'x-init-data': useWebApp().initData
         },
-        params: { date }
+        params: { date: date.toISOString() }
       })
       appointments.value = data
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function fetchAppointmentCounts() {
+    error.value = null
+    try {
+      const data = await $fetch<AppointmentCounts>('/api/appointments/count', {
+        method: 'GET',
+        headers: {
+          'x-init-data': useWebApp().initData
+        }
+      })
+      appointmentCounts.value = data
     } catch (err) {
       error.value = (err as Error).message
-    } finally {
     }
   }
 
@@ -58,12 +109,14 @@ export const useAdminStore = defineStore('admin', () => {
       })
       isAdmin.value = data.isAdmin
       if (isAdmin.value) {
-        await disabledDaysStore.fetchDisabledDays()
+        await Promise.all([
+          disabledDaysStore.fetchDisabledDays(),
+          fetchAppointmentCounts()
+        ])
       }
     } catch (err) {
       error.value = (err as Error).message
       isAdmin.value = false
-    } finally {
     }
   }
   function showDetails() {
@@ -89,18 +142,29 @@ export const useAdminStore = defineStore('admin', () => {
       ],
     })
   }
-  onMounted(async () => {
-    await checkAuth()
-  })
+
+
+  
+
+
+  async function onDateChange(newDate: Date) {
+    currentDate.value = newDate
+    await fetchAppointmentsByDate(newDate)
+  }
+
 
   return {
-    appointments,
+    currentDate,
+    filteredAppointments,
     paginationInfo,
     isAdmin,
     error,
     disabledDays,
+    isLoading,
+    appointmentCounts,
     disabledDayDates,
     checkAuth,
+    onDateChange,
     fetchAppointmentsByDate,
     showDetails,
     addDisabledDay(date: string) {

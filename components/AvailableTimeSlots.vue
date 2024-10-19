@@ -50,7 +50,7 @@ const adminStore = useAdminStore()
 
 onMounted(() => {
   if (adminStore.isAdmin) {
-    adminStore.fetchAppointmentsByDate(calendarStore.selectedDate?.toISOString() || '')
+    adminStore.fetchAppointmentsByDate(calendarStore.selectedDate as Date)
   }
 })
 </script>

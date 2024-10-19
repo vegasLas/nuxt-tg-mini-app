@@ -28,7 +28,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
   }
 })
-
 async function fetchAppointments(whereClause: any, page: number, take: number, date?: string) {
   const [appointments, totalCount] = await Promise.all([
     prisma.appointment.findMany({

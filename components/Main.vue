@@ -1,11 +1,23 @@
 <template>
 	<ClientOnly>
 		<div class="appointment-scheduler">
-			<div class="appointments-count">
+			<div v-if="!adminStore.isAdmin" class="appointments-count">
 			<button class="count-button" @click="stepStore.showAppointmentsList">
 				<span class="label">Мои записи</span>
 				<span class="count">{{ userStore.appointments.filter(appointment => new Date(appointment.time) >= new Date()).length }}</span>
 			</button>
+			</div>
+
+			<!-- Modified admin counts section -->
+			<div @click="stepStore.showAdminAppointmentsList" v-if="adminStore.isAdmin && adminStore.appointmentCounts" class="admin-counts">
+				<div class="count-item">
+					<span class="label">Сегодня:</span>
+					<span class="count">{{ adminStore.appointmentCounts.todayCount }}</span>
+				</div>
+					<div class="count-item">
+						<span class="label">Всего (30 дней):</span>
+						<span class="count">{{ adminStore.appointmentCounts.totalCount }}</span>
+					</div>
 			</div>
 
 			<template v-if="stepStore.currentStep === 'calendar'">
@@ -23,14 +35,22 @@
 			<template v-else-if="stepStore.currentStep === 'appointmentsList'">
 				<AppointmentsList />
 			</template>
+
+			<!-- New template for AdminAppointmentsList -->
+			<template v-else-if="stepStore.currentStep === 'adminAppointmentsList'">
+				<AdminAppointmentsList />
+			</template>
 		</div>
 	</ClientOnly>
   </template>
   
   <script setup lang="ts">
+  import AdminAppointmentsList from './AdminAppointmentsList.vue'
+
   const userStore = useUserStore()
   const adminStore = useAdminStore()
   const stepStore = useStepStore()
+
   onMounted(async () => {
     await adminStore.checkAuth()
     await userStore.fetchAppointments()
@@ -123,4 +143,33 @@
 .label {
   font-size: 14px;
   margin-top: 4px;
-}</style>
+}
+
+.admin-counts {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.count-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer; /* Add this to indicate it's clickable */
+}
+
+.count-item .label {
+  font-size: 14px;
+  color: var(--tg-theme-hint-color, #999999);
+}
+
+.count-item .count {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--tg-theme-text-color, #000000);
+}
+</style>

@@ -1,5 +1,5 @@
 import { useWebAppPopup } from 'vue-tg'
-
+import { parseISO } from 'date-fns'
 export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
   const userStore = useUserStore()
@@ -74,6 +74,20 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     } else if (!adminStore.isAdmin && hasExistingAppointment.value) {
       showAppointmentOptionsPopup()
     } else {
+      if (!adminStore.isAdmin) {
+        const activeAppointments = userStore.appointments.filter(appointment => 
+          parseISO(appointment.time) > new Date()
+        )
+  
+        if (activeAppointments.length >= 2 && !adminStore.isAdmin) {
+          showNotification({
+            type: 'error',
+            message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
+            time: 3
+          })
+          return
+        }
+      }
       proceed()
     }
   }
