@@ -1,8 +1,8 @@
-import { parseISO } from 'date-fns'
 export const useUserInfoStore = defineStore('userInfo', () => {
   const calendarStore = useCalendarStore()
   
   const name = ref('')
+  
   const phone = ref('+79')
   const comment = ref('')
   const isSubmiting = ref(false)
@@ -10,14 +10,23 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     const phoneRegex = /^\+7\d{10}$/
     return name.value.trim() !== '' && phoneRegex.test(phone.value.trim())
   })
+
   
+  watch(name, (newName) => {
+    const nameRegex = /^[А-ЯЁа-яё\s]+$/;
+    if (!nameRegex.test(newName)) {
+      name.value = ''; // Reset the name if it doesn't match the regex
+    }
+  }, { immediate: true })
   watch(phone, (newPhone, oldPhone) => {
-    if (newPhone === '+' && oldPhone === '+79') {
-      phone.value = '+79'
+    if (newPhone.includes('+') && newPhone.indexOf('+') !== 0) {
+      phone.value = oldPhone || ''; // Return to oldPhone if '+' is in the center
+    } else if (newPhone === '+' && oldPhone === '+79') {
+      phone.value = '+79';
     } else if (newPhone === '+7' && oldPhone === '+79') {
-      phone.value = '+79'
+      phone.value = '+79';
     } else if (!newPhone.startsWith('+79')) {
-      phone.value = '+79' + newPhone.replace(/^(\+79|79|89)?/, '')
+      phone.value = '+79' + newPhone.replace(/^(\+79|79|89)?/, '');
     }
   }, { immediate: true })
   

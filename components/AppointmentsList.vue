@@ -43,9 +43,7 @@ import { BackButton } from 'vue-tg'
 const stepStore = useStepStore()
 const userStore = useUserStore()
 
-function isExpired(time: string): boolean {
-  return new Date(time) < new Date()
-}
+
 </script>
 
 <style scoped>

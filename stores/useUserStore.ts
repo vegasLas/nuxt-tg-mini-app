@@ -1,6 +1,6 @@
 import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
-import { fetchUserAppointments, removeAppointment, submitAppointment, updateAppointment } from '~/api/appointments'
+import { fetchUserAppointments, cancelAppointment, submitAppointment, updateAppointment } from '~/api/appointments'
 import { parseISO, format } from 'date-fns'
 
 export const useUserStore = defineStore('user', () => {
@@ -44,9 +44,9 @@ export const useUserStore = defineStore('user', () => {
     const id = bookedAppointmentsStore.bookedAppointments.find(appointment => parseISO(appointment.time).getTime() === time.getTime())?.id
     if (!id) return
     try {
-      await removeAppointment(id)
-      await fetchAppointments(1)  // Refresh from the first page
-      await bookedAppointmentsStore.fetchOpenWindows()
+      await cancelAppointment(id)
+      appointments.value = appointments.value.filter(appointment => appointment.id !== id)
+      bookedAppointmentsStore.removeAppointment(id)
     } catch (error) {
       console.error('Error removing appointment:', error)
     }
@@ -68,7 +68,7 @@ export const useUserStore = defineStore('user', () => {
     return new Promise((resolve) => {
       const { showPopup, onPopupClosed } = useWebAppPopup()
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
-        if (e.button_id !== 'removeAppointment') {
+        if (e.button_id !== 'cancelAppointment') {
           resolve(false)
           return
         }
@@ -95,7 +95,7 @@ export const useUserStore = defineStore('user', () => {
             type: 'destructive',
           },
           {
-            id: 'removeAppointment',
+            id: 'cancelAppointment',
             type: 'default',
             text: 'Отменить запись'
           },

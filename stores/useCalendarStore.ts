@@ -11,6 +11,9 @@ export const useCalendarStore = defineStore('calendar', () => {
   const selectedDate = ref<Date | null>(null)
   const { openWindows } = storeToRefs(bookedAppointmentsStore)
   const getDotColor = (hasUserAppointment: boolean, slots: { booked: boolean }[]): string => {
+    if (adminStore.isAdmin) {
+      return slots.some(slot => slot.booked) ? 'yellow' : 'green';
+    }
     if (hasUserAppointment) return 'yellow';
     return slots.some(slot => !slot.booked) ? 'green' : 'red';
   }

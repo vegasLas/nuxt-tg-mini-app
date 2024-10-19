@@ -89,7 +89,9 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
 
     return Object.values(openWindowsMap)
   }
-
+  function removeAppointment(id: number) {
+    bookedAppointments.value = bookedAppointments.value.filter(appointment => appointment.id !== id)
+  }
   // Helper function to check if a day is disabled
   function isDisabledDay(date: Date): boolean {
     return disabledDaysStore.disabledDays.some(disabledDay => {
@@ -136,6 +138,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     bookedAppointments,
     isErrorFetchingBookedAppointments,
     openWindows,
+    removeAppointment,
     fetchOpenWindows,
     rescheduleAppointment,
   }

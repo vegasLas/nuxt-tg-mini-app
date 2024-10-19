@@ -17,7 +17,7 @@
   <div class="legend">
     <div><span class="dot green"></span> Есть свободные окна</div>
     <div><span class="dot red"></span> Все окна заняты</div>
-    <div><span class="dot yellow"></span> {{adminStore.isAdmin ? 'У вас есть запись' : 'Есть записи'}}</div>
+    <div><span class="dot yellow"></span> {{!adminStore.isAdmin ? 'У вас есть запись' : 'Есть записи'}}</div>
   </div>
   <div v-if="adminStore.isAdmin && calendarStore.selectedDate" class="admin-actions">
     <button
