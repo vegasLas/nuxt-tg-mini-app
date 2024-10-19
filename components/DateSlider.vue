@@ -1,9 +1,9 @@
 <template>
   <div class="date-slider">
     <button @click="changeDate(-1)" class="arrow-button">&#9664;</button>
-    <div class="date-display" :class="{ 'weekend': isWeekend }">
+    <div class="date-display" :class="{ 'weekend': isWeekend(currentDate.getDay()) }">
       {{ formattedDate }}
-      <span v-if="isWeekend" class="weekend-indicator">Выходной</span>
+      <span v-if="isWeekend(currentDate.getDay())" class="weekend-indicator">Выходной</span>
     </div>
     <button @click="changeDate(1)" class="arrow-button">&#9654;</button>
   </div>
@@ -30,10 +30,6 @@ const formattedDate = computed(() => {
   }).format(currentDate.value)
 })
 
-const isWeekend = computed(() => {
-  const day = currentDate.value.getDay()
-  return day === 0 || day === 6 // 0 is Sunday, 6 is Saturday
-})
 
 function changeDate(days: number) {
   currentDate.value = addDays(currentDate.value, days)

@@ -1,5 +1,7 @@
 import { useWebApp, useWebAppPopup } from 'vue-tg'
 import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns'
+import { cancelAppointment } from '~/api/appointments'
+
 interface Appointment {
   id: number
   time: string
@@ -34,6 +36,7 @@ interface AppointmentCounts {
 export const useAdminStore = defineStore('admin', () => {
   const disabledDaysStore = useDisabledTimeStore()
   const availableStore = useAvailableTimeSlots()
+  const bookedAppointmentsStore = useBookedAppointmentsStore()
   const { disabledDays, disabledDayDates } = storeToRefs(disabledDaysStore)
   const appointments = ref<Appointment[]>([])
   const paginationInfo = ref<PaginationInfo | null>(null)
@@ -42,6 +45,7 @@ export const useAdminStore = defineStore('admin', () => {
   const appointmentCounts = ref<AppointmentCounts | null>(null)
   const currentDate = ref(new Date())
   const isLoading = ref(false)
+  const isCanceling = ref(false)
   const filteredAppointments = computed(() => {
     const start = startOfDay(currentDate.value);
     const end = endOfDay(currentDate.value);
@@ -125,8 +129,7 @@ export const useAdminStore = defineStore('admin', () => {
     const appointment = appointments.value.find(appointment => isSameHour(appointment.time, time))
     const title = `Запись на ${formatDateTime(time)}`
     const message = [
-      appointment?.user?.name ? `Клиент: ${appointment.user.name}` : '',
-      appointment?.user?.username ? `tg: @${appointment.user.username}` : '',
+      appointment?.name ? `Клиент: ${appointment.name}` : '',
       appointment?.phoneNumber ? `Номер телефона: ${appointment.phoneNumber}` : '',
       appointment?.comment ? `Комментарий: ${appointment.comment}` : '',
     ].filter(Boolean).join('\n');
@@ -153,6 +156,79 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
 
+  async function deleteAppointment(id: number) {
+    error.value = null
+    try {
+      await cancelAppointment(id)
+      bookedAppointmentsStore.removeAppointment(id)
+      // Remove the appointment from the local state
+      appointments.value = appointments.value.filter(appointment => appointment.id !== id)
+      // Update appointment counts
+      if (appointmentCounts.value) {
+        appointmentCounts.value.totalCount--
+        if (isSameDay(parseISO(appointments.value.find(a => a.id === id)?.time || ''), new Date())) {
+          appointmentCounts.value.todayCount--
+        }
+      }
+      showNotification({
+        type: 'success',
+        message: 'Запись отменена',
+      })
+    } catch (err) {
+      showNotification({
+        type: 'error',
+        message: 'Не удалось отменить запись',
+      })
+      error.value = (err as Error).message
+      console.error('Error deleting appointment:', err)
+    }
+  }
+  async function handleCancelAppointment(id: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const { showPopup, onPopupClosed } = useWebAppPopup()
+      const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
+        if (e.button_id !== 'cancelAppointment') {
+          resolve(false)
+          return
+        }
+        isCanceling.value = true  // Set canceling state to true
+        try {
+          await deleteAppointment(id)
+          appointments.value = appointments.value.filter(appointment => appointment.id !== id)
+          showNotification({type: 'success', message: 'Запись успешно отменена'})
+          resolve(true)
+        } catch (error) { 
+          showNotification({type: 'error', message: 'Ошибка при отмене записи'})
+          console.error('Error removing appointment:', error)
+          resolve(false)
+        } finally {
+          isCanceling.value = false  // Reset canceling state
+          popupClosed.off()
+        }
+      }, { manual: true })
+      showPopup({
+        title: 'Отмена записи',
+        message: 'Хотите отменить запись?',
+        buttons: [
+          {
+            text: 'Закрыть',
+            type: 'destructive',
+          },
+          {
+            id: 'cancelAppointment',
+            type: 'default',
+            text: 'Отменить запись'
+          },
+        ],
+      })
+    })
+  }
+  function addAppointmentToCurrendDate() {
+    const stepStore = useStepStore()
+    const calendarStore = useCalendarStore()
+    calendarStore.setSelectedDate(currentDate.value)
+    stepStore.goToTimeSlots()
+  }
   return {
     currentDate,
     filteredAppointments,
@@ -163,6 +239,8 @@ export const useAdminStore = defineStore('admin', () => {
     isLoading,
     appointmentCounts,
     disabledDayDates,
+    isCanceling,
+    addAppointmentToCurrendDate,
     checkAuth,
     onDateChange,
     fetchAppointmentsByDate,
@@ -173,5 +251,6 @@ export const useAdminStore = defineStore('admin', () => {
     removeDisabledDay(id: string) {
       disabledDaysStore.removeDisabledDay(id)
     },
+    handleCancelAppointment,
   }
 })

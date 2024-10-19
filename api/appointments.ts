@@ -25,7 +25,7 @@ export async function fetchUserAppointments(page: number = 1) {
   }
 }
 
-export async function removeAppointment(id: number) {
+export async function cancelAppointment(id: number) {
   const response = await $fetch<{ success: boolean }>(`/api/appointments/${id}`, {
     method: 'DELETE',
     headers: {

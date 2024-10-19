@@ -15,20 +15,34 @@
             <div class="appointment-details">
               <div><strong>Имя:</strong> {{ appointment.name }}</div>
               <div><strong>Телефон:</strong> {{ appointment.phoneNumber }}</div>
+              <div v-if="appointment.comment"><strong>Комментарий:</strong> {{ appointment.comment }}</div>
             </div>
+            <button v-if="!isExpired(appointment.time)"
+              @click="() => adminStore.handleCancelAppointment(appointment.id)"
+              class="action-button remove">
+              Отменить
+            </button>
           </div>
         </div>
       </template>
     </div>
   </div>
+  <MainButton v-if="showMainButton()" 
+  @click="adminStore.addAppointmentToCurrendDate()" 
+  text="Добавить запись" />
+  <BackButton @click="stepStore.goToCalendar()" />
+  <LoaderOverlay v-if="adminStore.isCanceling" />
 </template>
 
 <script setup lang="ts">
-import DateSlider from './DateSlider.vue'
-import { parseISO } from 'date-fns'
+import { parseISO, isSameDay } from 'date-fns'
+import { BackButton, MainButton } from 'vue-tg'
 
 const adminStore = useAdminStore()
-
+const stepStore = useStepStore()
+function showMainButton() {
+  return !isExpired(adminStore.currentDate) && !isSameDay(adminStore.currentDate, new Date()) && !isWeekend(adminStore.currentDate.getDay())
+}
 function formatTime(time: string) {
   return formatDateTime(parseISO(time)).split(' ')[1]
 }
@@ -65,15 +79,15 @@ onMounted(() => {
 
 .appointment-item {
   display: flex;
-  gap: 20px;
-  padding: 20px;
+  gap: 10px;
+  padding: 10px;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .appointment-time {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   min-width: 60px;
   color: #495057;
@@ -102,5 +116,17 @@ onMounted(() => {
   height: 100%;
   background-color: #ffffff;
   border-radius: 8px;
+}
+.action-button {
+  padding: 2px 4px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.remove {
+  background-color: #ff4d4f;
+  color: #ffffff;
 }
 </style>

@@ -52,10 +52,9 @@
 
 <script setup lang="ts">
 import { BackButton, MainButton } from 'vue-tg'
-import { storeToRefs } from 'pinia'
 const stepStore = useStepStore()
 const userInfoStore = useUserInfoStore()
-const { name, phone, comment, isSubmiting, isFormValid } = storeToRefs(userInfoStore)
+const { name, phone, comment, isFormValid } = storeToRefs(userInfoStore)
 
 </script>
 
