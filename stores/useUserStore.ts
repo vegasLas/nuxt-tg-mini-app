@@ -75,10 +75,10 @@ export const useUserStore = defineStore('user', () => {
         isCanceling.value = true  // Set canceling state to true
         try {
           await removeUserAppointment(new Date(time))
-          showNotification('success', 'Запись успешно отменена')
+          showNotification({type: 'success', message: 'Запись успешно отменена'})
           resolve(true)
         } catch (error) { 
-          showNotification('error', 'Ошибка при отмене записи')
+          showNotification({type: 'error', message: 'Ошибка при отмене записи'})
           console.error('Error removing appointment:', error)
           resolve(false)
         } finally {
@@ -115,12 +115,12 @@ export const useUserStore = defineStore('user', () => {
       const response = await submitAppointment(appointmentData)
       appointments.value.unshift(response)
       await bookedAppointmentsStore.fetchOpenWindows()
-      showNotification('success', 'Запись прошла успешно')
+      showNotification({type: 'success', message: 'Запись прошла успешно'})
       return true
     } catch (error) {
       console.error('Error submitting form:', error)
       
-      showNotification('error', 'Не удалось создать запись. Попробуйте позже.')
+      showNotification({type: 'error', message: 'Не удалось создать запись. Попробуйте позже.'})
 
       return false
     }
@@ -133,11 +133,11 @@ export const useUserStore = defineStore('user', () => {
       if (index !== -1) {
         appointments.value[index] = updatedAppointment
       }
-      showNotification('success', 'Запись успешно обновлена')
+      showNotification({type: 'success', message: 'Запись успешно обновлена'})
       return true
     } catch (error) {
       console.error('Error updating appointment:', error)
-      showNotification('error', 'Не удалось обновить запись. Попробуйте позже.')
+      showNotification({type: 'error', message: 'Не удалось обновить запись. Попробуйте позже.'})
       return false
     }
   }
@@ -159,11 +159,11 @@ export const useUserStore = defineStore('user', () => {
         newTime
       )
 
-      showNotification('success', 'Запись успешно перенесена')
+      showNotification({type: 'success', message: 'Запись успешно перенесена'})
       return true
     } catch (error) {
       console.error('Error rescheduling appointment:', error)
-      showNotification('error', 'Не удалось перенести запись. Попробуйте позже.')
+      showNotification({type: 'error', message: 'Не удалось перенести запись. Попробуйте позже.'})
       return false
     }
   }

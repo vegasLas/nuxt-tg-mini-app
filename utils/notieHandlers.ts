@@ -2,11 +2,11 @@ import notie from 'notie'
 
 type NotieType = 'success' | 'error' | 'warning' | 'info'
 
-export const showNotification = (type: NotieType, message: string) => {
+export const showNotification = (data: {type: NotieType, message: string, time?: number, position?: 'top' | 'bottom' }) => {
   notie.alert({
-    type: type,
-    text: message,
-    time: 1,
-    position: 'bottom'
+    type: data.type,
+    text: data.message,
+    time: data.time || 1,
+    position: data.position || 'bottom'
   })
 }
