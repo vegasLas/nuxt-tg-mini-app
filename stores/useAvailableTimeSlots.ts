@@ -4,7 +4,9 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const calendarStore = useCalendarStore()
   const userStore = useUserStore()
   const stepStore = useStepStore()
-  const { isCanceling } = storeToRefs(userStore)
+  const appointmentStore = useAppointmentStore()
+  const { isCanceling } = storeToRefs(appointmentStore)
+  
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const { openWindows } = storeToRefs(bookedAppointmentsStore)
   const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
@@ -26,7 +28,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   })
 
   const hasExistingAppointment = computed(() => 
-    userStore.hasAppointmentOnDate(calendarStore.selectedDate)
+    userStore.hasAppointment(selectedSlot.value?.bookedAppointmentId!)
   )
 
   const isLoading = computed(() => 
@@ -41,7 +43,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   })
   
   function selectTimeSlot(slot: { time: Date, show: string, bookedAppointmentId: number | null }): void {
-    if (userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.bookedAppointmentId)) {
+      if (userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)) {
       selectedSlot.value = slot
       cancelMode.value = true
     } else {
@@ -64,37 +66,45 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     cancelMode.value = false
   }
   async function cancelAppointment(): Promise<void> {
-    const isCanceled = await userStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
+    const isCanceled = await appointmentStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
     if (isCanceled) {
+      userStore.removeUserAppointmentOfList(selectedSlot.value?.bookedAppointmentId!)
       resetSelectedSlotAndMode()
     }
   }
 
   async function handleMainButtonClick() {
-    if (adminStore.isAdmin && selectedSlot.value?.bookedAppointmentId) {
-      const isCanceled = await adminStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
-      if (isCanceled) {
-        resetSelectedSlotAndMode()
-      }
-    } else if (!adminStore.isAdmin && hasExistingAppointment.value) {
-      showAppointmentOptionsPopup()
-    } else {
-      if (!adminStore.isAdmin) {
-        const activeAppointments = userStore.appointments.filter(appointment => 
-          parseISO(appointment.time) > new Date()
-        )
-  
-        if (activeAppointments.length >= 2 && !adminStore.isAdmin) {
-          showNotification({
-            type: 'error',
-            message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
-            time: 3
-          })
-          return
-        }
-      }
-      proceed()
+    const { bookedAppointmentId } = selectedSlot.value || {};
+    
+    if (adminStore.isAdmin && bookedAppointmentId) {
+      const isCanceled = await adminStore.handleCancelAppointment(bookedAppointmentId);
+      if (isCanceled) resetSelectedSlotAndMode();
+      return;
     }
+    if (!adminStore.isAdmin) {
+      const activeAppointments = userStore.appointments.filter(appointment => 
+        parseISO(appointment.time) > new Date()
+      );
+
+      if (activeAppointments.length >= 2) {
+        showNotification({
+          type: 'error',
+          message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
+          time: 3
+        });
+        return;
+      }
+    }
+    if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
+      showAppointmentOptionsPopup()
+      return
+    }
+    if (selectedSlot.value && hasExistingAppointment.value) {
+      await cancelAppointment()
+      return
+    }
+
+    proceed();
   }
 
   function showAppointmentOptionsPopup() {
@@ -122,7 +132,8 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
 
     const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
       if (e.button_id === 'reschedule') {
-        rescheduleAppointment()
+        await rescheduleAppointment()
+        resetSelectedSlotAndMode()
       } else if (e.button_id === 'createNew') {
         const activeAppointments = userStore.appointments.filter(appointment => 
           parseISO(appointment.time) > new Date()
@@ -144,9 +155,10 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
 
   const rescheduleAppointment = async () => {
     if (!selectedSlot.value) return
-    const oldAppointment = userStore.appointments.find(appointment => 
-      new Date(appointment.time).toDateString() === calendarStore.selectedDate?.toDateString()
-    )
+    const oldAppointment = userStore.appointments.find(appointment => {
+      const appointmentDate = new Date(appointment.time);
+      return appointmentDate.toDateString() === selectedSlot.value?.time.toDateString();
+    });
 
     if (!oldAppointment) return
     isRescheduling.value = true

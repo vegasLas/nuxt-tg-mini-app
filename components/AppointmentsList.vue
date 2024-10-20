@@ -13,7 +13,7 @@
         </div>
         <div class="appointment-actions" :class="{ 'expired': isExpired(appointment.time) }">
           <template v-if="!isExpired(appointment.time)">
-            <button @click="() => userStore.handleCancelAppointment(appointment.id)" class="action-button remove">
+            <button @click="() => appointmentStore.handleCancelAppointment(appointment.id)" class="action-button remove">
               Отменить
             </button>
           </template>
@@ -24,7 +24,7 @@
       </li>
     </ul>
     <div v-if="userStore.hasMoreAppointments" class="load-more">
-      <button @click="userStore.loadMoreAppointments" class="load-more-button" :disabled="userStore.isCanceling">
+      <button @click="userStore.loadMoreAppointments" class="load-more-button" :disabled="appointmentStore.isCanceling">
         Загрузить еще
       </button>
     </div>
@@ -33,7 +33,7 @@
       (Всего записей: {{ userStore.totalItems }})
     </div>
     <BackButton @click="stepStore.goToCalendar()" />
-    <LoaderOverlay v-if="userStore.isCanceling" />
+    <LoaderOverlay v-if="appointmentStore.isCanceling" />
   </div>
 </template>
 
@@ -42,7 +42,7 @@ import { BackButton } from 'vue-tg'
 
 const stepStore = useStepStore()
 const userStore = useUserStore()
-
+const appointmentStore = useAppointmentStore()
 
 </script>
 
