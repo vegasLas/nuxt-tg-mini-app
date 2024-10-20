@@ -11,18 +11,18 @@
           v-for="slot in availableStore.availableTimeSlots"
           :key="slot.show"
           :class="['time-slot', { 
-            booked: slot.booked || new Date(slot.time) <= new Date(),
+            booked: slot.bookedAppointmentId || new Date(slot.time) <= new Date(),
             selected: availableStore.selectedSlot?.time === slot.time,
-            'user-appointment': userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.booked)
+            'user-appointment': userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.bookedAppointmentId)
           }]" 
           @click="availableStore.selectTimeSlot(slot)"
-          :disabled="!adminStore.isAdmin && (slot.booked && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date())"
+          :disabled="!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.time) || new Date(slot.time) <= new Date())"
         >
-          <span v-if="userStore.hasAppointment(slot.time)" class="checkmark">✓</span>
+          <span v-if="userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.bookedAppointmentId)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
         </button>
       </div>
-      <div v-if="adminStore.isAdmin && availableStore.selectedSlot && availableStore.selectedSlot.booked" class="admin-actions">
+      <div v-if="adminStore.isAdmin && availableStore.selectedSlot && availableStore.selectedSlot.bookedAppointmentId" class="admin-actions">
         <button @click="adminStore.showDetails" class="native-button details-button">Показать детали</button>
       </div>
       <BackButton @click="availableStore.closeTimeSlots()" />

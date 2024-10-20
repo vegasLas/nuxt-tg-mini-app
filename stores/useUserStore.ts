@@ -40,9 +40,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  async function removeUserAppointment(time: Date) {
-    const id = bookedAppointmentsStore.bookedAppointments.find(appointment => parseISO(appointment.time).getTime() === time.getTime())?.id
-    if (!id) return
+  async function removeUserAppointment(id: number) {
     try {
       await cancelAppointment(id)
       appointments.value = appointments.value.filter(appointment => appointment.id !== id)
@@ -64,7 +62,7 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  async function handleCancelAppointment(time: string): Promise<boolean> {
+  async function handleCancelAppointment(id: number): Promise<boolean> {
     return new Promise((resolve) => {
       const { showPopup, onPopupClosed } = useWebAppPopup()
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
@@ -74,7 +72,7 @@ export const useUserStore = defineStore('user', () => {
         }
         isCanceling.value = true  // Set canceling state to true
         try {
-          await removeUserAppointment(new Date(time))
+          await removeUserAppointment(id)
           showNotification({type: 'success', message: 'Запись успешно отменена'})
           resolve(true)
         } catch (error) { 
@@ -113,7 +111,12 @@ export const useUserStore = defineStore('user', () => {
   }) {
     try {
       const response = await submitAppointment(appointmentData)
-      appointments.value.unshift(response)
+      const adminStore = useAdminStore()
+      if (adminStore.isAdmin) {
+        adminStore.addAppointmentToList(response)
+      } else {
+        appointments.value.unshift(response)
+      }
       await bookedAppointmentsStore.fetchOpenWindows()
       showNotification({type: 'success', message: 'Запись прошла успешно'})
       return true
@@ -156,7 +159,7 @@ export const useUserStore = defineStore('user', () => {
       // Update the booked appointments and open windows
       bookedAppointmentsStore.rescheduleAppointment(
         { time: oldAppointment.time, id: oldAppointment.id },
-        newTime
+        { newTime: format(newTime, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"), id: updatedAppointment.id }
       )
 
       showNotification({type: 'success', message: 'Запись успешно перенесена'})
