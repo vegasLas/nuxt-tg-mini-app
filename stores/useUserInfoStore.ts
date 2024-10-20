@@ -38,7 +38,6 @@ export const useUserInfoStore = defineStore('userInfo', () => {
     const stepStore = useStepStore()
     
     try {
-
       const success = await userStore.submitUserAppointment({
         name: name.value,
         phoneNumber: phone.value,

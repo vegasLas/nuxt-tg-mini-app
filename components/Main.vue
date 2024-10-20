@@ -53,7 +53,9 @@
 
   onMounted(async () => {
     await adminStore.checkAuth()
-    await userStore.fetchAppointments()
+    if (!adminStore.isAdmin) {
+      await userStore.fetchAppointments()
+    }
   })
   </script>
 

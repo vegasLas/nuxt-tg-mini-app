@@ -7,7 +7,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const { isCanceling } = storeToRefs(userStore)
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const { openWindows } = storeToRefs(bookedAppointmentsStore)
-  const selectedSlot = ref<{ time: Date, show: string, booked: boolean } | null>(null)
+  const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
 
   const cancelMode = ref(false)
   const isRescheduling = ref(false)
@@ -34,14 +34,14 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   )
 
   const getMainButtonText = computed(() => {
-    if (adminStore.isAdmin && selectedSlot.value?.booked) {
+    if (adminStore.isAdmin && selectedSlot.value?.bookedAppointmentId) {
       return 'Отменить запись'
     }
     return cancelMode.value ? 'Отменить запись' : 'Продолжить'
   })
-
-  function selectTimeSlot(slot: { time: Date, show: string, booked: boolean }): void {
-    if (userStore.hasAppointment(slot.time)) {
+  
+  function selectTimeSlot(slot: { time: Date, show: string, bookedAppointmentId: number | null }): void {
+    if (userStore.hasAppointment(slot.time) || (adminStore.isAdmin && slot.bookedAppointmentId)) {
       selectedSlot.value = slot
       cancelMode.value = true
     } else {
@@ -59,18 +59,23 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   function proceed(): void {
     stepStore.proceedToUserInfo()
   }
-
+  function resetSelectedSlotAndMode(): void {
+    selectedSlot.value = null
+    cancelMode.value = false
+  }
   async function cancelAppointment(): Promise<void> {
-    const isCanceled = await userStore.handleCancelAppointment(selectedSlot.value?.time?.toString()!)
+    const isCanceled = await userStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
     if (isCanceled) {
-      selectedSlot.value = null
-      cancelMode.value = false
+      resetSelectedSlotAndMode()
     }
   }
 
-  function handleMainButtonClick() {
-    if ((adminStore.isAdmin && selectedSlot.value?.booked) || cancelMode.value) {
-      cancelAppointment()
+  async function handleMainButtonClick() {
+    if (adminStore.isAdmin && selectedSlot.value?.bookedAppointmentId) {
+      const isCanceled = await adminStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
+      if (isCanceled) {
+        resetSelectedSlotAndMode()
+      }
     } else if (!adminStore.isAdmin && hasExistingAppointment.value) {
       showAppointmentOptionsPopup()
     } else {

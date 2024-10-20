@@ -10,10 +10,6 @@ interface Appointment {
   comment: string | null
   phoneNumber: string
   userId: number
-  user: {
-    username: string | null
-    name: string | null
-  } | null
 }
 
 interface PaginationInfo {
@@ -54,7 +50,12 @@ export const useAdminStore = defineStore('admin', () => {
       return appointmentDate >= start && appointmentDate <= end;
     });
   });
-
+  function addAppointmentToList(appointment: Appointment) {
+    appointments.value.unshift(appointment)
+    if (appointmentCounts.value) {
+      appointmentCounts.value.totalCount += 1;
+    }
+  }
   async function fetchAppointmentsByDate(date: Date) {
     const start = startOfDay(date);
     const end = endOfDay(date);
@@ -194,7 +195,6 @@ export const useAdminStore = defineStore('admin', () => {
         isCanceling.value = true  // Set canceling state to true
         try {
           await deleteAppointment(id)
-          appointments.value = appointments.value.filter(appointment => appointment.id !== id)
           showNotification({type: 'success', message: 'Запись успешно отменена'})
           resolve(true)
         } catch (error) { 
@@ -245,6 +245,7 @@ export const useAdminStore = defineStore('admin', () => {
     onDateChange,
     fetchAppointmentsByDate,
     showDetails,
+    addAppointmentToList,
     addDisabledDay(date: string) {
       disabledDaysStore.addDisabledDay(date)
     },
