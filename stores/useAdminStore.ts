@@ -1,5 +1,5 @@
 import { useWebApp, useWebAppPopup } from 'vue-tg'
-import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay } from 'date-fns'
+import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay, isToday } from 'date-fns'
 import { cancelAppointment } from '~/api/appointments'
 
 interface Appointment {
@@ -45,13 +45,18 @@ export const useAdminStore = defineStore('admin', () => {
   const filteredAppointments = computed(() => {
     const start = startOfDay(currentDate.value);
     const end = endOfDay(currentDate.value);
-    return appointments.value.filter(appointment => {
-      const appointmentDate = parseISO(appointment.time);
-      return appointmentDate >= start && appointmentDate <= end;
-    });
+    return appointments.value
+      .filter(appointment => {
+        const appointmentDate = parseISO(appointment.time);
+        return appointmentDate >= start && appointmentDate <= end;
+      })
+      .sort((a, b) => parseISO(a.time).getTime() - parseISO(b.time).getTime());
   });
   function addAppointmentToList(appointment: Appointment) {
     appointments.value.unshift(appointment)
+    if (isToday(parseISO(appointment.time)) && appointmentCounts.value) {
+        appointmentCounts.value.todayCount += 1;
+    }
     if (appointmentCounts.value) {
       appointmentCounts.value.totalCount += 1;
     }
@@ -163,14 +168,15 @@ export const useAdminStore = defineStore('admin', () => {
       await cancelAppointment(id)
       bookedAppointmentsStore.removeAppointment(id)
       // Remove the appointment from the local state
-      appointments.value = appointments.value.filter(appointment => appointment.id !== id)
       // Update appointment counts
+      const index = appointments.value.findIndex(a => a.id === id)
       if (appointmentCounts.value) {
         appointmentCounts.value.totalCount--
-        if (isSameDay(parseISO(appointments.value.find(a => a.id === id)?.time || ''), new Date())) {
+        if (isToday(parseISO(appointments.value[index].time))) {
           appointmentCounts.value.todayCount--
         }
       }
+      appointments.value.splice(index, 1)
       showNotification({
         type: 'success',
         message: 'Запись отменена',
