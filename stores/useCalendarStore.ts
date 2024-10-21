@@ -1,20 +1,17 @@
 import type { CalendarAttribute } from '~/types'
-import { 
-  isSameDay,
-  parseISO,
-} from 'date-fns'
-
+import { startOfDay } from 'date-fns'
 export const useCalendarStore = defineStore('calendar', () => {
   const userStore = useUserStore()
   const adminStore = useAdminStore()
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const selectedDate = ref<Date | null>(null)
-  const { openWindows } = storeToRefs(bookedAppointmentsStore)
+  const openWindowsStore = useOpenWindowsStore()
+  const { openWindows } = storeToRefs(openWindowsStore)
   const getDotColor = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): string => {
-    const isPast = date < new Date();
+    const isPast = date < startOfDay(new Date());
     const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
 
-    if (isPast) {
+    if (isPast && adminStore.isAdmin) {
       return hasBookedSlots ? 'pink' : 'blue';
     }
     if (hasUserAppointment) return 'yellow';
@@ -22,18 +19,24 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
 
   const getPopoverLabel = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): { label: string } => {
-    const isPast = date < new Date();
+    const isPast = date < startOfDay(new Date());
     const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
 
-    if (isPast) {
+    if (isPast && adminStore.isAdmin) {
       return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
     }
     return {
-      label: hasUserAppointment 
-        ? 'У вас есть запись на этот день'
-        : slots.some(slot => !slot.bookedAppointmentId) 
-          ? 'Есть свободные окна' 
-          : 'Все окна заняты'
+      label: adminStore.isAdmin 
+        ? hasBookedSlots 
+          ? 'Есть записи на этот день' 
+          : isPast 
+            ? 'Не было записей' 
+            : 'Есть свободные окна'
+        : hasUserAppointment 
+          ? 'У вас есть запись на этот день'
+          : slots.some(slot => !slot.bookedAppointmentId) 
+            ? 'Есть свободные окна' 
+            : 'Все окна заняты'
     };
   }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {

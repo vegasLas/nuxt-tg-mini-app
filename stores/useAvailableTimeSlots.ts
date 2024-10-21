@@ -6,9 +6,8 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const stepStore = useStepStore()
   const appointmentStore = useAppointmentStore()
   const { isCanceling } = storeToRefs(appointmentStore)
-  
-  const bookedAppointmentsStore = useBookedAppointmentsStore()
-  const { openWindows } = storeToRefs(bookedAppointmentsStore)
+  const openWindowsStore = useOpenWindowsStore()
+  const { openWindows } = storeToRefs(openWindowsStore)
   const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
 
   const cancelMode = ref(false)
