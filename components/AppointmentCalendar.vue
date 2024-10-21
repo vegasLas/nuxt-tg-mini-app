@@ -3,6 +3,7 @@
     <VCalendar
       size="large"
       locale="ru-RU"
+      @did-move="calendarStore.onMonthChange"
       :attributes="calendarStore.calendarAttributes"
       :disabled-dates="[
         {

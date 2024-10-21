@@ -78,6 +78,10 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
       if (isCanceled) resetSelectedSlotAndMode();
       return;
     }
+    if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
+      showAppointmentOptionsPopup()
+      return
+    }
     if (!adminStore.isAdmin) {
       const activeAppointments = userStore.appointments.filter(appointment => 
         parseISO(appointment.time) > new Date()
@@ -94,10 +98,6 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   }
     if (selectedSlot.value && hasExistingAppointment.value) {
       await cancelAppointment()
-      return
-    }
-    if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
-      showAppointmentOptionsPopup()
       return
     }
 

@@ -50,16 +50,24 @@
   const userStore = useUserStore()
   const adminStore = useAdminStore()
   const stepStore = useStepStore()
+  const bookedAppointmentsStore = useBookedAppointmentsStore()
 
   onMounted(async () => {
     await adminStore.checkAuth()
     if (!adminStore.isAdmin) {
       await userStore.fetchAppointments()
+      await bookedAppointmentsStore.fetchOpenWindows()
+    }
+    else {
+      await bookedAppointmentsStore.fetchOpenWindowsForAdmin(new Date())
     }
   })
   </script>
 
   <style scoped>
+.test {
+    display: none
+  }
 .appointment-scheduler {
   display: flex;
   flex-direction: column;

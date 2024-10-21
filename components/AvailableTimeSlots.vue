@@ -47,10 +47,11 @@ const availableStore = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
+const bookedAppointmentsStore = useBookedAppointmentsStore()
 
 onMounted(() => {
-  if (adminStore.isAdmin) {
-    adminStore.fetchAppointmentsByDate(calendarStore.selectedDate as Date)
+  if (adminStore.isAdmin && calendarStore.selectedDate) {
+    adminStore.fetchAppointmentsByDate(calendarStore.selectedDate)
   }
 })
 </script>

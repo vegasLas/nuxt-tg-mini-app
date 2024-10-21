@@ -1,12 +1,30 @@
 import { PrismaClient } from '@prisma/client'
+import { parseISO, startOfDay, endOfDay } from 'date-fns'
 
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   try {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0) // Set to start of the day (00:00)
-    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const query = getQuery(event)
+    const startDateParam = query.startDate as string | undefined
+    const endDateParam = query.endDate as string | undefined
+
+    let startDate: Date
+    let endDate: Date
+
+    if (startDateParam && endDateParam) {
+      // If specific date range is provided, check if the user is an admin
+      if (!isAdminUser(event)) {
+        throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+      }
+      startDate = startOfDay(parseISO(startDateParam))
+      endDate = endOfDay(parseISO(endDateParam))
+    } else {
+      // If no date range is provided, fetch appointments for the next 30 days
+      startDate = startOfDay(new Date())
+      endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+    }
+
     const appointments = await prisma.appointment.findMany({
       select: {
         id: true,
@@ -15,8 +33,8 @@ export default defineEventHandler(async (event) => {
       where: {
         booked: true,
         time: {
-          gte: today,
-          lte: thirtyDaysFromNow
+          gte: startDate,
+          lte: endDate
         }
       },
       orderBy: {

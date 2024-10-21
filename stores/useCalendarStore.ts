@@ -10,15 +10,24 @@ export const useCalendarStore = defineStore('calendar', () => {
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const selectedDate = ref<Date | null>(null)
   const { openWindows } = storeToRefs(bookedAppointmentsStore)
-  const getDotColor = (hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): string => {
-    if (adminStore.isAdmin) {
-      return slots.some(slot => slot.bookedAppointmentId) ? 'yellow' : 'green';
+  const getDotColor = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): string => {
+    const isPast = date < new Date();
+    const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
+
+    if (isPast) {
+      return hasBookedSlots ? 'pink' : 'blue';
     }
     if (hasUserAppointment) return 'yellow';
     return slots.some(slot => !slot.bookedAppointmentId) ? 'green' : 'red';
   }
 
-  const getPopoverLabel = (hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): { label: string } => {
+  const getPopoverLabel = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): { label: string } => {
+    const isPast = date < new Date();
+    const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
+
+    if (isPast) {
+      return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
+    }
     return {
       label: hasUserAppointment 
         ? 'У вас есть запись на этот день'
@@ -29,16 +38,18 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
     return openWindows.value.map(window => {
-      const hasUserAppointment = userStore.appointments.some(appointment => 
-        isSameDay(parseISO(appointment.time), window.date)
-      );
-
-      const dotColor = getDotColor(hasUserAppointment, window.slots);
+      let isBooked = false
+      if (adminStore.isAdmin) {
+        isBooked = window.slots.some(slot => slot.bookedAppointmentId)
+      } else {
+        isBooked = userStore.appointments.some(appointment => window.slots.some(slot => slot.bookedAppointmentId === appointment.id))
+      }
+      const dotColor = getDotColor(window.date, isBooked, window.slots);
 
       return {
         dot: dotColor,
         dates: window.date,
-        popover: getPopoverLabel(hasUserAppointment, window.slots)
+        popover: getPopoverLabel(window.date, isBooked, window.slots)
       };
     });
   });
@@ -69,13 +80,22 @@ export const useCalendarStore = defineStore('calendar', () => {
   function setSelectedDate(date: Date | null) {
     selectedDate.value = date
   }
-  onMounted(() => {
-    bookedAppointmentsStore.fetchOpenWindows()
-  })
+  function onMonthChange(props: { id: string }[]) {
+    console.log('onMonthChange', props)
+    const date = new Date(props[0].id);
+    const isExistingOpenWindow = openWindows.value.some(({date: windowDate}) => 
+      date.getMonth() === windowDate.getMonth() && 
+      date.getFullYear() === windowDate.getFullYear()
+    );
+    if (adminStore.isAdmin && !isExistingOpenWindow) {
+      bookedAppointmentsStore.fetchOpenWindowsForAdmin(date);
+    }
+  }
 
   return {
     calendarAttributes,
     selectedDate,
+    onMonthChange,
     disableDay,
     onDayClick,
     setSelectedDate,
