@@ -46,7 +46,14 @@ export const useUserStore = defineStore('user', () => {
       await fetchAppointments(currentPage.value + 1)
     }
   }
-
+  async function handleCancelAppointment(id: number) {
+    const isCanceled = await appointmentStore.handleCancelAppointment(id)
+    if (isCanceled) {
+      removeUserAppointmentOfList(id)
+      totalItems.value--
+    }
+    return isCanceled
+  }
   function hasAppointment(id: number) {
     return appointments.value.some(appointment => appointment.id === id)
   }
@@ -108,6 +115,7 @@ export const useUserStore = defineStore('user', () => {
     itemsPerPage,
     isLoading,
     hasMoreAppointments,
+    handleCancelAppointment,
     hasAppointmentOnDate,
     removeUserAppointmentOfList,
     hasAppointment,

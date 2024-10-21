@@ -66,11 +66,8 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     cancelMode.value = false
   }
   async function cancelAppointment(): Promise<void> {
-    const isCanceled = await appointmentStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
-    if (isCanceled) {
-      userStore.removeUserAppointmentOfList(selectedSlot.value?.bookedAppointmentId!)
-      resetSelectedSlotAndMode()
-    }
+    const isCanceled = await userStore.handleCancelAppointment(selectedSlot.value?.bookedAppointmentId!)
+    if (isCanceled) resetSelectedSlotAndMode()
   }
 
   async function handleMainButtonClick() {
@@ -94,13 +91,13 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
         });
         return;
       }
+  }
+    if (selectedSlot.value && hasExistingAppointment.value) {
+      await cancelAppointment()
+      return
     }
     if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
       showAppointmentOptionsPopup()
-      return
-    }
-    if (selectedSlot.value && hasExistingAppointment.value) {
-      await cancelAppointment()
       return
     }
 
