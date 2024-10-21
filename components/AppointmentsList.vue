@@ -13,7 +13,7 @@
         </div>
         <div class="appointment-actions" :class="{ 'expired': isExpired(appointment.time) }">
           <template v-if="!isExpired(appointment.time)">
-            <button @click="() => appointmentStore.handleCancelAppointment(appointment.id)" class="action-button remove">
+            <button @click="() => userStore.handleCancelAppointment(appointment.id)" class="action-button remove">
               Отменить
             </button>
           </template>
