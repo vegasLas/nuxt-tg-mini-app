@@ -16,9 +16,17 @@
     />
   </div>
   <div class="legend">
-    <div><span class="dot green"></span> Есть свободные окна</div>
-    <div><span class="dot red"></span> Все окна заняты</div>
-    <div><span class="dot yellow"></span> {{!adminStore.isAdmin ? 'У вас есть запись' : 'Есть записи'}}</div>
+    <div v-if="!adminStore.isAdmin">
+      <div><span class="dot green"></span> Есть свободные окна</div>
+      <div><span class="dot red"></span> Все окна заняты</div>
+      <div><span class="dot orange"></span> У вас есть запись</div>
+    </div>
+    <div v-else>
+      <div><span class="dot green"></span> Есть свободные окна</div>
+      <div><span class="dot orange"></span> Есть записи</div>
+      <div><span class="dot pink"></span> Были записи</div>
+      <div><span class="dot blue"></span> Не было записей</div>
+    </div>
   </div>
   <div v-if="adminStore.isAdmin && calendarStore.selectedDate" class="admin-actions">
     <button
@@ -41,6 +49,23 @@ const calendarStore = useCalendarStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
 
+// Add a computed property to get the legend items
+const legendItems = computed(() => {
+  if (adminStore.isAdmin) {
+    return [
+      { color: 'green', label: 'Есть свободные окна' },
+      { color: 'red', label: 'Все окна заняты' },
+      { color: 'yellow', label: 'Есть записи' },
+      { color: 'blue', label: 'Отключенный день' },
+    ]
+  } else {
+    return [
+      { color: 'green', label: 'Есть свободные окна' },
+      { color: 'red', label: 'Все окна заняты' },
+      { color: 'yellow', label: 'У вас есть запись' },
+    ]
+  }
+})
 </script>
 
 <style scoped>
@@ -82,14 +107,20 @@ const stepStore = useStepStore()
 }
 
 .dot.green {
-  background-color: green;
+  background-color: #17a34a;
 }
 
 .dot.red {
   background-color: red;
 }
-.dot.yellow {
-  background-color: #fcc419;
+.dot.orange {
+  background-color: orange;
+}
+.dot.blue {
+  background-color: blue;
+}
+.dot.pink {
+  background-color: #db2877;
 }
 @media (max-width: 600px) {
   .appointment-scheduler {
