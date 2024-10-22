@@ -15,7 +15,7 @@ export const useAppointmentStore = defineStore('appointment', () => {
       bookedAppointmentsStore.removeAppointment(id)
       return true
     } catch (error) {
-      console.error('Error removing appointment:', error)
+      console.error('Произошла ошибка при отмене записи:', error)
       return false
     }
   }
@@ -35,11 +35,11 @@ export const useAppointmentStore = defineStore('appointment', () => {
             showNotification({type: 'success', message: 'Запись успешно отменена'})
             resolve(true)
           } else {
-            throw new Error('Failed to remove appointment')
+            throw new Error('Произошла ошибка при отмене записи')
           }
         } catch (error) { 
-          showNotification({type: 'error', message: 'Ошибка при отмене записи'})
-          console.error('Error removing appointment:', error)
+          showNotification({type: 'error', message: 'Произошла ошибка при отмене записи'})
+          console.error('Произошла ошибка при отмене записи:', error)
           resolve(false)
         } finally {
           isCanceling.value = false
@@ -69,7 +69,7 @@ export const useAppointmentStore = defineStore('appointment', () => {
       showNotification({type: 'success', message: 'Запись прошла успешно'})
       return response
     } catch (error) {
-      console.error('Error submitting form:', error)
+      console.error('Ошибка при создании записи:', error)
       showNotification({type: 'error', message: 'Не удалось создать запись. Попробуйте позже.'})
       return null
     }
@@ -80,9 +80,15 @@ export const useAppointmentStore = defineStore('appointment', () => {
       const updatedAppointment = await updateAppointment(id, updateData)
       showNotification({type: 'success', message: 'Запись успешно обновлена'})
       return updatedAppointment
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating appointment:', error)
-      showNotification({type: 'error', message: 'Не удалось обновить запись. Попробуйте позже.'})
+      if (error.statusCode === 409) {
+        showNotification({type: 'error', message: 'На это время уже есть запись. Пожалуйста, выберите другое время.'})
+      } else if(error.statusCode === 403) {
+        showNotification({type: 'error', message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.'})
+      } else {
+        showNotification({type: 'error', message: 'Не удалось обновить запись. Попробуйте позже.'})
+      }
       return null
     }
   }

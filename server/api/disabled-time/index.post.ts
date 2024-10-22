@@ -9,24 +9,27 @@ export default defineEventHandler(async (event) => {
   if (!isAdmin) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Forbidden: Admin access required',
+      message: 'У вас нет доступа к этой функции',
     })
   }
 
   const body = await readBody<CreateDisabledTimeInput>(event)
-  if (!body.date || !body.slot) {
+  console.log(body.date)
+  if (!body.date && !body.slot) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Bad Request: Invalid input',
+      message: 'Неверный запрос: Неверные данные',
     })
   }
 
   const disabledTime = await prisma.disabledTime.create({
+    select: { id: true, date: true, slot: true },
     data: {
       date: body.date,
-      slot: body.slot
+      slot: body.slot,
+      isActive: false,
     },
   })
 
-  return { message: 'Disabled time added successfully', disabledTime }
+  return disabledTime
 })

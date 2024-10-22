@@ -16,7 +16,7 @@
             'user-appointment': userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)
           }]" 
           @click="availableStore.selectTimeSlot(slot)"
-          :disabled="!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!) || new Date(slot.time) <= new Date())"
+          :disabled="(!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!)) || new Date(slot.time) <= new Date())"
         >
           <span v-if="userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
@@ -47,7 +47,6 @@ const availableStore = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
-const bookedAppointmentsStore = useBookedAppointmentsStore()
 
 onMounted(() => {
   if (adminStore.isAdmin && calendarStore.selectedDate) {

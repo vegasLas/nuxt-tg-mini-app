@@ -8,17 +8,13 @@ import {
   parseISO,
   addDays,
 } from 'date-fns'
-
+import { useAdminStore } from './useAdminStore'
+import type { OpenWindow } from '~/types'
 export const useOpenWindowsStore = defineStore('openWindows', () => {
-  const openWindows = ref<{ date: Date; slots: { show: string; time: Date, bookedAppointmentId: number | null }[] }[]>([])
+  const openWindows = ref<OpenWindow[]>([])
   const disabledDaysStore = useDisabledTimeStore()
 
-  function isDisabledDay(date: Date): boolean {
-    return disabledDaysStore.disabledDays.some(disabledDay => {
-      if (!disabledDay.date) return false
-      return isSameDay(date, parseISO(disabledDay.date))
-    })
-  }
+  
 
   function createWorkHours(currentDate: Date) {
     return Array.from({ length: 9 }, (_, i) => {
@@ -35,6 +31,7 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     const workHours = createWorkHours(currentDate)
     return {
       date: startOfDay(currentDate),
+      isDisabled: disabledDaysStore.isDisabledDay(currentDate),
       slots: workHours.map(({ show, time }) => ({
         show,
         time: set(currentDate, { hours: time.getHours(), minutes: 0, seconds: 0, milliseconds: 0 }),
@@ -46,7 +43,7 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     }
   }
 
-  function updateOpenWindows(newWindow: { date: Date, slots: any[] }) {
+  function updateOpenWindows(newWindow: OpenWindow) {
     const existingIndex = openWindows.value.findIndex(window => isSameDay(window.date, newWindow.date))
     if (existingIndex !== -1) {
       openWindows.value[existingIndex] = newWindow
@@ -60,9 +57,9 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     const workDays = [1, 2, 3, 4, 5] // Monday to Friday
     const now = new Date()
     const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
-	const adminStore = useAdminStore()
+	  const adminStore = useAdminStore()
     for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
-      if (adminStore.isAdmin || (workDays.includes(getDay(d)) && !isDisabledDay(d))) {
+      if (adminStore.isAdmin || workDays.includes(getDay(d))) {
         if (isSameDay(d, now) && now > cutoffTime) continue
 
         const newWindow = createNewWindow(d, bookedAppointments)

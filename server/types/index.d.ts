@@ -10,3 +10,8 @@ export interface DisabledTime {
 	date?: Date;
 	slot?: Date;
   }
+  export interface OpenWindow {
+	date: Date
+	isDisabled: boolean
+	slots: { show: string; time: Date, bookedAppointmentId: number | null }[]
+  }

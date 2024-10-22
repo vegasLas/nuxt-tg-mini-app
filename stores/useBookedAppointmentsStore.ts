@@ -14,11 +14,12 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   const isErrorFetchingBookedAppointments = ref(false)
   const disabledDaysStore = useDisabledTimeStore()
   const openWindowsStore = useOpenWindowsStore()
+  const isLoading = ref(false)
 
   async function fetchBookedAppointments(startDate?: Date, endDate?: Date) {
     try {
       let query = { startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }
-      await disabledDaysStore.fetchDisabledDays()
+      await disabledDaysStore.fetchDisabledDays(startDate, endDate)
       const response = await useFetch('/api/appointments/booked', {
         headers: {
           'x-init-data': useWebApp().initData
@@ -27,7 +28,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
       })
 
       if (response.status.value === 'error') {
-        throw new Error('Failed to fetch booked appointments')
+        throw new Error('Произошла ошибка при получении записей')
       }
       if (response.data.value) {
         bookedAppointments.value = response.data.value
@@ -35,14 +36,16 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
       }
     } catch (err) {
       isErrorFetchingBookedAppointments.value = true
-      throw new Error('Failed to fetch booked appointments')
+      throw new Error('Произошла ошибка при получении записей')
     }
   }
 
   async function fetchOpenWindows() {
+    isLoading.value = true
     await fetchBookedAppointments()
     if (isErrorFetchingBookedAppointments.value) {
       console.error('Error fetching booked appointments')
+      isLoading.value = false
       return
     }
 
@@ -51,6 +54,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
     const endDate = addDays(startDate, 30)
     openWindowsStore.generateOpenWindows(startDate, endDate, bookedAppointments.value)
+    isLoading.value = false
   }
 
   function removeAppointment(id: number) {
@@ -76,8 +80,9 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   }
 
   async function fetchOpenWindowsForAdmin(date: Date) {
+    isLoading.value = true
     if (!date) return
-
+    
     const startDate = startOfMonth(date)
     const endDate = endOfMonth(date)
     const fetchedAppointments = await fetchBookedAppointments(startDate, endDate)
@@ -85,14 +90,16 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     if (fetchedAppointments) {
       openWindowsStore.generateOpenWindows(startDate, endDate, fetchedAppointments)
     }
+    isLoading.value = false
   }
 
   return {
     bookedAppointments,
     isErrorFetchingBookedAppointments,
-    removeAppointment,
-    fetchOpenWindows,
-    rescheduleAppointment,
+    isLoading,
     fetchOpenWindowsForAdmin,
+    rescheduleAppointment,
+    removeAppointment,
+    fetchOpenWindows
   }
 })

@@ -1,6 +1,7 @@
 export interface OpenWindow {
   date: Date;
-  slots: string[];
+  isDisabled: boolean;
+  slots: { show: string; time: Date, bookedAppointmentId: number | null }[];
 }
 
 export interface CalendarAttribute {

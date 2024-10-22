@@ -9,23 +9,36 @@ export default defineEventHandler(async (event) => {
   if (!isAdmin) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Forbidden: Admin access required',
+      statusMessage: 'У вас нет доступа к этой функции',
     })
   }
 
-  const query = getQuery(event)
-  const id = query.id as string
+  const id = event.context.params?.id
 
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Bad Request: ID parameter is required',
+      statusMessage: 'Неверный запрос: Параметр ID обязателен',
     })
   }
 
-  await prisma.disabledTime.delete({
+  // Check if the disabled time exists
+  const existingDisabledTime = await prisma.disabledTime.findUnique({
     where: { id },
   })
 
-  return { message: 'Disabled time removed successfully' }
+  if (!existingDisabledTime) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Не найдено: Время отключено не найдено',
+    })
+  }
+
+  const result = await prisma.disabledTime.update({
+    where: { id },
+    select: { id: true, date: true, slot: true },
+    data: { isActive: true },
+  })
+
+  return result
 })

@@ -252,12 +252,6 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAppointmentsByDate,
     showDetails,
     addAppointmentToList,
-    addDisabledDay(date: string) {
-      disabledDaysStore.addDisabledDay(date)
-    },
-    removeDisabledDay(id: string) {
-      disabledDaysStore.removeDisabledDay(id)
-    },
     handleCancelAppointment,
   }
 })
