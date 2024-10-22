@@ -26,46 +26,34 @@
       <div><span class="dot orange"></span> Есть записи</div>
       <div><span class="dot pink"></span> Были записи</div>
       <div><span class="dot blue"></span> Не было записей</div>
+      <div><span class="dot gray"></span> День заблокирован</div>
     </div>
   </div>
-  <div v-if="adminStore.isAdmin && calendarStore.selectedDate" class="admin-actions">
+  <div v-if="adminStore.isAdmin && calendarStore.selectedDate && !calendarStore.isPast" class="admin-actions">
     <button
       class="admin-button"
-      @click="calendarStore.disableDay"
+      @click="disabledTimeStore.handleDay(calendarStore.selectedDate)"
     >
-      Отключить день
+      {{ disabledTimeStore.isDisabledDay(calendarStore.selectedDate) ? 'Включить день' : 'Отключить день' }}
     </button>
   </div>
   <MainButton
-    v-if="calendarStore.selectedDate"
+    v-if="calendarStore.selectedDate && (!disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true))"
     :text="adminStore.isAdmin ? 'Показать слоты' : 'Продолжить'"
+    :disabled="disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true)"
     @click="stepStore.goToTimeSlots"
   />
+  <LoaderOverlay v-if="bookedAppointmentsStore.isLoading || disabledTimeStore.isProcessing" />
 </template>
 
 <script setup lang="ts">
 import { MainButton } from 'vue-tg'
+
 const calendarStore = useCalendarStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
-
-// Add a computed property to get the legend items
-const legendItems = computed(() => {
-  if (adminStore.isAdmin) {
-    return [
-      { color: 'green', label: 'Есть свободные окна' },
-      { color: 'red', label: 'Все окна заняты' },
-      { color: 'yellow', label: 'Есть записи' },
-      { color: 'blue', label: 'Отключенный день' },
-    ]
-  } else {
-    return [
-      { color: 'green', label: 'Есть свободные окна' },
-      { color: 'red', label: 'Все окна заняты' },
-      { color: 'yellow', label: 'У вас есть запись' },
-    ]
-  }
-})
+const disabledTimeStore = useDisabledTimeStore()
+const bookedAppointmentsStore = useBookedAppointmentsStore()
 </script>
 
 <style scoped>
@@ -121,6 +109,9 @@ const legendItems = computed(() => {
 }
 .dot.pink {
   background-color: #db2877;
+}
+.dot.gray {
+  background-color: gray;
 }
 @media (max-width: 600px) {
   .appointment-scheduler {

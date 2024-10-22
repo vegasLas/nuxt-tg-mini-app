@@ -5,7 +5,8 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const userStore = useUserStore()
   const stepStore = useStepStore()
   const appointmentStore = useAppointmentStore()
-  const { isCanceling } = storeToRefs(appointmentStore)
+  console.log('appointmentStore', appointmentStore)
+  // const { isCanceling } = storeToRefs(appointmentStore)
   const openWindowsStore = useOpenWindowsStore()
   const { openWindows } = storeToRefs(openWindowsStore)
   const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
@@ -30,9 +31,9 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     userStore.hasAppointment(selectedSlot.value?.bookedAppointmentId!)
   )
 
-  const isLoading = computed(() => 
-    isCanceling.value || isRescheduling.value
-  )
+  const isLoading = computed(() => {
+    return appointmentStore.isCanceling || isRescheduling.value
+  })
 
   const getMainButtonText = computed(() => {
     if (adminStore.isAdmin && selectedSlot.value?.bookedAppointmentId) {
@@ -77,6 +78,10 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
       if (isCanceled) resetSelectedSlotAndMode();
       return;
     }
+    if (selectedSlot.value && hasExistingAppointment.value) {
+      await cancelAppointment()
+      return
+    }
     if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
       showAppointmentOptionsPopup()
       return
@@ -85,21 +90,16 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
       const activeAppointments = userStore.appointments.filter(appointment => 
         parseISO(appointment.time) > new Date()
       );
-
-      if (activeAppointments.length >= 2) {
-        showNotification({
-          type: 'error',
-          message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
-          time: 3
-        });
-        return;
-      }
-  }
-    if (selectedSlot.value && hasExistingAppointment.value) {
-      await cancelAppointment()
-      return
+    
+    if (activeAppointments.length >= 2) {
+      showNotification({
+        type: 'error',
+        message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
+        time: 3
+      });
+      return;
     }
-
+    }
     proceed();
   }
 
@@ -170,7 +170,6 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     availableTimeSlots,
     selectedSlot,
     cancelMode,
-    isCanceling,
     isRescheduling,
     hasExistingAppointment,
     isLoading,

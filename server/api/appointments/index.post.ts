@@ -1,38 +1,46 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-
+import { parseISO } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
-  const user = await getUserFromEvent(event)
-  const isAdmin = await isAdminUser(event)
+  const user = await getUserFromEvent(event);
   if (!user) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+    throw createError({ statusCode: 401, statusMessage: 'Не авторизован' });
   }
+
+  const isAdmin = await isAdminUser(event);
+  const { time } = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
   
-  // Check for active appointments
-  const activeAppointments = await prisma.appointment.count({
+  const disabledDaysStore = useDisabledTimeStore();
+  await disabledDaysStore.fetchDisabledDays();
+
+  if (disabledDaysStore.isDisabledDay(parseISO(time)) && !isAdmin) {
+    throw createError({
+      statusCode: 403,
+      statusText: 'Выбранная дата заблокирована. Пожалуйста, выберите другую дату.'
+    });
+  }
+
+  const activeAppointmentsCount = await prisma.appointment.count({
     where: {
       userId: user.id,
       booked: true,
-      time: {
-        gt: new Date()
-      }
+      time: { gt: new Date() }
     }
-  })
+  });
 
-  if (activeAppointments >= 2 && !isAdmin) {
+  if (activeAppointmentsCount >= 2 && !isAdmin) {
     throw createError({
       statusCode: 403,
       statusText: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.'
-    })
+    });
   }
-  const { time } = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
 
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
-      time: new Date(time),
+      time: parseISO(time),
       booked: true,
       userId: user.id
     }
@@ -41,11 +49,12 @@ export default defineEventHandler(async (event) => {
   if (existingAppointment) {
     throw createError({
       statusCode: 409,
-      statusText: 'An appointment with the same time already exists.'
+      statusText: 'На это время уже есть запись. Пожалуйста, выберите другое время.'
     });
   }
-  const createData = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>
-  return await prisma.appointment.create({
+
+  const createData = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
+  return prisma.appointment.create({
     select: {
       id: true,
       name: true,
@@ -59,5 +68,5 @@ export default defineEventHandler(async (event) => {
       ...createData,
       userId: user.id
     }
-  })
-})
+  });
+});

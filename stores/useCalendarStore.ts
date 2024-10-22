@@ -6,11 +6,16 @@ export const useCalendarStore = defineStore('calendar', () => {
   const bookedAppointmentsStore = useBookedAppointmentsStore()
   const selectedDate = ref<Date | null>(null)
   const openWindowsStore = useOpenWindowsStore()
+  const disabledTimeStore = useDisabledTimeStore()
   const { openWindows } = storeToRefs(openWindowsStore)
+  const isPast = computed(() => selectedDate.value && selectedDate.value < startOfDay(new Date()))
+
   const getDotColor = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): string => {
     const isPast = date < startOfDay(new Date());
     const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
-
+    if (disabledTimeStore.isDisabledDay(date)) {
+      return 'gray'
+    }
     if (isPast && adminStore.isAdmin) {
       return hasBookedSlots ? 'pink' : 'blue';
     }
@@ -21,23 +26,22 @@ export const useCalendarStore = defineStore('calendar', () => {
   const getPopoverLabel = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): { label: string } => {
     const isPast = date < startOfDay(new Date());
     const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
+    const hasAvailableSlots = slots.some(slot => !slot.bookedAppointmentId);
 
-    if (isPast && adminStore.isAdmin) {
-      return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
+    if (adminStore.isAdmin) {
+      if (isPast) {
+        return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
+      }
+      return { label: hasBookedSlots ? 'Есть записи на этот день' : 'Есть свободные окна' };
     }
-    return {
-      label: adminStore.isAdmin 
-        ? hasBookedSlots 
-          ? 'Есть записи на этот день' 
-          : isPast 
-            ? 'Не было записей' 
-            : 'Есть свободные окна'
-        : hasUserAppointment 
-          ? 'У вас есть запись на этот день'
-          : slots.some(slot => !slot.bookedAppointmentId) 
-            ? 'Есть свободные окна' 
-            : 'Все окна заняты'
-    };
+    if (disabledTimeStore.isDisabledDay(date)) {
+      return { label: 'Не рабочий день' };
+    }
+    if (hasUserAppointment) {
+      return { label: 'У вас есть запись на этот день' };
+    }
+
+    return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
     return openWindows.value.map(window => {
@@ -76,7 +80,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   
   function disableDay() {
     if (selectedDate.value) {
-      adminStore.addDisabledDay(selectedDate.value.toString())
+      disabledTimeStore.handleDay(selectedDate.value)
     }
   }
 
@@ -84,7 +88,6 @@ export const useCalendarStore = defineStore('calendar', () => {
     selectedDate.value = date
   }
   function onMonthChange(props: { id: string }[]) {
-    console.log('onMonthChange', props)
     const date = new Date(props[0].id);
     const isExistingOpenWindow = openWindows.value.some(({date: windowDate}) => 
       date.getMonth() === windowDate.getMonth() && 
@@ -98,6 +101,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   return {
     calendarAttributes,
     selectedDate,
+    isPast,
     onMonthChange,
     disableDay,
     onDayClick,
