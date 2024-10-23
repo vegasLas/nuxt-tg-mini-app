@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <LoaderOverlay v-if="availableStore.isLoading" />
+    <LoaderOverlay v-if="appointmentActionsStore.isLoading" />
     <div>
       <h2>Доступные окна</h2>
       <div v-if="calendarStore.selectedDate" class="selected-date">
@@ -8,29 +8,29 @@
       </div>
       <div class="time-slots-grid">
         <button
-          v-for="slot in availableStore.availableTimeSlots"
+          v-for="slot in availableTimeSlots.availableTimeSlots"
           :key="slot.show"
           :class="['time-slot', { 
             booked: slot.bookedAppointmentId || new Date(slot.time) <= new Date(),
-            selected: availableStore.selectedSlot?.time === slot.time,
+            selected: availableTimeSlots.selectedSlot?.time === slot.time,
             'user-appointment': userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)
           }]" 
-          @click="availableStore.selectTimeSlot(slot)"
+          @click="availableTimeSlots.selectTimeSlot(slot)"
           :disabled="(!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!)) || new Date(slot.time) <= new Date())"
         >
           <span v-if="userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
         </button>
       </div>
-      <div v-if="adminStore.isAdmin && availableStore.selectedSlot && availableStore.selectedSlot.bookedAppointmentId" class="admin-actions">
+      <div v-if="adminStore.isAdmin && availableTimeSlots.selectedSlot && availableTimeSlots.selectedSlot.bookedAppointmentId" class="admin-actions">
         <button @click="adminStore.showDetails" class="native-button details-button">Показать детали</button>
       </div>
-      <BackButton @click="availableStore.closeTimeSlots()" />
+      <BackButton @click="appointmentActionsStore.closeTimeSlots()" />
       <MainButton
-        v-if="availableStore.selectedSlot && !availableStore.isLoading"
-        :text="availableStore.getMainButtonText"
-        @click="availableStore.handleMainButtonClick()"
-        :disabled="!availableStore.selectedSlot && !availableStore.cancelMode"
+        v-if="availableTimeSlots.selectedSlot && !appointmentActionsStore.isLoading"
+        :text="appointmentActionsStore.getMainButtonText"
+        @click="appointmentActionsStore.handleMainButtonClick()"
+        :disabled="!availableTimeSlots.selectedSlot && !appointmentActionsStore.cancelMode"
       />
     </div>
   </div>
@@ -38,12 +38,9 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import { useAvailableTimeSlots } from '@/stores/useAvailableTimeSlots'
-import { useCalendarStore } from '@/stores/useCalendarStore'
-import { useUserStore } from '@/stores/useUserStore'
-import { useAdminStore } from '@/stores/useAdminStore'
 
-const availableStore = useAvailableTimeSlots()
+const appointmentActionsStore = useAppointmentActionsStore()
+const availableTimeSlots = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
