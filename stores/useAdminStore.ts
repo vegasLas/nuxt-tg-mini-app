@@ -118,12 +118,6 @@ export const useAdminStore = defineStore('admin', () => {
         }
       })
       isAdmin.value = data.isAdmin
-      if (isAdmin.value) {
-        await Promise.all([
-          disabledDaysStore.fetchDisabledDays(),
-          fetchAppointmentCounts()
-        ])
-      }
     } catch (err) {
       error.value = (err as Error).message
       isAdmin.value = false
@@ -246,6 +240,7 @@ export const useAdminStore = defineStore('admin', () => {
     appointmentCounts,
     disabledDayDates,
     isCanceling,
+    fetchAppointmentCounts,
     addAppointmentToCurrendDate,
     checkAuth,
     onDateChange,

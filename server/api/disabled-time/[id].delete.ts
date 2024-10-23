@@ -37,7 +37,7 @@ export default defineEventHandler(async (event) => {
   const result = await prisma.disabledTime.update({
     where: { id },
     select: { id: true, date: true, slot: true },
-    data: { isActive: true },
+    data: { isActive: false },
   })
 
   return result

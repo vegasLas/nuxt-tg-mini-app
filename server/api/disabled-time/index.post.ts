@@ -22,14 +22,34 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const disabledTime = await prisma.disabledTime.create({
-    select: { id: true, date: true, slot: true },
-    data: {
+  // Check if the DisabledTime record already exists
+  const existingDisabledTime = await prisma.disabledTime.findFirst({
+    where: {
       date: body.date,
       slot: body.slot,
-      isActive: false,
     },
   })
+
+  let disabledTime
+
+  if (existingDisabledTime) {
+    // If the record exists, update its isActive status to true
+    disabledTime = await prisma.disabledTime.update({
+      where: { id: existingDisabledTime.id },
+      data: { isActive: true },
+      select: { id: true, date: true, slot: true, isActive: true },
+    })
+  } else {
+    // If the record doesn't exist, create a new one
+    disabledTime = await prisma.disabledTime.create({
+      select: { id: true, date: true, slot: true, isActive: true },
+      data: {
+        date: body.date,
+        slot: body.slot,
+        isActive: true,
+      },
+    })
+  }
 
   return disabledTime
 })

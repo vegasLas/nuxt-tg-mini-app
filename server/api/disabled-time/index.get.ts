@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
   const endDate = query.endDate ? parseISO(query.endDate as string) : addDays(new Date(), 30)
 
   let dateFilter = {
+    isActive: true,
     date: {
       gte: startDate,
       lte: endDate,

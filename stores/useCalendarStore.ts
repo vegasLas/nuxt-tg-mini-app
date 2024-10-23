@@ -44,6 +44,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
+    console.log('openWindows', openWindows.value)
     return openWindows.value.map(window => {
       let isBooked = false
       if (adminStore.isAdmin) {

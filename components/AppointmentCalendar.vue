@@ -20,13 +20,14 @@
       <div><span class="dot green"></span> Есть свободные окна</div>
       <div><span class="dot red"></span> Все окна заняты</div>
       <div><span class="dot orange"></span> У вас есть запись</div>
+      <div><span class="dot gray"></span> Не рабочий день</div>
     </div>
     <div v-else>
       <div><span class="dot green"></span> Есть свободные окна</div>
       <div><span class="dot orange"></span> Есть записи</div>
       <div><span class="dot pink"></span> Были записи</div>
       <div><span class="dot blue"></span> Не было записей</div>
-      <div><span class="dot gray"></span> День заблокирован</div>
+      <div><span class="dot gray"></span> Выходной</div>
     </div>
   </div>
   <div v-if="adminStore.isAdmin && calendarStore.selectedDate && !calendarStore.isPast" class="admin-actions">
@@ -111,7 +112,7 @@ const bookedAppointmentsStore = useBookedAppointmentsStore()
   background-color: #db2877;
 }
 .dot.gray {
-  background-color: gray;
+  background-color: rgb(71, 85, 105);
 }
 @media (max-width: 600px) {
   .appointment-scheduler {
