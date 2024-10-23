@@ -54,12 +54,12 @@
 
   onMounted(async () => {
     await adminStore.checkAuth()
-    if (!adminStore.isAdmin) {
-      await userStore.fetchAppointments()
-      await bookedAppointmentsStore.fetchOpenWindows()
-    }
-    else {
-      await bookedAppointmentsStore.fetchOpenWindowsForAdmin(new Date())
+    if (adminStore.isAdmin) {
+      bookedAppointmentsStore.fetchOpenWindowsForAdmin(new Date())
+      adminStore.fetchAppointmentCounts()
+    }else {
+      bookedAppointmentsStore.fetchOpenWindows(),
+      userStore.fetchAppointments()
     }
   })
   </script>

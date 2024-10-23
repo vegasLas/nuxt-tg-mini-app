@@ -82,23 +82,20 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
       await cancelAppointment()
       return
     }
-    if (userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
+    const activeAppointments = userStore.appointments.filter(appointment => 
+      parseISO(appointment.time) > new Date()
+    );
+    if (activeAppointments.length < 2 && userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
       showAppointmentOptionsPopup()
       return
     }
-    if (!adminStore.isAdmin) {
-      const activeAppointments = userStore.appointments.filter(appointment => 
-        parseISO(appointment.time) > new Date()
-      );
-    
-    if (activeAppointments.length >= 2) {
+    if (!adminStore.isAdmin && activeAppointments.length >= 2) {
       showNotification({
         type: 'error',
         message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
         time: 3
       });
       return;
-    }
     }
     proceed();
   }

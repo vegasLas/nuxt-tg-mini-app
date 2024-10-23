@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import { parseISO } from 'date-fns'
+import { parseISO, startOfDay, endOfDay } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
@@ -12,14 +12,23 @@ export default defineEventHandler(async (event) => {
 
   const isAdmin = await isAdminUser(event);
   const { time } = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
+  const appointmentDate = parseISO(time);
   
-  const disabledDaysStore = useDisabledTimeStore();
-  await disabledDaysStore.fetchDisabledDays();
+  // Check if the appointment time falls within a disabled day range
+  const disabledTime = await prisma.disabledTime.findFirst({
+    where: {
+      date: {
+        gte: startOfDay(appointmentDate),
+        lte: endOfDay(appointmentDate)
+      },
+      slot: appointmentDate
+    }
+  });
 
-  if (disabledDaysStore.isDisabledDay(parseISO(time)) && !isAdmin) {
+  if (disabledTime) {
     throw createError({
       statusCode: 403,
-      statusText: 'Выбранная дата заблокирована. Пожалуйста, выберите другую дату.'
+      statusText: 'Выбранная дата недоступна для записи. Пожалуйста, выберите другую дату.'
     });
   }
 
@@ -40,7 +49,7 @@ export default defineEventHandler(async (event) => {
 
   const existingAppointment = await prisma.appointment.findFirst({
     where: {
-      time: parseISO(time),
+      time: appointmentDate,
       booked: true,
       userId: user.id
     }

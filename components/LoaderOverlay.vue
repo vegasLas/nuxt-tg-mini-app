@@ -1,5 +1,5 @@
 <template>
-  <div class="loader-overlay">
+  <div class="loader-overlay" style="z-index: 50;">
     <div class="loader-container">
       <BeatLoader color="#ffffff" size="10px" />
     </div>
