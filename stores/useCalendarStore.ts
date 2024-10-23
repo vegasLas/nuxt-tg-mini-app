@@ -27,7 +27,10 @@ export const useCalendarStore = defineStore('calendar', () => {
     const isPast = date < startOfDay(new Date());
     const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
     const hasAvailableSlots = slots.some(slot => !slot.bookedAppointmentId);
-
+    const isDisabled = disabledTimeStore.isDisabledDay(date)
+    if (isDisabled) {
+      return { label: 'Не рабочий день' }
+    }
     if (adminStore.isAdmin) {
       if (isPast) {
         return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
@@ -44,7 +47,6 @@ export const useCalendarStore = defineStore('calendar', () => {
     return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
   const calendarAttributes = computed<CalendarAttribute[]>(() => {
-    console.log('openWindows', openWindows.value)
     return openWindows.value.map(window => {
       let isBooked = false
       if (adminStore.isAdmin) {

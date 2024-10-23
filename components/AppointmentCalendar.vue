@@ -27,7 +27,7 @@
       <div><span class="dot orange"></span> Есть записи</div>
       <div><span class="dot pink"></span> Были записи</div>
       <div><span class="dot blue"></span> Не было записей</div>
-      <div><span class="dot gray"></span> Выходной</div>
+      <div><span class="dot gray"></span> Не рабочий день</div>
     </div>
   </div>
   <div v-if="adminStore.isAdmin && calendarStore.selectedDate && !calendarStore.isPast" class="admin-actions">
