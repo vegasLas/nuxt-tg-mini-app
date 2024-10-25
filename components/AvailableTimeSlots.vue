@@ -1,6 +1,6 @@
 <template>
   <div class="time-selector">
-    <LoaderOverlay v-if="appointmentActionsStore.isLoading" />
+    <LoaderOverlay v-if="appointmentActionsStore.isLoading || appointmentStore.isCanceling" />
     <div>
       <h2>Доступные окна</h2>
       <div v-if="calendarStore.selectedDate" class="selected-date">
@@ -16,7 +16,7 @@
             'user-appointment': userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)
           }]" 
           @click="availableTimeSlots.selectTimeSlot(slot)"
-          :disabled="(!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!)) || new Date(slot.time) <= new Date())"
+          :disabled="Number(slot.bookedAppointmentId) > 0 && Boolean(!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!)))"
         >
           <span v-if="userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
@@ -27,10 +27,10 @@
       </div>
       <BackButton @click="appointmentActionsStore.closeTimeSlots()" />
       <MainButton
-        v-if="availableTimeSlots.selectedSlot && !appointmentActionsStore.isLoading"
+        v-if="availableTimeSlots.selectedSlot && !appointmentActionsStore.isLoading && !availableTimeSlots.isPast"
         :text="appointmentActionsStore.getMainButtonText"
         @click="appointmentActionsStore.handleMainButtonClick()"
-        :disabled="!availableTimeSlots.selectedSlot && !appointmentActionsStore.cancelMode"
+        :disabled="!availableTimeSlots.selectedSlot"
       />
     </div>
   </div>
@@ -40,6 +40,7 @@
 import { MainButton, BackButton } from 'vue-tg'
 
 const appointmentActionsStore = useAppointmentActionsStore()
+const appointmentStore = useAppointmentStore()
 const availableTimeSlots = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
@@ -217,7 +218,7 @@ h2 {
 .admin-actions {
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.1rem;
 }
 
 .native-button {

@@ -49,7 +49,7 @@ export const useAppointmentActionsStore = defineStore('appointmentActions', () =
   }
 
   async function handleMainButtonClick() {
-    const { bookedAppointmentId } = availableTimeSlotsStore.selectedSlot || {};
+    const { bookedAppointmentId, time } = availableTimeSlotsStore.selectedSlot || {};
     
     if (adminStore.isAdmin && bookedAppointmentId) {
       const isCanceled = await adminStore.handleCancelAppointment(bookedAppointmentId);
@@ -69,12 +69,15 @@ export const useAppointmentActionsStore = defineStore('appointmentActions', () =
       parseISO(appointment.time) > new Date()
     );
 
+    if (adminStore.isAdmin) {
+      proceed()
+      return
+    }
     if (activeAppointments.length < 2 && userStore.hasAppointmentOnDate(calendarStore.selectedDate!)) {
       showAppointmentOptionsPopup()
       return
     }
-
-    if (!adminStore.isAdmin && activeAppointments.length >= 2) {
+    if (activeAppointments.length >= 2) {
       showNotification({
         type: 'error',
         message: 'У вас уже есть 2 активных записи. Пожалуйста, отмените одну из них, прежде чем создавать новую.',
