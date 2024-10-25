@@ -1,5 +1,6 @@
 import type { CalendarAttribute } from '~/types'
-import { startOfDay } from 'date-fns'
+import { startOfDay, set } from 'date-fns'
+
 export const useCalendarStore = defineStore('calendar', () => {
   const userStore = useUserStore()
   const adminStore = useAdminStore()
@@ -10,35 +11,47 @@ export const useCalendarStore = defineStore('calendar', () => {
   const { openWindows } = storeToRefs(openWindowsStore)
   const isPast = computed(() => selectedDate.value && selectedDate.value < startOfDay(new Date()))
 
-  const getDotColor = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): string => {
-    const isPast = date < startOfDay(new Date());
-    const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
-    if (disabledTimeStore.isDisabledDay(date)) {
+  const getDotColor = (props: {
+    bookedSlotsLength: number, 
+    hasUserAppointment: boolean, 
+    isDisabled: boolean,  
+    hasAvailableSlots: boolean,
+    isPast: boolean,
+    slots: { bookedAppointmentId: number | null }[]
+  }): string => {
+    const { bookedSlotsLength, hasUserAppointment, isDisabled, hasAvailableSlots, isPast } = props
+    if (isDisabled) {
       return 'gray'
     }
-    if (isPast && adminStore.isAdmin) {
-      return hasBookedSlots ? 'pink' : 'blue';
+    if (hasUserAppointment) {
+      return 'yellow'
     }
-    if (hasUserAppointment) return 'yellow';
-    return slots.some(slot => !slot.bookedAppointmentId) ? 'green' : 'red';
+    if (isPast && adminStore.isAdmin) {
+      return bookedSlotsLength ? 'pink' : 'blue';
+    }
+    return hasAvailableSlots ? 'green' : 'red';
   }
 
-  const getPopoverLabel = (date: Date, hasUserAppointment: boolean, slots: { bookedAppointmentId: number | null }[]): { label: string } => {
-    const isPast = date < startOfDay(new Date());
-    const hasBookedSlots = slots.some(slot => slot.bookedAppointmentId);
-    const hasAvailableSlots = slots.some(slot => !slot.bookedAppointmentId);
-    const isDisabled = disabledTimeStore.isDisabledDay(date)
+  const getPopoverLabel = (props: {
+    bookedSlotsLength: number, 
+    hasUserAppointment: boolean, 
+    isDisabled: boolean,
+    hasAvailableSlots: boolean,
+    isPast: boolean,
+    slots: { bookedAppointmentId: number | null }[]
+  }): { label: string } => {
+    const { bookedSlotsLength, hasUserAppointment, isDisabled, hasAvailableSlots, isPast } = props
     if (isDisabled) {
+      if (adminStore.isAdmin && bookedSlotsLength) {
+        return { label: `Записей на этот день: ${bookedSlotsLength}\n\nНе рабочий день` }
+      }
       return { label: 'Не рабочий день' }
     }
     if (adminStore.isAdmin) {
       if (isPast) {
-        return { label: hasBookedSlots ? 'Были записи' : 'Не было записей' };
+        return { label: bookedSlotsLength ? `Было записей: ${bookedSlotsLength}` : 'Не было записей' };
       }
-      return { label: hasBookedSlots ? 'Есть записи на этот день' : 'Есть свободные окна' };
-    }
-    if (disabledTimeStore.isDisabledDay(date)) {
-      return { label: 'Не рабочий день' };
+      return { label: bookedSlotsLength ? `Записей на этот день: ${bookedSlotsLength}` : 'Есть свободные окна' };
     }
     if (hasUserAppointment) {
       return { label: 'У вас есть запись на этот день' };
@@ -46,21 +59,37 @@ export const useCalendarStore = defineStore('calendar', () => {
 
     return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
-  const calendarAttributes = computed<CalendarAttribute[]>(() => {
+  const calendarAttributes = computed(() => {
     return openWindows.value.map(window => {
+      const isDisabled = disabledTimeStore.isDisabledDay(window.date)
+      const hasAvailableSlots = window.slots.some(slot => !slot.bookedAppointmentId)
+      const bookedSlotsLength = window.slots.filter(slot => slot.bookedAppointmentId).length ;
+      const now = new Date()
+      const isPast = window.date < set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
       let isBooked = false
       if (adminStore.isAdmin) {
         isBooked = window.slots.some(slot => slot.bookedAppointmentId)
       } else {
         isBooked = userStore.appointments.some(appointment => window.slots.some(slot => slot.bookedAppointmentId === appointment.id))
       }
-      const dotColor = getDotColor(window.date, isBooked, window.slots);
-
+      const data = {
+        bookedSlotsLength, 
+        hasUserAppointment: isBooked, 
+        isDisabled,
+        hasAvailableSlots,
+        slots: window.slots,
+        isPast,
+      }
+      const dotColor = getDotColor(data);
+      const popover = getPopoverLabel(data)
+      let content = adminStore.isAdmin && isDisabled && bookedSlotsLength ? 'yellow' : undefined
       return {
+        key: window.date.toDateString(),
         dot: dotColor,
+        content,
         dates: window.date,
-        popover: getPopoverLabel(window.date, isBooked, window.slots)
-      };
+        popover
+      } as Partial<CalendarAttribute>;
     });
   });
 

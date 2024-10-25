@@ -92,11 +92,17 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
     }
     isLoading.value = false
   }
-
+  function hasAppointmentOnDate(date: Date): boolean {
+    return bookedAppointments.value.some(appointment => {
+      const appointmentDate = new Date(appointment.time);
+      return appointmentDate.toDateString() === date.toDateString();
+    });
+  }
   return {
     bookedAppointments,
     isErrorFetchingBookedAppointments,
     isLoading,
+    hasAppointmentOnDate,
     fetchOpenWindowsForAdmin,
     rescheduleAppointment,
     removeAppointment,

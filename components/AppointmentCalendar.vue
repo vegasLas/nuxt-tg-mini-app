@@ -35,13 +35,13 @@
       class="admin-button"
       @click="disabledTimeStore.handleDay(calendarStore.selectedDate)"
     >
-      {{ disabledTimeStore.isDisabledDay(calendarStore.selectedDate) ? 'Включить день' : 'Отключить день' }}
+      {{ disabledTimeStore.isDisabledDay(calendarStore.selectedDate) ? 'Сделать рабочим' : 'Сделать не рабочим' }}
     </button>
   </div>
   <MainButton
-    v-if="calendarStore.selectedDate && (!disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true))"
+    v-if="shouldShowMainButton"
     :text="adminStore.isAdmin ? 'Показать слоты' : 'Продолжить'"
-    :disabled="disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true)"
+    :disabled="disabledTimeStore.isDisabledDay(calendarStore.selectedDate as Date, true)"
     @click="stepStore.goToTimeSlots"
   />
   <LoaderOverlay v-if="bookedAppointmentsStore.isLoading || disabledTimeStore.isProcessing" />
@@ -49,12 +49,23 @@
 
 <script setup lang="ts">
 import { MainButton } from 'vue-tg'
-
+import { set } from 'date-fns'
 const calendarStore = useCalendarStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
 const disabledTimeStore = useDisabledTimeStore()
 const bookedAppointmentsStore = useBookedAppointmentsStore()
+
+const shouldShowMainButton = computed(() => {
+  const windowsCutoff = set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  const hasAppointment = bookedAppointmentsStore.hasAppointmentOnDate(calendarStore.selectedDate as Date)
+  if (calendarStore.selectedDate === null || (!hasAppointment && calendarStore.selectedDate < windowsCutoff)) return false
+  if (adminStore.isAdmin && hasAppointment) {
+    return true
+  }
+
+  return !disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true)
+})
 </script>
 
 <style scoped>
@@ -159,7 +170,7 @@ const bookedAppointmentsStore = useBookedAppointmentsStore()
 .admin-actions {
   display: flex;
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .admin-button {

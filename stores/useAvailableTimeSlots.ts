@@ -3,7 +3,9 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const openWindowsStore = useOpenWindowsStore()
   const { openWindows } = storeToRefs(openWindowsStore)
   const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
-
+  const isPast = computed(() => {
+    return selectedSlot.value?.time && new Date(selectedSlot.value.time) <= new Date()
+  })
   const availableTimeSlots = computed(() => {
     const selectedWindow = openWindows.value.find(window => 
       window.date.toDateString() === calendarStore.selectedDate?.toDateString()
@@ -23,6 +25,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   }
 
   return {
+    isPast,
     availableTimeSlots,
     selectedSlot,
     selectTimeSlot,

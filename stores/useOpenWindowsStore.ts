@@ -55,13 +55,9 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
 
   function generateOpenWindows(startDate: Date, endDate: Date, bookedAppointments: { time: string, id: number }[]) {
     const workDays = [1, 2, 3, 4, 5] // Monday to Friday
-    const now = new Date()
-    const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
-	  const adminStore = useAdminStore()
+    const adminStore = useAdminStore()
     for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
       if (adminStore.isAdmin || workDays.includes(getDay(d))) {
-        if (isSameDay(d, now) && now > cutoffTime) continue
-
         const newWindow = createNewWindow(d, bookedAppointments)
         updateOpenWindows(newWindow)
       }

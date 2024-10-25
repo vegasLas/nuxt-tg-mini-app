@@ -75,7 +75,7 @@
   gap: 24px;
   max-width: 600px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 12px 24px;
   background-color: var(--tg-theme-bg-color, #ffffff);
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -115,7 +115,7 @@
 
 @media (max-width: 600px) {
   .appointment-scheduler {
-    padding: 16px;
+    padding: 8px 16px;
     gap: 16px;
   }
 }
