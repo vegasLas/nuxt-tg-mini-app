@@ -41,7 +41,6 @@
   <MainButton
     v-if="shouldShowMainButton"
     :text="adminStore.isAdmin ? 'Показать слоты' : 'Продолжить'"
-    :disabled="disabledTimeStore.isDisabledDay(calendarStore.selectedDate as Date, true)"
     @click="stepStore.goToTimeSlots"
   />
   <LoaderOverlay v-if="bookedAppointmentsStore.isLoading || disabledTimeStore.isProcessing" />
@@ -53,18 +52,32 @@ import { set } from 'date-fns'
 const calendarStore = useCalendarStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
+const userStore = useUserStore()
 const disabledTimeStore = useDisabledTimeStore()
 const bookedAppointmentsStore = useBookedAppointmentsStore()
-
+// const userStore = useUserStore()
 const shouldShowMainButton = computed(() => {
-  const windowsCutoff = set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
-  const hasAppointment = bookedAppointmentsStore.hasAppointmentOnDate(calendarStore.selectedDate as Date)
-  if (calendarStore.selectedDate === null || (!hasAppointment && calendarStore.selectedDate < windowsCutoff)) return false
-  if (adminStore.isAdmin && hasAppointment) {
-    return true
+  const selectedDate = calendarStore.selectedDate
+  if (selectedDate === null) return false
+  const isPast = selectedDate < set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  const isFuture = !isPast
+  const isPastAndAdminBookedAppointments = isPast && adminStore.isAdmin && bookedAppointmentsStore.hasAppointmentOnDate(selectedDate as Date)
+  if (isPastAndAdminBookedAppointments) return true
+  if (isFuture) {
+    const isDisabled = disabledTimeStore.isDisabledDay(selectedDate)
+    if (adminStore.isAdmin) return true
+    if (isDisabled && userStore.hasAppointmentOnDate(selectedDate as Date)) return true
+    if (!isDisabled) return true
   }
 
-  return !disabledTimeStore.isDisabledDay(calendarStore.selectedDate, true)
+  // const hasAppointment = bookedAppointmentsStore.hasAppointmentOnDate(selectedDate as Date)
+  // const isDisabled = disabledTimeStore.isDisabledDay(selectedDate)
+  // if (adminStore.isAdmin) {
+  //   if (hasAppointment) return true
+  //   if (!isDisabled) return true
+  // }
+  // if (isDisabled && userStore.hasAppointmentOnDate(selectedDate as Date)) return true
+  return false
 })
 </script>
 
