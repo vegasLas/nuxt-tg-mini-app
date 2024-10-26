@@ -13,17 +13,18 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   const getDotColor = (props: {
     bookedSlotsLength: number, 
-    hasUserAppointment: boolean, 
     isDisabled: boolean,  
     hasAvailableSlots: boolean,
     isPast: boolean,
     slots: { bookedAppointmentId: number | null }[]
   }): string => {
-    const { bookedSlotsLength, hasUserAppointment, isDisabled, hasAvailableSlots, isPast } = props
+    const { bookedSlotsLength, isDisabled, hasAvailableSlots, isPast } = props
     if (isDisabled) {
-      return 'gray'
+      if (adminStore.isAdmin) return 'gray'
+      if (bookedSlotsLength > 0) return 'yellow'
+      else return 'gray'
     }
-    if (hasUserAppointment) {
+    if (bookedSlotsLength > 0) {
       return 'yellow'
     }
     if (isPast && adminStore.isAdmin) {
@@ -34,16 +35,18 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   const getPopoverLabel = (props: {
     bookedSlotsLength: number, 
-    hasUserAppointment: boolean, 
     isDisabled: boolean,
     hasAvailableSlots: boolean,
     isPast: boolean,
     slots: { bookedAppointmentId: number | null }[]
   }): { label: string } => {
-    const { bookedSlotsLength, hasUserAppointment, isDisabled, hasAvailableSlots, isPast } = props
+    const { bookedSlotsLength, isDisabled, hasAvailableSlots, isPast } = props
     if (isDisabled) {
       if (adminStore.isAdmin && bookedSlotsLength) {
-        return { label: `Записей на этот день: ${bookedSlotsLength}\n\nНе рабочий день` }
+        return { label: `Записей на этот день: ${bookedSlotsLength}. Не рабочий день` }
+      }
+      if (bookedSlotsLength > 0) {
+        return { label: `У вас есть запись на этот день` }
       }
       return { label: 'Не рабочий день' }
     }
@@ -53,7 +56,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       }
       return { label: bookedSlotsLength ? `Записей на этот день: ${bookedSlotsLength}` : 'Есть свободные окна' };
     }
-    if (hasUserAppointment) {
+    if (bookedSlotsLength > 0) {
       return { label: 'У вас есть запись на этот день' };
     }
 
@@ -63,7 +66,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     return openWindows.value.map(window => {
       const isDisabled = disabledTimeStore.isDisabledDay(window.date)
       const hasAvailableSlots = window.slots.some(slot => !slot.bookedAppointmentId)
-      const bookedSlotsLength = window.slots.filter(slot => slot.bookedAppointmentId).length ;
+      const bookedSlotsLength = window.slots.filter(slot => adminStore.isAdmin ? slot.bookedAppointmentId : slot.bookedAppointmentId && userStore.hasAppointment(slot.bookedAppointmentId)).length ;
       const now = new Date()
       const isPast = window.date < set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
       let isBooked = false
@@ -74,7 +77,6 @@ export const useCalendarStore = defineStore('calendar', () => {
       }
       const data = {
         bookedSlotsLength, 
-        hasUserAppointment: isBooked, 
         isDisabled,
         hasAvailableSlots,
         slots: window.slots,
