@@ -26,6 +26,7 @@ export const useAppointmentStore = defineStore('appointment', () => {
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
         if (e.button_id !== 'cancelAppointment') {
           resolve(false)
+          popupClosed.off()
           return
         }
         isCanceling.value = true

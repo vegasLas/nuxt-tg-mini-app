@@ -190,6 +190,7 @@ export const useAdminStore = defineStore('admin', () => {
       const popupClosed = onPopupClosed(async (e: { button_id: string }) => {
         if (e.button_id !== 'cancelAppointment') {
           resolve(false)
+          popupClosed.off()
           return
         }
         isCanceling.value = true  // Set canceling state to true

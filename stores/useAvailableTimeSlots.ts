@@ -15,7 +15,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
     }
     return [];
   })
-
+  
   function selectTimeSlot(slot: { time: Date, show: string, bookedAppointmentId: number | null }): void {
     selectedSlot.value = slot
   }
