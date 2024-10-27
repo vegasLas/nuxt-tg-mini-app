@@ -12,11 +12,12 @@
           :key="slot.show"
           :class="['time-slot', { 
             booked: slot.bookedAppointmentId || new Date(slot.time) <= new Date(),
+            disabled: calendarStore.isDisabledDay && !userStore.hasAppointment(slot.bookedAppointmentId!),
             selected: availableTimeSlots.selectedSlot?.time === slot.time,
             'user-appointment': userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)
           }]" 
           @click="availableTimeSlots.selectTimeSlot(slot)"
-          :disabled="Number(slot.bookedAppointmentId) > 0 && Boolean(!adminStore.isAdmin && (slot.bookedAppointmentId && !userStore.hasAppointment(slot.bookedAppointmentId!)))"
+          :disabled="isDisabled(slot)"
         >
           <span v-if="userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)" class="checkmark">✓</span>
           <span class="time-icon">&#128339;</span> {{ slot.show }}
@@ -38,14 +39,25 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-
+import { set } from 'date-fns'
 const appointmentActionsStore = useAppointmentActionsStore()
 const appointmentStore = useAppointmentStore()
 const availableTimeSlots = useAvailableTimeSlots()
 const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
-
+function isDisabled(slot: { bookedAppointmentId: number | null }) {
+  const isPast = calendarStore.selectedDate! < set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  if (slot.bookedAppointmentId! < 1 && !calendarStore.isDisabledDay && !isPast) return false
+  else if (slot.bookedAppointmentId! && adminStore.isAdmin) return false
+  const userHasNotAppointment = !userStore.hasAppointment(slot.bookedAppointmentId!)
+  if (calendarStore.isDisabledDay) {
+    if (adminStore.isAdmin) return false
+    if (userHasNotAppointment) return true
+  } 
+  if (userHasNotAppointment) return true
+  return false
+}
 onMounted(() => {
   if (adminStore.isAdmin && calendarStore.selectedDate) {
     adminStore.fetchAppointmentsByDate(calendarStore.selectedDate)
@@ -97,7 +109,7 @@ h2 {
   color: #fff;
   border-color: #4263eb;
 }
-
+.time-slot:disabled,
 .time-slot.booked {
   background-color: #f8f9fa;
   color: #adb5bd;

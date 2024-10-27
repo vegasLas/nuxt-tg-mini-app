@@ -10,7 +10,9 @@ export const useCalendarStore = defineStore('calendar', () => {
   const disabledTimeStore = useDisabledTimeStore()
   const { openWindows } = storeToRefs(openWindowsStore)
   const isPast = computed(() => selectedDate.value && selectedDate.value < startOfDay(new Date()))
-
+  const isDisabledDay = computed(() => {
+    return selectedDate.value && disabledTimeStore.isDisabledDay(selectedDate.value)
+  })
   const getDotColor = (props: {
     bookedSlotsLength: number, 
     isDisabled: boolean,  
@@ -24,11 +26,11 @@ export const useCalendarStore = defineStore('calendar', () => {
       if (bookedSlotsLength > 0) return 'yellow'
       else return 'gray'
     }
-    if (bookedSlotsLength > 0) {
-      return 'yellow'
-    }
     if (isPast && adminStore.isAdmin) {
       return bookedSlotsLength ? 'pink' : 'blue';
+    }
+    if (bookedSlotsLength > 0) {
+      return 'yellow'
     }
     return hasAvailableSlots ? 'green' : 'red';
   }
@@ -62,6 +64,8 @@ export const useCalendarStore = defineStore('calendar', () => {
 
     return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
+
+  
   const calendarAttributes = computed(() => {
     return openWindows.value.map(window => {
       const isDisabled = disabledTimeStore.isDisabledDay(window.date)
@@ -136,6 +140,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     calendarAttributes,
     selectedDate,
     isPast,
+    isDisabledDay,
     onMonthChange,
     disableDay,
     onDayClick,
