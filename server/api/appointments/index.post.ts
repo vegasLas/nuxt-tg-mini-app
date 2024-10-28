@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import { parseISO, startOfDay, endOfDay } from 'date-fns'
+import { parseISO, startOfDay, endOfDay, format } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const createData = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
-  return prisma.appointment.create({
+  const newAppointment = await prisma.appointment.create({
     select: {
       id: true,
       name: true,
@@ -78,4 +78,29 @@ export default defineEventHandler(async (event) => {
       userId: user.id
     }
   });
+  // Fetch all admin users
+  const admins = await prisma.admin.findMany({
+    include: {
+      user: true, // Includes the related User
+    },
+  })
+
+  // Prepare the message
+  
+  const message = `
+  Запись создана
+  ${newAppointment.name ? `Имя: ${newAppointment.name}` : ''}
+  ${newAppointment.phoneNumber ? `Телефон: ${newAppointment.phoneNumber}` : ''}
+  ${newAppointment.time ? `Время: ${format(newAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+  ${newAppointment.comment ? `Комментарий: ${newAppointment.comment}` : ''}
+    `
+  // Notify all admins
+  await Promise.all(
+    admins.map(async (admin) => {
+      if (admin.user.telegramId && admin.user.chatId) {
+        TBOT.sendMessage(admin.user.chatId , message)
+      }
+    })
+  )
+  return newAppointment
 });

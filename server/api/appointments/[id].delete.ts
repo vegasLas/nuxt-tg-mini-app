@@ -24,13 +24,31 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Appointment not found or not authorized' })
     }
 
-    await prisma.appointment.update({
+    const updatedAppointment = await prisma.appointment.update({
       where: { id: parseInt(id) },
       data: { 
         booked: false,
       },  
     })
+    const admins = await prisma.admin.findMany({
+      include: {
+        user: true, // Includes the related User
+      },
+    })
 
+    const message = `
+    Запись удалена
+    ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
+    ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
+    ${updatedAppointment.time ? `Время: ${updatedAppointment.time.toLocaleString()}` : ''}
+    ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
+      `
+
+    admins.forEach(admin => {
+      if (admin.user.chatId) {
+        TBOT.sendMessage(admin.user.chatId, message)
+      }
+    })
     return {
       success: true,
     }

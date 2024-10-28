@@ -27,6 +27,7 @@ model Appointment {
 model User {
   id          Int            @id @default(autoincrement())
   telegramId  BigInt         @unique
+  chatId      String?        @unique
   allowsWriteToPm Boolean?
   username    String?
   languageCode String?
@@ -66,4 +67,12 @@ model DisabledTime {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
+}
+
+model DisabledDay {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
