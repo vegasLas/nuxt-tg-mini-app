@@ -1,34 +1,46 @@
 import { PrismaClient } from '@prisma/client'
-import { getUserFromEvent } from '../../utils/getUserFromEvent'
-
+import { parseISO } from 'date-fns'
 const prisma = new PrismaClient()
 const DEFAULT_ITEMS_PER_PAGE = 5
 
 export default defineEventHandler(async (event) => {
   const user = await getUserFromEvent(event)
-  
+  const isAdmin = await isAdminUser(event)
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
   const query = getQuery(event)
   const page = parseInt(query.page as string) || 1
-  const date = query.date as string
-  const take = DEFAULT_ITEMS_PER_PAGE
+  const startDate = query.startDate as string
+  const endDate = query.endDate as string
+  const take = isAdmin ? 100 : DEFAULT_ITEMS_PER_PAGE
 
   try {
-    const whereClause = {
+    let whereClause: any = {
       booked: true,
-      userId: user.id,
     }
 
-    return await fetchAppointments(whereClause, page, take, date)
+    // Only apply userId filter for non-admin users
+    if (!isAdmin) {
+      whereClause.userId = user.id
+    }
+
+    // Add date range filter for admin users
+    if (isAdmin && startDate && endDate) {
+      whereClause.time = {
+        gte: parseISO(startDate),
+        lte: parseISO(endDate),
+      }
+    }
+    return await fetchAppointments(whereClause, page, take)
   } catch (error) {
     console.error('Error fetching appointments:', error)
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
   }
 })
-async function fetchAppointments(whereClause: any, page: number, take: number, date?: string) {
+
+async function fetchAppointments(whereClause: any, page: number, take: number) {
   const [appointments, totalCount] = await Promise.all([
     prisma.appointment.findMany({
       where: whereClause,
@@ -60,7 +72,7 @@ async function fetchAppointments(whereClause: any, page: number, take: number, d
       totalPages,
       totalItems: totalCount,
       itemsPerPage: take,
-      nextLink: nextPage ? `/api/appointments?page=${nextPage}&take=${take}${date ? `&date=${date}` : ''}` : null,
+      nextLink: nextPage ? `/api/appointments?page=${nextPage}&take=${take}` : null,
     },
   }
 }

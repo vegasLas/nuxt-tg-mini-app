@@ -39,7 +39,6 @@
 
 <script setup lang="ts">
 import { MainButton, BackButton } from 'vue-tg'
-import { set } from 'date-fns'
 const appointmentActionsStore = useAppointmentActionsStore()
 const appointmentStore = useAppointmentStore()
 const availableTimeSlots = useAvailableTimeSlots()
@@ -47,7 +46,7 @@ const calendarStore = useCalendarStore()
 const userStore = useUserStore()
 const adminStore = useAdminStore()
 function isDisabled(slot: { bookedAppointmentId: number | null }) {
-  const isPast = calendarStore.selectedDate! < set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  const isPast = isPastTime(calendarStore.selectedDate!)
   if (slot.bookedAppointmentId! < 1 && !calendarStore.isDisabledDay && !isPast) return false
   else if (slot.bookedAppointmentId! && adminStore.isAdmin) return false
   const userHasNotAppointment = !userStore.hasAppointment(slot.bookedAppointmentId!)

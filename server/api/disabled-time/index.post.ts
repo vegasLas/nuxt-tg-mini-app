@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<CreateDisabledTimeInput>(event)
-  console.log(body.date)
   if (!body.date && !body.slot) {
     throw createError({
       statusCode: 400,

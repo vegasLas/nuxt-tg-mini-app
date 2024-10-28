@@ -21,7 +21,6 @@ export async function getUserFromEvent(event: H3Event): Promise<User | null> {
 
     return user as User | null
   } catch (error) {
-    console.log('Error authenticating user:', error)
     console.error('Error authenticating user:', error)
     return null
   }

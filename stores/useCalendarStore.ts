@@ -1,5 +1,5 @@
 import type { CalendarAttribute } from '~/types'
-import { startOfDay, set } from 'date-fns'
+import { startOfDay, set, isSameDay} from 'date-fns'
 
 export const useCalendarStore = defineStore('calendar', () => {
   const userStore = useUserStore()
@@ -71,8 +71,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       const isDisabled = disabledTimeStore.isDisabledDay(window.date)
       const hasAvailableSlots = window.slots.some(slot => !slot.bookedAppointmentId)
       const bookedSlotsLength = window.slots.filter(slot => adminStore.isAdmin ? slot.bookedAppointmentId : slot.bookedAppointmentId && userStore.hasAppointment(slot.bookedAppointmentId)).length ;
-      const now = new Date()
-      const isPast = window.date < set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+      const isPast = isPastTime(window.date)
       let isBooked = false
       if (adminStore.isAdmin) {
         isBooked = window.slots.some(slot => slot.bookedAppointmentId)

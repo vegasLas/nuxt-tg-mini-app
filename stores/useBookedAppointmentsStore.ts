@@ -31,8 +31,15 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
         throw new Error('Произошла ошибка при получении записей')
       }
       if (response.data.value) {
-        bookedAppointments.value = response.data.value
-        return response.data.value
+        const tempAppointments = [] as { time: string, id: number }[]
+        for (const appointment of response.data.value) {
+          const isExistingAppointment = bookedAppointments.value.find(app => app.id === appointment.id)
+          if (!isExistingAppointment) {
+            tempAppointments.push({ time: appointment.time, id: appointment.id })
+          }
+        }
+        bookedAppointments.value = [...bookedAppointments.value, ...tempAppointments]
+        return tempAppointments
       }
     } catch (err) {
       isErrorFetchingBookedAppointments.value = true
