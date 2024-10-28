@@ -11,13 +11,12 @@
       <div v-for="(appointmentGroup, date) in groupedAppointments" 
            :key="date" 
            class="date-group">
-        <h3 class="date-header">{{ formatDateHeader(date) }}</h3>
+        <h3 class="date-header">{{ formatDateHeader(date as string) }}</h3>
         <ul>
           <li v-for="appointment in appointmentGroup" 
               :key="appointment.id" 
               class="appointment-item">
             <div class="appointment-info">
-              <div class="time">{{ formatTime(appointment.time) }}</div>
               <div class="client-info">
                 <div class="name">{{ appointment.name }}</div>
                 <div class="phone">{{ appointment.phoneNumber }}</div>
@@ -27,6 +26,7 @@
               </div>
             </div>
             <div class="appointment-actions">
+              <div class="time"><span style="margin-right: 0.5rem;">&#128339;</span>{{ formatTime(appointment.time) }}</div>
               <button 
                 @click="() => adminStore.handleCancelAppointment(appointment.id)"
                 class="action-button remove"
@@ -45,22 +45,24 @@
 </template>
 
 <script setup lang="ts">
-import { format, parseISO, startOfDay, addDays, endOfDay } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { BackButton } from 'vue-tg'
+import type { Appointment } from '~/types';
 
 const stepStore = useStepStore()
 const adminStore = useAdminStore()
 onMounted(async () => {
-  const today = startOfDay(new Date())
-  const startDate = startOfDay(today)
-  const endDate = endOfDay(addDays(today, 30))
+  // const today = startOfDay(new Date())
+  // const startDate = startOfDay(today)
+  // const endDate = endOfDay(addDays(today, 30))
+  const { startDate, endDate } = getDateRange((new Date()).toString())
   // Fetch appointments for all dates
   adminStore.fetchAppointmentsByDateRange(startDate, endDate)
 })
 
 const groupedAppointments = computed(() => {
-  const grouped: Record<string, any[]> = {}
+  const grouped: Record<string, Appointment[]> = {}
   adminStore.appointments.forEach(appointment => {
     if (isPastTime(parseISO(appointment.time))) return
     const date = format(parseISO(appointment.time), 'yyyy-MM-dd')
@@ -77,7 +79,13 @@ const groupedAppointments = computed(() => {
     )
   })
 
-  return grouped
+  // Convert to array of [date, appointments] pairs and sort by date
+  const sortedEntries = Object.entries(grouped).sort((a, b) => 
+    parseISO(a[0]).getTime() - parseISO(b[0]).getTime()
+  )
+
+  // Convert back to object
+  return Object.fromEntries(sortedEntries)
 })
 
 const formatDateHeader = (dateStr: string) => {
@@ -91,7 +99,7 @@ const formatTime = (dateStr: string) => {
 
 <style scoped>
 .appointments-list {
-  width: 90%;
+  width: 95%;
   min-height: 70vh;
   display: flex;
   flex-direction: column;
@@ -135,7 +143,7 @@ const formatTime = (dateStr: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 6px;
   border-bottom: 1px solid var(--tg-theme-hint-color, #cccccc);
   margin-bottom: 8px;
 }
@@ -143,12 +151,12 @@ const formatTime = (dateStr: string) => {
 .appointment-info {
   flex-grow: 1;
   display: flex;
-  gap: 15px;
+  gap: 5px;
 }
 
 .time {
   font-weight: bold;
-  min-width: 60px;
+  min-width: 30px;
   color: black
 }
 
@@ -175,6 +183,8 @@ const formatTime = (dateStr: string) => {
 }
 
 .appointment-actions {
+  flex-direction: column;
+  gap: 5px;
   display: flex;
   align-items: center;
 }

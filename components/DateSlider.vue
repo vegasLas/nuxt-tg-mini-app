@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { addDays } from 'date-fns'
+
 const props = defineProps<{
   initialDate: Date
 }>()
@@ -21,6 +21,13 @@ const emit = defineEmits<{
 }>()
 
 const currentDate = ref(props.initialDate)
+
+watch(
+  () => props.initialDate,
+  (newDate) => {
+    currentDate.value = newDate
+  }
+)
 
 const formattedDate = computed(() => {
   return new Intl.DateTimeFormat('ru-RU', { 

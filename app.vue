@@ -8,10 +8,14 @@
       :transition-speed="1000"
     ></VuePreloader>
     <ClientOnly>
-      <Main />
+      <Main :style="{ visibility: showMain ? 'visible' : 'hidden' }" />
     </ClientOnly>
 </template>
 
 <script setup lang="ts">
 import { VuePreloader } from "vue-preloader";
+const showMain = ref(false)
+setTimeout(() => {
+  showMain.value = true
+}, 1000)
 </script>
