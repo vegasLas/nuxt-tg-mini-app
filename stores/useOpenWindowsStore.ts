@@ -49,7 +49,6 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
       openWindows.value[existingIndex] = newWindow
     } else {
       openWindows.value.push(newWindow)
-      openWindows.value.sort((a, b) => a.date.getTime() - b.date.getTime())
     }
   }
 
@@ -62,6 +61,7 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
         updateOpenWindows(newWindow)
       }
     }
+    openWindows.value.sort((a, b) => a.date.getTime() - b.date.getTime())
   }
 
   function unbookSlot(date: Date, id: number) {

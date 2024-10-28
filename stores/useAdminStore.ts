@@ -29,6 +29,11 @@ interface AppointmentCounts {
   };
 }
 
+interface DateRangeResponse {
+  appointments: Appointment[];
+  pagination: PaginationInfo;
+}
+
 export const useAdminStore = defineStore('admin', () => {
   const disabledDaysStore = useDisabledTimeStore()
   const availableStore = useAvailableTimeSlots()
@@ -62,6 +67,8 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
   async function fetchAppointmentsByDate(date: Date) {
+    const isAlreadyFetched = appointments.value.some(appointment => isSameDay(appointment.time, date))
+    if (isAlreadyFetched) return
     const start = startOfDay(date);
     const end = endOfDay(date);
     
@@ -85,7 +92,12 @@ export const useAdminStore = defineStore('admin', () => {
         },
         params: { date: date.toISOString() }
       })
-      appointments.value = data
+      for (const appointment of data) {
+        const isExist = appointments.value.find(a => a.id === appointment.id)
+        if (!isExist) {
+          appointments.value.push(appointment)
+        }
+      }
     } catch (error) {
       console.error('Error fetching appointments:', error)
     } finally {
@@ -230,6 +242,46 @@ export const useAdminStore = defineStore('admin', () => {
     calendarStore.setSelectedDate(currentDate.value)
     stepStore.goToTimeSlots()
   }
+
+  // Add these new refs
+  const dateRangePagination = ref<PaginationInfo | null>(null)
+
+  // Add this new method
+  async function fetchAppointmentsByDateRange(startDate: Date, endDate: Date, page: number = 1) {
+    if (!isAdmin.value) return
+    
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const data = await $fetch<DateRangeResponse>('/api/appointments', {
+        method: 'GET',
+        headers: {
+          'x-init-data': useWebApp().initData
+        },
+        params: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          page
+        }
+      })
+      const tempAppointments = [] as Appointment[]
+      for (const appointment of data.appointments) {
+        const isExist = appointments.value.find(a => a.id === appointment.id)
+        if (!isExist) {
+          tempAppointments.push(appointment)
+        }
+      }
+      appointments.value = [...appointments.value, ...tempAppointments]
+      dateRangePagination.value = data.pagination
+    } catch (err) {
+      error.value = (err as Error).message
+      console.error('Error fetching appointments by date range:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     currentDate,
     filteredAppointments,
@@ -241,6 +293,8 @@ export const useAdminStore = defineStore('admin', () => {
     appointmentCounts,
     disabledDayDates,
     isCanceling,
+    appointments,
+    dateRangePagination,
     fetchAppointmentCounts,
     addAppointmentToCurrendDate,
     checkAuth,
@@ -249,5 +303,6 @@ export const useAdminStore = defineStore('admin', () => {
     showDetails,
     addAppointmentToList,
     handleCancelAppointment,
+    fetchAppointmentsByDateRange,
   }
 })

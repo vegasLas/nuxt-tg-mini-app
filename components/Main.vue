@@ -9,12 +9,12 @@
 			</div>
 
 			<!-- Modified admin counts section -->
-			<div @click="stepStore.showAdminAppointmentsList" v-if="adminStore.isAdmin && adminStore.appointmentCounts" class="admin-counts">
-				<div class="count-item">
+			<div v-if="adminStore.isAdmin && adminStore.appointmentCounts" class="admin-counts">
+				<div class="count-item" @click="stepStore.showAdminAppointmentsList">
 					<span class="label">Сегодня:</span>
 					<span class="count">{{ adminStore.appointmentCounts.todayCount }}</span>
 				</div>
-					<div class="count-item">
+					<div class="count-item" @click="stepStore.showAdminAppointmentsListAll">
 						<span class="label">Всего (30 дней):</span>
 						<span class="count">{{ adminStore.appointmentCounts.totalCount }}</span>
 					</div>
@@ -35,17 +35,17 @@
 			<template v-else-if="stepStore.currentStep === 'appointmentsList'">
 				<AppointmentsList />
 			</template>
-
-			<!-- New template for AdminAppointmentsList -->
 			<template v-else-if="stepStore.currentStep === 'adminAppointmentsList'">
 				<AdminAppointmentsList />
 			</template>
+      <template v-else-if="stepStore.currentStep === 'adminAppointmentsListAll'">
+        <AdminAppointmentListAll />
+      </template>
 		</div>
 	</ClientOnly>
   </template>
   
   <script setup lang="ts">
-  import AdminAppointmentsList from './AdminAppointmentsList.vue'
 
   const userStore = useUserStore()
   const adminStore = useAdminStore()

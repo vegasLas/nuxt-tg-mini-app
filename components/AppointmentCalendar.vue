@@ -39,7 +39,7 @@
     </button>
   </div>
   <MainButton
-    v-if="shouldShowMainButton"
+    v-if="showMainButton"
     :text="adminStore.isAdmin ? 'Показать слоты' : 'Продолжить'"
     @click="stepStore.goToTimeSlots"
   />
@@ -48,18 +48,16 @@
 
 <script setup lang="ts">
 import { MainButton } from 'vue-tg'
-import { set } from 'date-fns'
 const calendarStore = useCalendarStore()
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
 const userStore = useUserStore()
 const disabledTimeStore = useDisabledTimeStore()
 const bookedAppointmentsStore = useBookedAppointmentsStore()
-// const userStore = useUserStore()
-const shouldShowMainButton = computed(() => {
+const showMainButton = computed(() => {
   const selectedDate = calendarStore.selectedDate
   if (selectedDate === null) return false
-  const isPast = selectedDate < set(new Date(), { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
+  const isPast = isPastTime(selectedDate)
   const isFuture = !isPast
   const isPastAndAdminBookedAppointments = isPast && adminStore.isAdmin && bookedAppointmentsStore.hasAppointmentOnDate(selectedDate as Date)
   if (isPastAndAdminBookedAppointments) return true
@@ -69,14 +67,6 @@ const shouldShowMainButton = computed(() => {
     if (isDisabled && userStore.hasAppointmentOnDate(selectedDate as Date)) return true
     if (!isDisabled) return true
   }
-
-  // const hasAppointment = bookedAppointmentsStore.hasAppointmentOnDate(selectedDate as Date)
-  // const isDisabled = disabledTimeStore.isDisabledDay(selectedDate)
-  // if (adminStore.isAdmin) {
-  //   if (hasAppointment) return true
-  //   if (!isDisabled) return true
-  // }
-  // if (isDisabled && userStore.hasAppointmentOnDate(selectedDate as Date)) return true
   return false
 })
 </script>
