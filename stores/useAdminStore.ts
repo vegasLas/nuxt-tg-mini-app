@@ -166,7 +166,12 @@ export const useAdminStore = defineStore('admin', () => {
     currentDate.value = newDate
     await fetchAppointmentsByDate(newDate)
   }
-
+  function showTodayAppointmentsList() {
+    const stepStore = useStepStore()
+    stepStore.showAdminAppointmentsList()
+    currentDate.value = new Date()
+    fetchAppointmentsByDate(currentDate.value)
+  }
 
   async function deleteAppointment(id: number) {
     error.value = null
@@ -298,6 +303,7 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAppointmentCounts,
     addAppointmentToCurrendDate,
     checkAuth,
+    showTodayAppointmentsList,
     onDateChange,
     fetchAppointmentsByDate,
     showDetails,

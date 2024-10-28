@@ -1,5 +1,4 @@
 <template>
-	<ClientOnly>
 		<div class="appointment-scheduler">
 			<div v-if="!adminStore.isAdmin" class="appointments-count">
 			<button class="count-button" @click="stepStore.showAppointmentsList">
@@ -10,7 +9,7 @@
 
 			<!-- Modified admin counts section -->
 			<div v-if="adminStore.isAdmin && adminStore.appointmentCounts" class="admin-counts">
-				<div class="count-item" @click="stepStore.showAdminAppointmentsList">
+				<div class="count-item" @click="adminStore.showTodayAppointmentsList">
 					<span class="label">Сегодня:</span>
 					<span class="count">{{ adminStore.appointmentCounts.todayCount }}</span>
 				</div>
@@ -42,7 +41,6 @@
         <AdminAppointmentListAll />
       </template>
 		</div>
-	</ClientOnly>
   </template>
   
   <script setup lang="ts">
@@ -117,6 +115,7 @@
   .appointment-scheduler {
     padding: 8px 16px;
     gap: 16px;
+    padding-top: 30px;
   }
 }
 

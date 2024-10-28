@@ -11,17 +11,19 @@
         </div>
         <div v-else class="appointments-list">
           <div v-for="appointment in adminStore.filteredAppointments" :key="appointment.id" class="appointment-item">
-            <div class="appointment-time">{{ formatTime(appointment.time) }}</div>
             <div class="appointment-details">
               <div><strong>Имя:</strong> {{ appointment.name }}</div>
               <div><strong>Телефон:</strong> {{ appointment.phoneNumber }}</div>
               <div v-if="appointment.comment"><strong>Комментарий:</strong> {{ appointment.comment }}</div>
             </div>
-            <button v-if="!isExpired(appointment.time)"
-              @click="() => adminStore.handleCancelAppointment(appointment.id)"
-              class="action-button remove">
-              Отменить
-            </button>
+            <div class="appointment-actions">
+              <div class="appointment-time"><span style="margin-right: 0.5rem;">&#128339;</span>{{ formatTime(appointment.time) }}</div>
+              <button v-if="!isExpired(appointment.time)"
+                @click="() => adminStore.handleCancelAppointment(appointment.id)"
+                class="action-button remove">
+                Отменить
+              </button>
+            </div>
           </div>
         </div>
       </template>
@@ -47,9 +49,6 @@ function formatTime(time: string) {
   return formatDateTime(parseISO(time)).split(' ')[1]
 }
 
-onMounted(() => {
-  adminStore.fetchAppointmentsByDate(adminStore.currentDate)
-})
 </script>
 
 <style scoped>
@@ -58,6 +57,12 @@ onMounted(() => {
   flex-direction: column;
   gap: 20px;
   padding: 0 20px 20px 20px;
+}
+.appointment-actions {
+  flex-direction: column;
+  gap: 5px;
+  display: flex;
+  align-items: center;
 }
 
 .appointments-container {
@@ -82,6 +87,7 @@ onMounted(() => {
   gap: 10px;
   padding: 10px;
   background-color: #ffffff;
+  justify-content: space-between;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -118,11 +124,11 @@ onMounted(() => {
   border-radius: 8px;
 }
 .action-button {
-  padding: 2px 4px;
+  padding: 8px 16px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .remove {
