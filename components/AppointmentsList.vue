@@ -5,7 +5,7 @@
       У вас нет запланированных записей.
     </div>
     <ul v-else>
-      <li v-for="appointment in userStore.appointments" :key="appointment.id" class="appointment-item">
+      <li v-for="appointment in userStore.filteredAppointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
           <div class="date-time" :class="{ 'expired': isExpired(appointment.time) }">
             {{ formatDateTime(new Date(appointment.time)) }}

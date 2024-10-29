@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=critikk
+      - POSTGRES_PASSWORD=fadfafadfhNsanS
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+  app:
+    image: vegasslas/myapp-private:elchin
+    restart: always
+    expose:
+      - 8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    environment:
+      - PORT=8001
+      - TELEGRAM_BOT_TOKEN=7922920819:AAG2SvQah45c1fpDB-uXrd03vsUC1OD77VE
+      - DATABASE_URL=postgresql://critikk:fadfafadfhNsanS@elchin-db-1:5432/mydatabase
+    networks:
+      - app-network
+volumes:
+  postgres_data:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /opt/beget/elchin/data
+
+networks:
+  app-network:
+    driver: bridge 

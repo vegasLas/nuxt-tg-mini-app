@@ -1,4 +1,3 @@
-import { defineStore } from 'pinia'
 import type { Appointment } from '~/types'
 import { fetchUserAppointments } from '~/api/appointments'
 import { useAppointmentStore } from './useAppointmentStore'
@@ -15,7 +14,7 @@ export const useUserStore = defineStore('user', () => {
 
   const appointmentStore = useAppointmentStore()
   const adminStore = useAdminStore()
-
+  const filteredAppointments = computed(() => appointments.value.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()))
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
   function hasAppointmentOnDate(date: Date): boolean {
     return appointments.value.some(appointment => {
@@ -109,6 +108,7 @@ export const useUserStore = defineStore('user', () => {
   }
   return {
     appointments,
+    filteredAppointments,
     currentPage,
     totalPages,
     totalItems,

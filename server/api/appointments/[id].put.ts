@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-
+import { format } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   try {
     const user = await getUserFromEvent(event)
+    const isAdmin = await isAdminUser(event)
   
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
   if (!existingAppointment || existingAppointment.userId !== user.id) {
     throw createError({ statusCode: 404, statusMessage: 'Appointment not found or not authorized' })
   }
-  
+  const previousTime = existingAppointment.time
   const updatedAppointment = await prisma.appointment.update({
     select: {
       id: true,
@@ -42,6 +43,27 @@ export default defineEventHandler(async (event) => {
     where: { id: parseInt(id) },
       data: updateData,
     })
+    if (!isAdmin) {
+      const admins = await prisma.admin.findMany({
+        include: {
+          user: true, // Includes the related User
+        },
+      })
+      const message = `🔔 Клиент перенес запись\n
+      ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
+      ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
+      ${previousTime ? `Прошлое время: ${format(previousTime, 'dd.MM.yyyy HH:mm')}` : ''}
+      ${updatedAppointment.time ? `Новое время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+      ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
+      `
+      admins.forEach(admin => {
+        if (admin.user.chatId) {
+          TBOT.sendMessage(admin.user.chatId, message).catch(error => {
+            console.error('Error sending message to admin after updating appointment:', error)
+          })
+        }
+      })
+    }
     return updatedAppointment
   } catch (error) {
     console.error('Error updating appointment:', error)
