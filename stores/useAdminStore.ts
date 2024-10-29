@@ -166,9 +166,9 @@ export const useAdminStore = defineStore('admin', () => {
     currentDate.value = newDate
     await fetchAppointmentsByDate(newDate)
   }
-  function showTodayAppointmentsList() {
+  function showTodayAppointmentsOverview() {
     const stepStore = useStepStore()
-    stepStore.showAdminAppointmentsList()
+    stepStore.showAdminAppointmentsOverview()
     currentDate.value = new Date()
     fetchAppointmentsByDate(currentDate.value)
   }
@@ -303,7 +303,7 @@ export const useAdminStore = defineStore('admin', () => {
     fetchAppointmentCounts,
     addAppointmentToCurrendDate,
     checkAuth,
-    showTodayAppointmentsList,
+    showTodayAppointmentsOverview,
     onDateChange,
     fetchAppointmentsByDate,
     showDetails,
