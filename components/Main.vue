@@ -9,11 +9,11 @@
 
 			<!-- Modified admin counts section -->
 			<div v-if="adminStore.isAdmin && adminStore.appointmentCounts" class="admin-counts">
-				<div class="count-item" @click="adminStore.showTodayAppointmentsList">
+				<div class="count-item" @click="adminStore.showTodayAppointmentsOverview">
 					<span class="label">Сегодня:</span>
 					<span class="count">{{ adminStore.appointmentCounts.todayCount }}</span>
 				</div>
-					<div class="count-item" @click="stepStore.showAdminAppointmentsListAll">
+					<div class="count-item" @click="stepStore.showAdminAppointmentsList">
 						<span class="label">Всего (30 дней):</span>
 						<span class="count">{{ adminStore.appointmentCounts.totalCount }}</span>
 					</div>
@@ -34,11 +34,11 @@
 			<template v-else-if="stepStore.currentStep === 'appointmentsList'">
 				<AppointmentsList />
 			</template>
-			<template v-else-if="stepStore.currentStep === 'adminAppointmentsList'">
-				<AdminAppointmentsList />
+			<template v-else-if="stepStore.currentStep === 'adminAppointmentsOverview'">
+				<AdminAppointmentsOverview />
 			</template>
-      <template v-else-if="stepStore.currentStep === 'adminAppointmentsListAll'">
-        <AdminAppointmentListAll />
+      <template v-else-if="stepStore.currentStep === 'adminAppointmentsList'">
+        <AdminAppointmentList />
       </template>
 		</div>
   </template>

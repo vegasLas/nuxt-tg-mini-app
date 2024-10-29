@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import type { Appointment } from '~/types'
-
+import { format } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
@@ -30,25 +29,26 @@ export default defineEventHandler(async (event) => {
         booked: false,
       },  
     })
-    const admins = await prisma.admin.findMany({
-      include: {
-        user: true, // Includes the related User
-      },
-    })
-
-    const message = `
-    Запись удалена
-    ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
-    ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
-    ${updatedAppointment.time ? `Время: ${updatedAppointment.time.toLocaleString()}` : ''}
-    ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
+    if (!isAdmin) {
+      const admins = await prisma.admin.findMany({
+        include: {
+          user: true, // Includes the related User
+        },
+      })
+      const message = `⚠️ Клиент отменил запись\n
+      ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
+      ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
+      ${updatedAppointment.time ? `Время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+      ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
       `
-
-    admins.forEach(admin => {
-      if (admin.user.chatId) {
-        TBOT.sendMessage(admin.user.chatId, message)
-      }
-    })
+      admins.forEach(admin => {
+        if (admin.user.chatId) {
+          TBOT.sendMessage(admin.user.chatId, message).catch(error => {
+            console.error('Error sending message to admin after deleting appointment:', error)
+          })
+        }
+      })
+    }
     return {
       success: true,
     }
