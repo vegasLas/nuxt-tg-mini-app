@@ -1,4 +1,3 @@
-import { defineStore } from 'pinia'
 import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
 import { cancelAppointment, submitAppointment, updateAppointment } from '~/api/appointments'

@@ -5,8 +5,9 @@ import { parseISO, startOfDay, endOfDay, format } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
-  const user = await getUserFromEvent(event);
-  if (!user) {
+  try {
+    const user = await getUserFromEvent(event);
+    if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Не авторизован' });
   }
 
@@ -86,21 +87,24 @@ export default defineEventHandler(async (event) => {
   })
 
   // Prepare the message
-  
-  const message = `
-  Запись создана
-  ${newAppointment.name ? `Имя: ${newAppointment.name}` : ''}
-  ${newAppointment.phoneNumber ? `Телефон: ${newAppointment.phoneNumber}` : ''}
-  ${newAppointment.time ? `Время: ${format(newAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
-  ${newAppointment.comment ? `Комментарий: ${newAppointment.comment}` : ''}
+  if (!isAdmin) {
+    const message = `🔔 Клиент создал запись\n
+    ${newAppointment.name ? `Имя: ${newAppointment.name}` : ''}
+    ${newAppointment.phoneNumber ? `Телефон: ${newAppointment.phoneNumber}` : ''}
+    ${newAppointment.time ? `Время: ${format(newAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+    ${newAppointment.comment ? `Комментарий: ${newAppointment.comment}` : ''}
     `
-  // Notify all admins
-  await Promise.all(
-    admins.map(async (admin) => {
+    admins.forEach(async (admin) => {
       if (admin.user.telegramId && admin.user.chatId) {
-        TBOT.sendMessage(admin.user.chatId , message)
+        TBOT.sendMessage(admin.user.chatId , message).catch(error => {
+          console.error('Error sending message to admin after creating appointment:', error)
+        })
       }
     })
-  )
+  }
   return newAppointment
+  } catch (error) {
+    console.error('Error creating appointment:', error)
+    throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
+  }
 });

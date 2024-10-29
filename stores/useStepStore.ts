@@ -1,5 +1,5 @@
 export const useStepStore = defineStore('step', () => {
-  const currentStep = ref<'calendar' | 'adminAppointmentsList' | 'adminAppointmentsListAll' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
+  const currentStep = ref<'calendar' | 'adminAppointmentsOverview' | 'adminAppointmentsList' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
 
   function proceedToUserInfo() {
     currentStep.value = 'userInfo'
@@ -21,8 +21,8 @@ export const useStepStore = defineStore('step', () => {
     currentStep.value = 'adminAppointmentsList'
   }
 
-  function showAdminAppointmentsListAll() {
-    currentStep.value = 'adminAppointmentsListAll'
+  function showAdminAppointmentsOverview() {
+    currentStep.value = 'adminAppointmentsOverview'
   }
 
   return {
@@ -32,6 +32,6 @@ export const useStepStore = defineStore('step', () => {
     goToTimeSlots,
     showAppointmentsList,
     showAdminAppointmentsList,
-    showAdminAppointmentsListAll,
+    showAdminAppointmentsOverview,
   }
 })
