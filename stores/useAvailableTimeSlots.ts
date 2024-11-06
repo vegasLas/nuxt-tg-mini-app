@@ -4,7 +4,7 @@ export const useAvailableTimeSlots = defineStore('availableTimeSlots', () => {
   const { openWindows } = storeToRefs(openWindowsStore)
   const selectedSlot = ref<{ time: Date, show: string, bookedAppointmentId: number | null } | null>(null)
   const isPast = computed(() => {
-    return selectedSlot.value?.time && new Date(selectedSlot.value.time) <= new Date()
+    return selectedSlot.value?.time && toMoscowTime(selectedSlot.value.time) <= toMoscowTime()
   })
   const availableTimeSlots = computed(() => {
     const selectedWindow = openWindows.value.find(window => 

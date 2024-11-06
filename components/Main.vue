@@ -3,7 +3,7 @@
 			<div v-if="!adminStore.isAdmin" class="appointments-count">
 			<button class="count-button" @click="stepStore.showAppointmentsList">
 				<span class="label">Мои записи</span>
-				<span class="count">{{ userStore.appointments.filter(appointment => new Date(appointment.time) >= new Date()).length }}</span>
+				<span class="count">{{ userStore.filteredAppointments.filter(appointment => isPastTime(parseISO(appointment.time)) === false).length }}</span>
 			</button>
 			</div>
 
@@ -44,6 +44,7 @@
   </template>
   
   <script setup lang="ts">
+  import { parseISO } from 'date-fns'
 
   const userStore = useUserStore()
   const adminStore = useAdminStore()
@@ -53,7 +54,7 @@
   onMounted(async () => {
     await adminStore.checkAuth()
     if (adminStore.isAdmin) {
-      bookedAppointmentsStore.fetchOpenWindowsForAdmin(new Date())
+      bookedAppointmentsStore.fetchOpenWindowsForAdmin(toMoscowTime())
       adminStore.fetchAppointmentCounts()
     }else {
       bookedAppointmentsStore.fetchOpenWindows(),

@@ -1,5 +1,5 @@
-import { isBefore, isSameDay } from 'date-fns'
+import { isBefore } from 'date-fns'
 
 export function isExpired(time: string | Date) {
-	return isBefore(time, new Date())
+	return isBefore(time, toMoscowTime())
 }

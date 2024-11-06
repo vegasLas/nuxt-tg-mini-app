@@ -14,11 +14,11 @@ export const useUserStore = defineStore('user', () => {
 
   const appointmentStore = useAppointmentStore()
   const adminStore = useAdminStore()
-  const filteredAppointments = computed(() => appointments.value.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()))
+  const filteredAppointments = computed(() => appointments.value.sort((a, b) => toMoscowTime(a.time).getTime() - toMoscowTime(b.time).getTime()))
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
   function hasAppointmentOnDate(date: Date): boolean {
     return appointments.value.some(appointment => {
-      const appointmentDate = new Date(appointment.time);
+      const appointmentDate = toMoscowTime(appointment.time);
       return appointmentDate.toDateString() === date.toDateString();
     });
   }

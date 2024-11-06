@@ -43,7 +43,7 @@ import { BackButton, MainButton } from 'vue-tg'
 const adminStore = useAdminStore()
 const stepStore = useStepStore()
 function showMainButton() {
-  return !isExpired(adminStore.currentDate) && !isSameDay(adminStore.currentDate, new Date()) && !isWeekend(adminStore.currentDate.getDay())
+  return !isExpired(adminStore.currentDate) && !isSameDay(adminStore.currentDate, toMoscowTime()) && !isWeekend(adminStore.currentDate.getDay())
 }
 function formatTime(time: string) {
   return formatDateTime(parseISO(time)).split(' ')[1]

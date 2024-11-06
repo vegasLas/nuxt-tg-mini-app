@@ -1,5 +1,5 @@
 import type { CalendarAttribute } from '~/types'
-import { startOfDay, set, isSameDay} from 'date-fns'
+import { startOfDay } from 'date-fns'
 
 export const useCalendarStore = defineStore('calendar', () => {
   const userStore = useUserStore()
@@ -9,7 +9,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   const openWindowsStore = useOpenWindowsStore()
   const disabledTimeStore = useDisabledTimeStore()
   const { openWindows } = storeToRefs(openWindowsStore)
-  const isPast = computed(() => selectedDate.value && selectedDate.value < startOfDay(new Date()))
+  const isPast = computed(() => selectedDate.value && selectedDate.value < startOfDay(toMoscowTime()))
   const isDisabledDay = computed(() => {
     return selectedDate.value && disabledTimeStore.isDisabledDay(selectedDate.value)
   })
@@ -125,7 +125,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     selectedDate.value = date
   }
   function onMonthChange(props: { id: string }[]) {
-    const date = new Date(props[0].id);
+    const date = toMoscowTime(props[0].id);
     const isExistingOpenWindow = openWindows.value.some(({date: windowDate}) => 
       date.getMonth() === windowDate.getMonth() && 
       date.getFullYear() === windowDate.getFullYear()

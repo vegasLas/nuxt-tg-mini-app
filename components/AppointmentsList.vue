@@ -8,7 +8,7 @@
       <li v-for="appointment in userStore.filteredAppointments" :key="appointment.id" class="appointment-item">
         <div class="appointment-info">
           <div class="date-time" :class="{ 'expired': isExpired(appointment.time) }">
-            {{ formatDateTime(new Date(appointment.time)) }}
+            {{ formatDateTime(toMoscowTime(appointment.time)) }}
           </div>
         </div>
         <div class="appointment-actions" :class="{ 'expired': isExpired(appointment.time) }">

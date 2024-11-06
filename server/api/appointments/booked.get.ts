@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { parseISO, startOfDay, endOfDay } from 'date-fns'
+import { startOfDay, endOfDay } from 'date-fns'
 
 const prisma = new PrismaClient()
 
@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
       if (!isAdminUser(event)) {
         throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
       }
-      startDate = startOfDay(parseISO(startDateParam))
-      endDate = endOfDay(parseISO(endDateParam))
+      startDate = startOfDay(parseToMoscowTime(startDateParam))
+      endDate = endOfDay(parseToMoscowTime(endDateParam))
     } else {
       // If no date range is provided, fetch appointments for the next 30 days
       startDate = startOfDay(new Date())

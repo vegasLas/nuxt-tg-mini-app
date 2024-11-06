@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { startOfDay, endOfDay, parseISO } from 'date-fns'
+import { startOfDay, endOfDay } from 'date-fns'
 
 const prisma = new PrismaClient()
 export default defineEventHandler(async (event) => {
@@ -20,9 +20,10 @@ export default defineEventHandler(async (event) => {
     })
   }
   try {
-    const parsedDate = parseISO(date)
-    const dayStart = startOfDay(parsedDate)
-    const dayEnd = endOfDay(parsedDate)
+    const moscowDate = parseToMoscowTime(date)
+    const dayStart = startOfDay(moscowDate)
+    const dayEnd = endOfDay(moscowDate)
+    console.log('moscow date', moscowDate, 'dayStart', dayStart, 'dayEnd', dayEnd)
     const appointments = await prisma.appointment.findMany({
       where: {
         booked: true,

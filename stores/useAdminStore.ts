@@ -1,5 +1,5 @@
 import { useWebApp, useWebAppPopup } from 'vue-tg'
-import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay, isToday } from 'date-fns'
+import { isSameHour, isSameDay, parseISO, startOfDay, endOfDay, isToday, formatISO } from 'date-fns'
 import { cancelAppointment } from '~/api/appointments'
 
 interface Appointment {
@@ -44,7 +44,7 @@ export const useAdminStore = defineStore('admin', () => {
   const error = ref<string | null>(null)
   const isAdmin = ref(false)
   const appointmentCounts = ref<AppointmentCounts | null>(null)
-  const currentDate = ref(new Date())
+  const currentDate = ref(toMoscowTime())
   const isLoading = ref(false)
   const isCanceling = ref(false)
   const filteredAppointments = computed(() => {
@@ -69,6 +69,7 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchAppointmentsByDate(date: Date) {
     const isAlreadyFetched = appointments.value.some(appointment => isSameDay(appointment.time, date))
     if (isAlreadyFetched) return
+    console.log('fetching appointments by date', date)
     const start = startOfDay(date);
     const end = endOfDay(date);
     
@@ -90,7 +91,7 @@ export const useAdminStore = defineStore('admin', () => {
         headers: {
           'x-init-data': useWebApp().initData
         },
-        params: { date: date.toISOString() }
+        params: { date: formatISO(date) }
       })
       for (const appointment of data) {
         const isExist = appointments.value.find(a => a.id === appointment.id)
@@ -169,7 +170,7 @@ export const useAdminStore = defineStore('admin', () => {
   function showTodayAppointmentsOverview() {
     const stepStore = useStepStore()
     stepStore.showAdminAppointmentsOverview()
-    currentDate.value = new Date()
+    currentDate.value = toMoscowTime()
     fetchAppointmentsByDate(currentDate.value)
   }
 

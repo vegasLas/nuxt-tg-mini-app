@@ -1,12 +1,12 @@
 import { defineEventHandler, getQuery, createError } from 'h3'
 import { PrismaClient } from '@prisma/client'
-import { parseISO, addDays, startOfDay } from 'date-fns'
+import { addDays, startOfDay } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
-  const startDate = query.startDate ? parseISO(query.startDate as string) : startOfDay(new Date())
-  const endDate = query.endDate ? parseISO(query.endDate as string) : addDays(new Date(), 30)
+  const startDate = query.startDate ? parseToMoscowTime(query.startDate as string) : startOfDay(new Date())
+  const endDate = query.endDate ? parseToMoscowTime(query.endDate as string) : addDays(new Date(), 30)
 
   let dateFilter = {
     isActive: true,

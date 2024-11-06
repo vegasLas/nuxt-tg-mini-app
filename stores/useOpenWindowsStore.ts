@@ -20,7 +20,7 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     return Array.from({ length: 9 }, (_, i) => {
       const hour = 9 + i
       return {
-        show: format(setHours(new Date(), hour), 'HH:00'),
+        show: format(setHours(toMoscowTime(), hour), 'HH:00'),
         time: setHours(currentDate, hour),
         bookedAppointmentId: null
       }
@@ -52,16 +52,20 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     }
   }
 
-  function generateOpenWindows(startDate: Date, endDate: Date, bookedAppointments: { time: string, id: number }[]) {
+  function generateOpenWindows(startRange: Date, endRange: Date, bookedAppointments: { time: string, id: number }[]) {
     const workDays = [1, 2, 3, 4, 5] // Monday to Friday
     const adminStore = useAdminStore()
-    for (let d = startOfDay(startDate); d <= endDate; d = addDays(d, 1)) {
+    const start = startOfDay(startRange)
+    const end = startOfDay(endRange)
+    
+    for (let d = start; d <= end; d = addDays(d, 1)) {
       if (adminStore.isAdmin || workDays.includes(getDay(d))) {
         const newWindow = createNewWindow(d, bookedAppointments)
         updateOpenWindows(newWindow)
       }
     }
     openWindows.value.sort((a, b) => a.date.getTime() - b.date.getTime())
+    console.log('openWindows', openWindows.value)
   }
 
   function unbookSlot(date: Date, id: number) {
