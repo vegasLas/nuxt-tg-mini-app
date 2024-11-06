@@ -11,7 +11,7 @@
           v-for="slot in availableTimeSlots.availableTimeSlots"
           :key="slot.show"
           :class="['time-slot', { 
-            booked: slot.bookedAppointmentId || new Date(slot.time) <= new Date(),
+            booked: slot.bookedAppointmentId || toMoscowTime(slot.time) <= toMoscowTime(),
             disabled: calendarStore.isDisabledDay && !userStore.hasAppointment(slot.bookedAppointmentId!),
             selected: availableTimeSlots.selectedSlot?.time === slot.time,
             'user-appointment': userStore.hasAppointment(slot.bookedAppointmentId!) || (adminStore.isAdmin && slot.bookedAppointmentId)

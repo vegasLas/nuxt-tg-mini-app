@@ -66,7 +66,7 @@ export const useAppointmentActionsStore = defineStore('appointmentActions', () =
     }
 
     const activeAppointments = userStore.appointments.filter(appointment => 
-      parseISO(appointment.time) > new Date()
+      parseISO(appointment.time) > toMoscowTime()
     );
 
     if (adminStore.isAdmin) {
@@ -119,7 +119,7 @@ export const useAppointmentActionsStore = defineStore('appointmentActions', () =
         resetModes()
       } else if (e.button_id === 'createNew') {
         const activeAppointments = userStore.appointments.filter(appointment => 
-          parseISO(appointment.time) > new Date()
+          parseISO(appointment.time) > toMoscowTime()
         )
         if (!adminStore.isAdmin && activeAppointments.length >= 2) {
           showNotification({
@@ -138,7 +138,7 @@ export const useAppointmentActionsStore = defineStore('appointmentActions', () =
   const rescheduleAppointment = async () => {
     if (!availableTimeSlotsStore.selectedSlot) return
     const oldAppointment = userStore.appointments.find(appointment => {
-      const appointmentDate = new Date(appointment.time);
+      const appointmentDate = toMoscowTime(appointment.time);
       return appointmentDate.toDateString() === availableTimeSlotsStore.selectedSlot?.time.toDateString();
     });
 

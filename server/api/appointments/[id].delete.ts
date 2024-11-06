@@ -38,7 +38,8 @@ export default defineEventHandler(async (event) => {
       const message = `⚠️ Клиент отменил запись\n
       ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
       ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
-      ${updatedAppointment.time ? `Время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+      ${updatedAppointment.time ? `Число: ${format(updatedAppointment.time, 'dd.MM.yyyy')}` : ''}
+      ${updatedAppointment.time ? `Время: ${format(updatedAppointment.time, 'HH:mm')}` : ''}
       ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
       `
       admins.forEach(admin => {

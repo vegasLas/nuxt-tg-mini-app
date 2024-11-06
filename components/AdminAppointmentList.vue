@@ -53,11 +53,7 @@ import type { Appointment } from '~/types';
 const stepStore = useStepStore()
 const adminStore = useAdminStore()
 onMounted(async () => {
-  // const today = startOfDay(new Date())
-  // const startDate = startOfDay(today)
-  // const endDate = endOfDay(addDays(today, 30))
-  const { startDate, endDate } = getDateRange((new Date()).toString())
-  // Fetch appointments for all dates
+  const { startDate, endDate } = getDateRange(toMoscowTime())
   adminStore.fetchAppointmentsByDateRange(startDate, endDate)
 })
 

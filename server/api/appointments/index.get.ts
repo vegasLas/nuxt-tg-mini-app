@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { parseISO } from 'date-fns'
 const prisma = new PrismaClient()
 const DEFAULT_ITEMS_PER_PAGE = 5
 
@@ -29,8 +28,8 @@ export default defineEventHandler(async (event) => {
     // Add date range filter for admin users
     if (isAdmin && startDate && endDate) {
       whereClause.time = {
-        gte: parseISO(startDate),
-        lte: parseISO(endDate),
+        gte: parseToMoscowTime(startDate),
+        lte: parseToMoscowTime(endDate),
       }
     }
     return await fetchAppointments(whereClause, page, take)

@@ -8,8 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "deploy": "nuxt build && nuxt preview",
-    "start:server": "ts-node server/index.ts"
+    "deploy": "nuxt build && nuxt start"
   },
   "overrides": {
     "vue": "latest"

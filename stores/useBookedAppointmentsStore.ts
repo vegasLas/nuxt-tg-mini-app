@@ -56,7 +56,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
       return
     }
 
-    const now = new Date()
+    const now = toMoscowTime()
     const cutoffTime = set(now, { hours: 17, minutes: 0, seconds: 0, milliseconds: 0 })
     const startDate = isAfter(now, cutoffTime) ? addDays(now, 1) : now
     const endDate = addDays(startDate, 30)
@@ -101,7 +101,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   }
   function hasAppointmentOnDate(date: Date): boolean {
     return bookedAppointments.value.some(appointment => {
-      const appointmentDate = new Date(appointment.time);
+      const appointmentDate = toMoscowTime(appointment.time);
       return appointmentDate.toDateString() === date.toDateString();
     });
   }

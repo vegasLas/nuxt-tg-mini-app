@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import type { Appointment } from '~/types'
 import { getUserFromEvent } from '../../utils/getUserFromEvent'
-import { parseISO, startOfDay, endOfDay, format } from 'date-fns'
+import { startOfDay, endOfDay, format } from 'date-fns'
 const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
   const isAdmin = await isAdminUser(event);
   const { time } = await readBody(event) as Omit<Appointment, 'id' | 'user' | 'userId'>;
-  const appointmentDate = parseISO(time);
+  const appointmentDate = parseToMoscowTime(time);
   
   // Check if the appointment time falls within a disabled day range
   const disabledTime = await prisma.disabledTime.findFirst({
@@ -91,7 +91,8 @@ export default defineEventHandler(async (event) => {
     const message = `🔔 Клиент создал запись\n
     ${newAppointment.name ? `Имя: ${newAppointment.name}` : ''}
     ${newAppointment.phoneNumber ? `Телефон: ${newAppointment.phoneNumber}` : ''}
-    ${newAppointment.time ? `Время: ${format(newAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
+    ${newAppointment.time ? `Число: ${format(newAppointment.time, 'dd.MM.yyyy')}` : ''}
+    ${newAppointment.time ? `Время: ${format(newAppointment.time, 'HH:mm')}` : ''}
     ${newAppointment.comment ? `Комментарий: ${newAppointment.comment}` : ''}
     `
     admins.forEach(async (admin) => {

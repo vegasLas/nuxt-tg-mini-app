@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { isAdminUser } from '~/server/utils/isAdminUser'
 import { startOfDay, endOfDay } from 'date-fns'
 import { getDateRange } from '~/utils/getDatesRange'
 const prisma = new PrismaClient()
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const today = new Date()
-    const dateRange = getDateRange(today.toISOString())
+    const dateRange = getDateRange(today)
     const { startDate, endDate } = dateRange
 
     const todayStart = startOfDay(today)
