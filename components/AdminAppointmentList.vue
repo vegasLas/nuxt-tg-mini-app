@@ -45,52 +45,19 @@
 </template>
 
 <script setup lang="ts">
-import { format, parseISO } from 'date-fns'
-import { ru } from 'date-fns/locale'
 import { BackButton } from 'vue-tg'
-import type { Appointment } from '~/types';
 
 const stepStore = useStepStore()
 const adminStore = useAdminStore()
+
 onMounted(async () => {
   const { startDate, endDate } = getDateRange(toMoscowTime())
   adminStore.fetchAppointmentsByDateRange(startDate, endDate)
 })
 
 const groupedAppointments = computed(() => {
-  const grouped: Record<string, Appointment[]> = {}
-  adminStore.appointments.forEach(appointment => {
-    if (isPastTime(parseISO(appointment.time))) return
-    const date = format(parseISO(appointment.time), 'yyyy-MM-dd')
-    if (!grouped[date]) {
-      grouped[date] = []
-    }
-    grouped[date].push(appointment)
-  })
-
-  // Sort appointments within each date group by time
-  Object.keys(grouped).forEach(date => {
-    grouped[date].sort((a, b) => 
-      parseISO(a.time).getTime() - parseISO(b.time).getTime()
-    )
-  })
-
-  // Convert to array of [date, appointments] pairs and sort by date
-  const sortedEntries = Object.entries(grouped).sort((a, b) => 
-    parseISO(a[0]).getTime() - parseISO(b[0]).getTime()
-  )
-
-  // Convert back to object
-  return Object.fromEntries(sortedEntries)
+  return groupAppointmentsByDate(adminStore.appointments)
 })
-
-const formatDateHeader = (dateStr: string) => {
-  return format(parseISO(dateStr), 'd MMMM', { locale: ru })
-}
-
-const formatTime = (dateStr: string) => {
-  return format(parseISO(dateStr), 'HH:mm')
-}
 </script>
 
 <style scoped>

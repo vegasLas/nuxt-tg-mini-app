@@ -2,7 +2,6 @@ import { useWebAppPopup } from 'vue-tg'
 import type { Appointment } from '~/types'
 import { cancelAppointment, submitAppointment, updateAppointment } from '~/api/appointments'
 import { format } from 'date-fns'
-import { useBookedAppointmentsStore } from './useBookedAppointmentsStore'
 
 export const useAppointmentStore = defineStore('appointment', () => {
   const isCanceling = ref(false)

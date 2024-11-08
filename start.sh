@@ -7,9 +7,14 @@ echo -e "Starting server setup...\n"
 echo -e "Installing dependencies...\n"
 npm install
 
+# Migrate the database
+echo -e "Migrating database...\n"
+npx prisma migrate deploy
+
 # Generate Prisma client only (skip migrations)
 echo -e "Generating Prisma client...\n"
 npx prisma generate
+
 
 # Build the Nuxt application
 echo -e "Building Nuxt application...\n"

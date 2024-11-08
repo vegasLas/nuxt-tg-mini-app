@@ -171,7 +171,7 @@ export default defineNitroPlugin(async (event) => {
 	});
 	
 	// Schedule daily appointment summary at 21:00
-	schedule.scheduleJob({hour: 21, minute: 0}, () => {
+	schedule.scheduleJob({hour: 18, minute: 0}, () => {
 		sendAppointmentSummary();
 		sendUserAppointmentReminders(); // Add this line to send reminders
 	});
