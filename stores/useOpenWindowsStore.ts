@@ -8,7 +8,6 @@ import {
   parseISO,
   addDays,
 } from 'date-fns'
-import { useAdminStore } from './useAdminStore'
 import type { OpenWindow } from '~/types'
 export const useOpenWindowsStore = defineStore('openWindows', () => {
   const openWindows = ref<OpenWindow[]>([])
@@ -65,7 +64,6 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
       }
     }
     openWindows.value.sort((a, b) => a.date.getTime() - b.date.getTime())
-    console.log('openWindows', openWindows.value)
   }
 
   function unbookSlot(date: Date, id: number) {

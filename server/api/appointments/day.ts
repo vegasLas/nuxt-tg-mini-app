@@ -23,7 +23,6 @@ export default defineEventHandler(async (event) => {
     const moscowDate = parseToMoscowTime(date)
     const dayStart = startOfDay(moscowDate)
     const dayEnd = endOfDay(moscowDate)
-    console.log('moscow date', moscowDate, 'dayStart', dayStart, 'dayEnd', dayEnd)
     const appointments = await prisma.appointment.findMany({
       where: {
         booked: true,

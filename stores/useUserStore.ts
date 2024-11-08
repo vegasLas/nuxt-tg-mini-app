@@ -1,7 +1,5 @@
 import type { Appointment } from '~/types'
 import { fetchUserAppointments } from '~/api/appointments'
-import { useAppointmentStore } from './useAppointmentStore'
-import { useAdminStore } from './useAdminStore'
 
 export const useUserStore = defineStore('user', () => {
   const appointments = ref<Appointment[]>([])
@@ -70,6 +68,7 @@ export const useUserStore = defineStore('user', () => {
       if (adminStore.isAdmin) {
         adminStore.addAppointmentToList(response)
       } else {
+        totalItems.value++
         appointments.value.unshift(response)
       }
       return true

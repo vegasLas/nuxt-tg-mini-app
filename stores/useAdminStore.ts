@@ -69,7 +69,6 @@ export const useAdminStore = defineStore('admin', () => {
   async function fetchAppointmentsByDate(date: Date) {
     const isAlreadyFetched = appointments.value.some(appointment => isSameDay(appointment.time, date))
     if (isAlreadyFetched) return
-    console.log('fetching appointments by date', date)
     const start = startOfDay(date);
     const end = endOfDay(date);
     
