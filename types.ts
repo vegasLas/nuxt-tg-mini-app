@@ -25,6 +25,7 @@ export interface Admin {
 export interface User {
   id: number;
   phoneNumber: string | null;
+  chatId: string | null;
   allowsWriteToPm: boolean;
   username: string | null;
   languageCode: string | null;

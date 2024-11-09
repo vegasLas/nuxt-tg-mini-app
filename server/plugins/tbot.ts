@@ -51,7 +51,7 @@ async function sendAppointmentSummary() {
 			statusMessage = `⚠️ Завтра нерабочий день:\n`;
 		}
 
-		const messageCount = `Всего записей: ${appointments.length}\n\n`;
+		const messageCount = `📊 Всего записей: ${appointments.length}\n\n`;
 		
 		let messageDetails = appointments.map((apt, index) => {
 			return `${index + 1}. ${apt?.name} - ${apt?.phoneNumber} - ${format(apt.time, 'HH:mm')}`;
@@ -59,7 +59,7 @@ async function sendAppointmentSummary() {
 
 		// If no appointments, add a note
 		if (appointments.length === 0) {
-			messageDetails = 'Записей нет';
+			messageDetails = '📭 Записей нет';
 		}
 
 		const fullMessage = messageHeader + statusMessage + messageCount + messageDetails;
@@ -80,7 +80,7 @@ async function sendUserAppointmentReminders() {
 	try {
 		const tomorrow = startOfDay(addDays(new Date(), 1));
 		const tomorrowEnd = endOfDay(tomorrow);
-
+		
 		// Check if tomorrow is a weekend or disabled day
 		const isWeekend = tomorrow.getDay() === 0 || tomorrow.getDay() === 6;
 		const disabledDay = await prisma.disabledTime.findFirst({
@@ -110,12 +110,9 @@ async function sendUserAppointmentReminders() {
 		// Send reminder to each user with an appointment
 		for (const appointment of appointments) {
 			if (appointment.user?.chatId && !appointment.user.admin) {
-				let message = '';
-					// Message for regular users
-					message = `🔔 Напоминание о записи на завтра!\n\n`;
-					message += `📅 Дата: ${format(appointment.time, 'dd.MM.yyyy')}\n`;
-					message += `⏰ Время: ${format(appointment.time, 'HH:mm')}\n`;
-
+				const message = `🔔 Напоминание о записи на завтра!\n\n` +
+					`📅 Дата: ${format(appointment.time, 'dd.MM.yyyy')}\n` +
+					`⏰ Время: ${format(appointment.time, 'HH:mm')}\n`;
 
 				await TBOT.sendMessage(appointment.user.chatId, message);
 			}

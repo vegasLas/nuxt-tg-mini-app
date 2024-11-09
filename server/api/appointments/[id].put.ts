@@ -41,30 +41,41 @@ export default defineEventHandler(async (event) => {
       booked: true,
     },
     where: { id: parseInt(id) },
-      data: updateData,
+    data: updateData,
+  })
+
+  // Add notification to user
+  if (user.chatId) {
+    const message = [
+      `${isAdmin ? '✏️ Вы изменили запись' : '✏️ Ваша запись изменена'}`,
+      updatedAppointment.name ? `👤 Имя: ${updatedAppointment.name}` : '',
+      updatedAppointment.phoneNumber ? `📱 Телефон: ${updatedAppointment.phoneNumber}` : '',
+      previousTime ? `⏰ Прошлое время: ${format(previousTime, 'dd.MM.yyyy HH:mm')}` : '',
+      updatedAppointment.time ? `📅 Новое время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}` : '',
+      updatedAppointment.comment ? `💬 Комментарий: ${updatedAppointment.comment}` : ''
+    ].filter(Boolean).join('\n');
+
+    TBOT.sendMessage(user.chatId, message).catch(error => {
+      console.error('Error sending update message to user:', error)
     })
-    if (!isAdmin) {
-      const admins = await prisma.admin.findMany({
-        include: {
-          user: true, // Includes the related User
-        },
-      })
-      const message = `🔔 Клиент перенес запись\n
-      ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
-      ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
-      ${previousTime ? `Прошлое время: ${format(previousTime, 'dd.MM.yyyy HH:mm')}` : ''}
-      ${updatedAppointment.time ? `Новое время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}` : ''}
-      ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
-      `
-      admins.forEach(admin => {
-        if (admin.user.chatId) {
-          TBOT.sendMessage(admin.user.chatId, message).catch(error => {
-            console.error('Error sending message to admin after updating appointment:', error)
-          })
-        }
-      })
-    }
-    return updatedAppointment
+  }
+
+  if (!isAdmin) {
+    const admins = await prisma.admin.findMany({
+      include: {
+        user: true, // Includes the related User
+      },
+    })
+    const message = `🔔 Клиент перенес запись\n${updatedAppointment.name ? `👤 Имя: ${updatedAppointment.name}\n` : ''}${updatedAppointment.phoneNumber ? `📱 Телефон: ${updatedAppointment.phoneNumber}\n` : ''}${previousTime ? `⏰ Прошлое время: ${format(previousTime, 'dd.MM.yyyy HH:mm')}\n` : ''}${updatedAppointment.time ? `📅 Новое время: ${format(updatedAppointment.time, 'dd.MM.yyyy HH:mm')}\n` : ''}${updatedAppointment.comment ? `💬 Комментарий: ${updatedAppointment.comment}\n` : ''}`
+    admins.forEach(admin => {
+      if (admin.user.chatId) {
+        TBOT.sendMessage(admin.user.chatId, message).catch(error => {
+          console.error('Error sending message to admin after updating appointment:', error)
+        })
+      }
+    })
+  }
+  return updatedAppointment
   } catch (error) {
     console.error('Error updating appointment:', error)
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })

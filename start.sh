@@ -1,25 +1,24 @@
 #!/bin/bash
 set -e  # Exit on any error
 
-echo -e "Starting server setup...\n"
+echo -e "\033[1mStarting server setup...\033[0m\n"
 
 # Install dependencies
-echo -e "Installing dependencies...\n"
+echo -e "\033[1mInstalling dependencies...\033[0m\n"
 npm install
 
 # Migrate the database
-echo -e "Migrating database...\n"
+echo -e "\033[1mMigrating database...\033[0m\n"
 npx prisma migrate deploy
 
 # Generate Prisma client only (skip migrations)
-echo -e "Generating Prisma client...\n"
+echo -e "\033[1mGenerating Prisma client...\033[0m\n"
 npx prisma generate
 
-
 # Build the Nuxt application
-echo -e "Building Nuxt application...\n"
+echo -e "\033[1mBuilding Nuxt application...\033[0m\n"
 npx nuxt build
 
 # Start the preview server
-echo -e "Starting preview server...\n"
+echo -e "\033[1mStarting preview server...\033[0m\n"
 npx nuxt preview
