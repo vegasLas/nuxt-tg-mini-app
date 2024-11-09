@@ -79,6 +79,22 @@ export default defineEventHandler(async (event) => {
       userId: user.id
     }
   });
+
+  // Add notification to user
+  if (user.chatId) {
+    const message = [
+        `✅ ${isAdmin ? 'Запись успешно создана' : 'Вы успешно записались'}`,
+        newAppointment.name ? `👤 Имя: ${newAppointment.name}` : '',
+        newAppointment.phoneNumber ? `📱 Телефон: ${newAppointment.phoneNumber}` : '',
+        newAppointment.time ? `📅 Число: ${format(newAppointment.time, 'dd.MM.yyyy')}` : '',
+        newAppointment.time ? `⏰ Время: ${format(newAppointment.time, 'HH:mm')}` : '',
+        newAppointment.comment ? `💬 Комментарий: ${newAppointment.comment}` : ''
+      ].filter(Boolean).join('\n');
+    TBOT.sendMessage(user.chatId, message).catch(error => {
+      console.error('Error sending confirmation message to user:', error)
+    })
+  }
+
   // Fetch all admin users
   const admins = await prisma.admin.findMany({
     include: {
@@ -88,13 +104,7 @@ export default defineEventHandler(async (event) => {
 
   // Prepare the message
   if (!isAdmin) {
-    const message = `🔔 Клиент создал запись\n
-    ${newAppointment.name ? `Имя: ${newAppointment.name}` : ''}
-    ${newAppointment.phoneNumber ? `Телефон: ${newAppointment.phoneNumber}` : ''}
-    ${newAppointment.time ? `Число: ${format(newAppointment.time, 'dd.MM.yyyy')}` : ''}
-    ${newAppointment.time ? `Время: ${format(newAppointment.time, 'HH:mm')}` : ''}
-    ${newAppointment.comment ? `Комментарий: ${newAppointment.comment}` : ''}
-    `
+    const message = `🔔 Клиент создал запись\n${newAppointment.name ? `👤 Имя: ${newAppointment.name}\n` : ''}${newAppointment.phoneNumber ? `📱 Телефон: ${newAppointment.phoneNumber}\n` : ''}${newAppointment.time ? `📅 Число: ${format(newAppointment.time, 'dd.MM.yyyy')}\n` : ''}${newAppointment.time ? `⏰ Время: ${format(newAppointment.time, 'HH:mm')}\n` : ''}${newAppointment.comment ? `💬 Комментарий: ${newAppointment.comment}\n` : ''}`
     admins.forEach(async (admin) => {
       if (admin.user.telegramId && admin.user.chatId) {
         TBOT.sendMessage(admin.user.chatId , message).catch(error => {

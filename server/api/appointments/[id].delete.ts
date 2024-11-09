@@ -29,19 +29,47 @@ export default defineEventHandler(async (event) => {
         booked: false,
       },  
     })
+
+    if (isAdmin && existingAppointment.userId && (existingAppointment.userId !== user.id)) {
+        const appointmentUser = await prisma.user.findUnique({
+          where: { id: existingAppointment.userId }
+        })
+        
+        if (appointmentUser?.chatId) {
+          const message = [
+            `❌ Ваша запись была отменена администратором\n`,
+            existingAppointment.time ? `📅 Число: ${format(existingAppointment.time, 'dd.MM.yyyy')}\n` : '',
+            existingAppointment.time ? `⏰ Время: ${format(existingAppointment.time, 'HH:mm')}\n` : ''
+          ].filter(Boolean).join('')
+          
+          TBOT.sendMessage(appointmentUser.chatId, message).catch(error => {
+            console.error('Error sending cancellation message to user:', error)
+          })
+        }
+    }
+
+    if (user.chatId) {
+      const message = [
+        `❌ Вы отменили запись\n`,
+        existingAppointment.name ? `👤 Имя: ${existingAppointment.name}\n` : '',
+        existingAppointment.phoneNumber ? `📱 Телефон: ${existingAppointment.phoneNumber}\n` : '',
+        existingAppointment.time ? `📅 Число: ${format(existingAppointment.time, 'dd.MM.yyyy')}\n` : '',
+        existingAppointment.time ? `⏰ Время: ${format(existingAppointment.time, 'HH:mm')}\n` : '',
+        existingAppointment.comment ? `💬 Комментарий: ${existingAppointment.comment}\n` : ''
+      ].filter(Boolean).join('')
+      
+      TBOT.sendMessage(user.chatId, message).catch(error => {
+        console.error('Error sending cancellation message to user:', error)
+      })
+    }
+
     if (!isAdmin) {
       const admins = await prisma.admin.findMany({
         include: {
-          user: true, // Includes the related User
+          user: true,
         },
       })
-      const message = `⚠️ Клиент отменил запись\n
-      ${updatedAppointment.name ? `Имя: ${updatedAppointment.name}` : ''}
-      ${updatedAppointment.phoneNumber ? `Телефон: ${updatedAppointment.phoneNumber}` : ''}
-      ${updatedAppointment.time ? `Число: ${format(updatedAppointment.time, 'dd.MM.yyyy')}` : ''}
-      ${updatedAppointment.time ? `Время: ${format(updatedAppointment.time, 'HH:mm')}` : ''}
-      ${updatedAppointment.comment ? `Комментарий: ${updatedAppointment.comment}` : ''}
-      `
+      const message = `⚠️ Клиент отменил запись\n${updatedAppointment.name ? `👤 Имя: ${updatedAppointment.name}\n` : ''}${updatedAppointment.phoneNumber ? `📱 Телефон: ${updatedAppointment.phoneNumber}\n` : ''}${updatedAppointment.time ? `📅 Число: ${format(updatedAppointment.time, 'dd.MM.yyyy')}\n` : ''}${updatedAppointment.time ? `⏰ Время: ${format(updatedAppointment.time, 'HH:mm')}\n` : ''}${updatedAppointment.comment ? `💬 Комментарий: ${updatedAppointment.comment}\n` : ''}`
       admins.forEach(admin => {
         if (admin.user.chatId) {
           TBOT.sendMessage(admin.user.chatId, message).catch(error => {
