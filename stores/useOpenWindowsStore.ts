@@ -42,7 +42,7 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     }
   }
 
-  function updateOpenWindows(newWindow: OpenWindow) {
+  function generateWindow(newWindow: OpenWindow) {
     const existingIndex = openWindows.value.findIndex(window => isSameDay(window.date, newWindow.date))
     if (existingIndex !== -1) {
       openWindows.value[existingIndex] = newWindow
@@ -57,13 +57,28 @@ export const useOpenWindowsStore = defineStore('openWindows', () => {
     const start = startOfDay(startRange)
     const end = startOfDay(endRange)
     
+    // Create a temporary array to store all new windows
+    const tempOpenWindows: OpenWindow[] = [...openWindows.value]
+    
     for (let d = start; d <= end; d = addDays(d, 1)) {
       if (adminStore.isAdmin || workDays.includes(getDay(d))) {
         const newWindow = createNewWindow(d, bookedAppointments)
-        updateOpenWindows(newWindow)
+        // Update the temporary array instead of the reactive openWindows
+        
+        const existingIndex = tempOpenWindows.findIndex(window => isSameDay(window.date, newWindow.date))
+        if (existingIndex !== -1) {
+          tempOpenWindows[existingIndex] = newWindow
+        } else {
+          tempOpenWindows.push(newWindow)
+        }
       }
     }
-    openWindows.value.sort((a, b) => a.date.getTime() - b.date.getTime())
+    
+    // Sort the temporary array
+    tempOpenWindows.sort((a, b) => a.date.getTime() - b.date.getTime())
+    
+    // Update openWindows.value once with the final result
+    openWindows.value = tempOpenWindows
   }
 
   function unbookSlot(date: Date, id: number) {

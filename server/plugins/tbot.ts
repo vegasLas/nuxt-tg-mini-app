@@ -162,6 +162,10 @@ export default defineNitroPlugin(async (event) => {
 					},
 				});
 			}
+
+			// Send welcome message with instructions and an icon
+			await TBOT.sendMessage(currentChatId, '✨ Нажмите кнопку "Запись", чтобы записаться на прием ✨');
+
 		} catch (error: any) {
 			console.error('Error handling user', error)
 		}
