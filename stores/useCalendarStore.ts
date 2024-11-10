@@ -24,7 +24,7 @@ export const useCalendarStore = defineStore('calendar', () => {
     if (isDisabled) {
       if (adminStore.isAdmin) return 'gray'
       if (bookedSlotsLength > 0) return 'yellow'
-      else return 'gray'
+      return 'gray'
     }
     if (isPast && adminStore.isAdmin) {
       return bookedSlotsLength ? 'pink' : 'blue';

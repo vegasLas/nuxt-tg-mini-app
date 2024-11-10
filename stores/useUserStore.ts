@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
   const isLoading = ref(false)
 
   const appointmentStore = useAppointmentStore()
+  const bookedAppointmentsStore = useBookedAppointmentsStore()
   const adminStore = useAdminStore()
   const filteredAppointments = computed(() => appointments.value.sort((a, b) => toMoscowTime(a.time).getTime() - toMoscowTime(b.time).getTime()))
   const hasMoreAppointments = computed(() => currentPage.value < totalPages.value)
@@ -20,12 +21,15 @@ export const useUserStore = defineStore('user', () => {
       return appointmentDate.toDateString() === date.toDateString();
     });
   }
+  async function fetchOpenWindows() {
+    await fetchAppointments()
+    await bookedAppointmentsStore.fetchOpenWindows()
+  }
   async function fetchAppointments(page: number = 1) {
     isLoading.value = true
     try {
       const result = await fetchUserAppointments(page)
       appointments.value = page === 1 ? result.appointments : [...appointments.value, ...result.appointments]
-
       currentPage.value = result.pagination.currentPage
       totalPages.value = result.pagination.totalPages
       totalItems.value = result.pagination.totalItems
@@ -114,6 +118,7 @@ export const useUserStore = defineStore('user', () => {
     itemsPerPage,
     isLoading,
     hasMoreAppointments,
+    fetchOpenWindows,
     handleCancelAppointment,
     hasAppointmentOnDate,
     removeUserAppointmentOfList,

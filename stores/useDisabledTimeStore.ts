@@ -33,7 +33,7 @@ export const useDisabledTimeStore = defineStore('disabledDays', () => {
         throw new Error('Failed to fetch disabled days')
       }
       if (response.data.value) {
-        disabledDays.value = response.data.value
+        disabledDays.value = [...disabledDays.value, ...response.data.value]
         return response.data.value
       }
     } catch (err) {

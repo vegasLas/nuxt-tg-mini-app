@@ -15,7 +15,7 @@ export const useBookedAppointmentsStore = defineStore('bookedAppointments', () =
   const disabledDaysStore = useDisabledTimeStore()
   const openWindowsStore = useOpenWindowsStore()
   const isLoading = ref(false)
-
+  const userStore = useUserStore()
   async function fetchBookedAppointments(startDate?: Date, endDate?: Date) {
     try {
       let query = { startDate: startDate?.toISOString(), endDate: endDate?.toISOString() }
