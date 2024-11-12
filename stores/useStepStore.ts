@@ -1,11 +1,14 @@
+import { startOfDay } from 'date-fns'
+
 export const useStepStore = defineStore('step', () => {
   const currentStep = ref<'calendar' | 'adminAppointmentsOverview' | 'adminAppointmentsList' | 'timeSlots' | 'userInfo' | 'appointmentsList'>('calendar')
-
+  const calendarStore = useCalendarStore()
   function proceedToUserInfo() {
     currentStep.value = 'userInfo'
   }
 
   function goToCalendar() {
+    calendarStore.currentMonth = startOfDay(toMoscowTime())
     currentStep.value = 'calendar'
   }
 
