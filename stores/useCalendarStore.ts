@@ -65,19 +65,22 @@ export const useCalendarStore = defineStore('calendar', () => {
     return { label: hasAvailableSlots ? 'Есть свободные окна' : 'Все окна заняты' };
   }
 
-  
+  const currentMonth = ref<Date>(startOfDay(toMoscowTime()))
+
   const calendarAttributes = computed(() => {
-    return openWindows.value.map(window => {
+    const currentMonthWindows = openWindows.value.filter(window => 
+      window.date.getMonth() === currentMonth.value.getMonth() && 
+      window.date.getFullYear() === currentMonth.value.getFullYear()
+    )
+
+    return currentMonthWindows.map(window => {
       const isDisabled = disabledTimeStore.isDisabledDay(window.date)
       const hasAvailableSlots = window.slots.some(slot => !slot.bookedAppointmentId)
-      const bookedSlotsLength = window.slots.filter(slot => adminStore.isAdmin ? slot.bookedAppointmentId : slot.bookedAppointmentId && userStore.hasAppointment(slot.bookedAppointmentId)).length ;
+      const bookedSlotsLength = window.slots.filter(slot => 
+        adminStore.isAdmin ? slot.bookedAppointmentId : 
+        slot.bookedAppointmentId && userStore.hasAppointment(slot.bookedAppointmentId)
+      ).length
       const isPast = isPastTime(window.date)
-      let isBooked = false
-      if (adminStore.isAdmin) {
-        isBooked = window.slots.some(slot => slot.bookedAppointmentId)
-      } else {
-        isBooked = userStore.appointments.some(appointment => window.slots.some(slot => slot.bookedAppointmentId === appointment.id))
-      }
       const data = {
         bookedSlotsLength, 
         isDisabled,
@@ -85,22 +88,19 @@ export const useCalendarStore = defineStore('calendar', () => {
         slots: window.slots,
         isPast,
       }
-      const dotColor = getDotColor(data);
+      const dotColor = getDotColor(data)
       const popover = getPopoverLabel(data)
       let content = adminStore.isAdmin && isDisabled && bookedSlotsLength ? 'yellow' : undefined
+      
       return {
         key: window.date.toDateString(),
         dot: dotColor,
         content,
         dates: window.date,
         popover
-      } as Partial<CalendarAttribute>;
-    });
-  });
-
-  
-
-  
+      } as Partial<CalendarAttribute>
+    })
+  })
 
   function onDayClick(day: { date: Date }) {
     if (adminStore.isAdmin) {
@@ -125,13 +125,16 @@ export const useCalendarStore = defineStore('calendar', () => {
     selectedDate.value = date
   }
   function onMonthChange(props: { id: string }[]) {
-    const date = toMoscowTime(props[0].id);
+    const date = toMoscowTime(props[0].id)
+    currentMonth.value = date
+    
     const isExistingOpenWindow = openWindows.value.some(({date: windowDate}) => 
       date.getMonth() === windowDate.getMonth() && 
       date.getFullYear() === windowDate.getFullYear()
-    );
+    )
+    
     if (adminStore.isAdmin && !isExistingOpenWindow) {
-      bookedAppointmentsStore.fetchOpenWindowsForAdmin(date);
+      bookedAppointmentsStore.fetchOpenWindowsForAdmin(date)
     }
   }
 
@@ -140,9 +143,10 @@ export const useCalendarStore = defineStore('calendar', () => {
     selectedDate,
     isPast,
     isDisabledDay,
+    currentMonth,
     onMonthChange,
     disableDay,
     onDayClick,
-    setSelectedDate,
+    setSelectedDate
   }
 })
