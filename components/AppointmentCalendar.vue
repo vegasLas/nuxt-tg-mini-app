@@ -1,6 +1,7 @@
 <template>
   <div class="calendar-container">
     <VCalendar
+      :key="calendarKey"
       size="large"
       locale="ru-RU"
       @did-move="calendarStore.onMonthChange"
@@ -54,20 +55,25 @@ const stepStore = useStepStore()
 const userStore = useUserStore()
 const disabledTimeStore = useDisabledTimeStore()
 const bookedAppointmentsStore = useBookedAppointmentsStore()
+
+const calendarKey = computed(() => {
+  return JSON.stringify(calendarStore.calendarAttributes)
+})
+
 const showMainButton = computed(() => {
   const selectedDate = calendarStore.selectedDate
-  if (selectedDate === null) return false
+  if (!selectedDate) return false
+
   const isPast = isPastTime(selectedDate)
-  const isFuture = !isPast
-  const isPastAndAdminBookedAppointments = isPast && adminStore.isAdmin && bookedAppointmentsStore.hasAppointmentOnDate(selectedDate as Date)
-  if (isPastAndAdminBookedAppointments) return true
-  if (isFuture) {
-    const isDisabled = disabledTimeStore.isDisabledDay(selectedDate)
-    if (adminStore.isAdmin) return true
-    if (isDisabled && userStore.hasAppointmentOnDate(selectedDate as Date)) return true
-    if (!isDisabled) return true
+
+  if (isPast) {
+    return adminStore.isAdmin && bookedAppointmentsStore.hasAppointmentOnDate(selectedDate)
   }
-  return false
+
+  if (adminStore.isAdmin) return true
+
+  const isDisabled = disabledTimeStore.isDisabledDay(selectedDate)
+  return !isDisabled || (isDisabled && userStore.hasAppointmentOnDate(selectedDate))
 })
 </script>
 
